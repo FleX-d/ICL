@@ -162,16 +162,16 @@ namespace base
 
     flexd::icl::JsonObj BinStream::getJson(const std::string& FileName) const
     {
-        flexd::icl::JsonObj j;
+        flexd::icl::JsonObj j = {};
         
         bool temp = j.add<std::string>("/File/Name", FileName);
         bool temp1 = j.add<int>("/File/FileSize",getSizeOfBase64());
         bool temp2 = j.add<std::string>("/File/Data", getBase64());
         if(temp && temp1 && temp2)
         {
-           return j;
+           return std::move(j);
         }
-        return j;
+        return flexd::icl::JsonObj();
             
     }
 //    size_t BinStream::get(void* data) const // naplni void* decodovanymi datmi z BASE64 a vrati velkost dat ako size_t

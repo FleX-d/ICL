@@ -52,7 +52,9 @@ namespace flexd {
             
         public:
             JsonObj();
-            JsonObj(std::string jString);            
+            JsonObj(const std::string& jString);   
+            JsonObj(JsonObj&& other);
+            JsonObj& operator=(JsonObj&& other);
             ~JsonObj();
 
             /**
