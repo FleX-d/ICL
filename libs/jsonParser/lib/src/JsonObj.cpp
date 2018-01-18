@@ -60,18 +60,20 @@ namespace flexd
             nlohmann::json m_ctx;
             };
 
-        JsonObj::JsonObj(JsonObj&& other)
+        JsonObj::JsonObj(JsonObj&& other) : m_obj(nullptr)
         {
-            m_obj->m_ctx = other.m_obj->m_ctx;
-            other.m_obj->m_ctx = nullptr;
+            m_obj = std::move(other.m_obj);
+            other.m_obj = nullptr;
         }
         
         JsonObj& JsonObj::operator=(JsonObj&& other)
         {
             if(this != &other)
             {
-                this->m_obj->m_ctx = other.m_obj->m_ctx;        
-                other.m_obj->m_ctx = nullptr;
+                delete m_obj;
+                
+                m_obj = std::move(other.m_obj);   
+                other.m_obj = nullptr;
             }
             return *this;
         }
