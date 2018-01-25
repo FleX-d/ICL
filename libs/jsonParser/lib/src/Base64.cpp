@@ -59,7 +59,15 @@ namespace base
         0, 0, 0, 63, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
         41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
-    BinStream::BinStream(const std::string& filePath)//check size of file
+    BinStream::BinStream()
+    : m_dataSize(0),
+      m_dataBase64("")
+    {    
+    }
+    
+    BinStream::BinStream(const std::string& filePath)
+    : m_dataSize(0),
+      m_dataBase64("")
     {
 
         if (getFileSize(filePath) != -1 && getFileSize(filePath) <= MaxSizeFile)
@@ -80,6 +88,8 @@ namespace base
     }
 
     BinStream::BinStream(const void* data, const size_t len)
+    : m_dataSize(0),
+      m_dataBase64("")
     {
         if (len <= MaxSizeFile)
         {
@@ -88,10 +98,12 @@ namespace base
         }
     }
 
-    BinStream::BinStream(const std::ifstream& stream)
+    BinStream::BinStream(const std::ifstream&& stream)
+    : m_dataSize(0),
+      m_dataBase64("")
     {
         if (stream)
-        {
+        { 
             std::stringstream fileData;
             fileData << stream.rdbuf();
             fileData.seekg(0, fileData.end);
@@ -103,6 +115,17 @@ namespace base
             }
         }
     }
+    
+    BinStream::BinStream(const flexd::icl::JsonObj& jsonObj)
+    : m_dataSize(0),
+      m_dataBase64("")
+    {
+        jsonObj.get<std::string>("/File/Data", m_dataBase64);
+        int temp;
+        jsonObj.get<int>("/File/FileSize", temp);
+        m_dataSize = temp;
+    }
+    
 
     bool BinStream::set(const std::string& filePath)
     {
@@ -138,17 +161,17 @@ namespace base
     }
 
 
-    const std::string& BinStream::getBase64() const // return reference to Base64 string
+    const std::string& BinStream::getBase64() const 
     {
         return m_dataBase64;
     }
 
-    size_t BinStream::getSizeOfBase64() const // return size of Base64 string
+    size_t BinStream::getSizeOfBase64() const 
     {
         return m_dataSize;
     }
 
-    bool BinStream::write(const std::string& filePath) // vytovory subor a zapise do neho decodovane data z BASE64
+    bool BinStream::write(const std::string& filePath) 
     {
         std::ofstream file(filePath.c_str(), std::ios::out | std::ios::binary);
         if(file){
@@ -174,6 +197,18 @@ namespace base
         return flexd::icl::JsonObj();
             
     }
+
+    bool BinStream::setBase64(const std::string& stringBase64)
+    {
+        m_dataBase64 = stringBase64;
+        m_dataSize = m_dataBase64.size();
+        if(m_dataBase64 == stringBase64)
+        {
+            return true;
+        }
+        return false;
+    }
+
 //    size_t BinStream::get(void* data) const // naplni void* decodovanymi datmi z BASE64 a vrati velkost dat ako size_t
 //    {
 //            
