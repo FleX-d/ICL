@@ -336,14 +336,14 @@ namespace flexd
 
         ReturnType JsonObj::merge(const JsonObj& other)
         {
-            std::string s = other.m_obj->m_ctx.dump();
-            nlohmann::json j = nlohmann::json::parse(s);
-            for (nlohmann::json::iterator it = j.begin(); it != j.end(); ++it)
+            if(!other.m_obj->m_ctx.empty())
             {
-                m_obj->m_ctx[it.key()] = it.value();
+                for (nlohmann::json::const_iterator it = other.m_obj->m_ctx.begin(); it != other.m_obj->m_ctx.end(); ++it)
+                {
+                    m_obj->m_ctx[it.key()] = it.value();
+                }
                 return Success;
             }
-
             return Error;
         }
 
