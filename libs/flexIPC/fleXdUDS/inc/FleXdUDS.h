@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDUDS_H
 #define FLEXDUDS_H
 
-#include <string>
-#include <memory>
+#include "FleXdEpoll.h"
+#include "FleXdIPCMsg.h"
 
 namespace flexd {
     namespace ilc {
@@ -42,21 +42,32 @@ namespace flexd {
 
             class FleXdUDS {
             public:
-                FleXdUDS(const std::string& socPath);
+                FleXdUDS(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDS();
 
                 bool init();
-                void loop();
+                void onRead(FleXdEpoll::Event e);
+                void onMsg(pSharedFleXdIPCMsg msg);
+                virtual void onWrite(pSharedFleXdIPCMsg msg) = 0; 
                 
                 FleXdUDS(const FleXdUDS&) = delete;
                 FleXdUDS& operator=(const FleXdUDS&) = delete;
                 
             protected:
-                int m_fd;
-                const std::string m_socPath;
+                int getFd() const;
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
+                virtual void onMessage(pSharedFleXdIPCMsg msg) = 0;
+                virtual bool initialization() = 0;
+                virtual bool onReConnect(int fd) = 0;
+                bool connectClient();
+                bool listenClient();
+                
+            protected:    
+                FleXdEpoll& m_poller;
                 
             private:
                 class Ctx;
+                const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };
 

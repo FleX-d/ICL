@@ -53,10 +53,26 @@ namespace flexd {
                 explicit FleXdIPCBuffer(size_t maxBufferSize = 65536);
                 explicit FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize = 65536);
                 ~FleXdIPCBuffer();
-                
+                /**
+                 * Function send data to Factory for parsing message 
+                 * @param data - shared pointer to Array of data which will be parsed 
+                 * @param size - size of data
+                 */
                 void rcvMsg(pSharedArray8192& data, size_t size);
+                /**
+                 * Function return FleXdIPCMsg from queue, but not remove it
+                 * @return shared pointer to FleXdIPCMsg from front of queue
+                 */
                 pSharedFleXdIPCMsg front() const;
+                /**
+                 * Function return FleXdIPCMsg from queue, but not remove it
+                 * @return shared pointer to FleXdIPCMsg from back of queue
+                 */
                 pSharedFleXdIPCMsg back() const;
+                /**
+                 * Function return FleXdIPCMsg from queue and remove it
+                 * @return shared pointer to FleXdIPCMsg from front of queue
+                 */
                 pSharedFleXdIPCMsg pop();
 
                 FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;

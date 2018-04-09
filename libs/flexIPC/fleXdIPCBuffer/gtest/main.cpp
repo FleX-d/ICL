@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
@@ -11,6 +12,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,43 +26,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   FleXdIPCFactory.h
+ * File:   JsonObj.h
+ * 
  * Author: Matus Bodorik
  *
- * Created on February 21, 2018, 8:32 AM
+ * Created on April 06, 2018, 10:02 AM
  */
 
-#ifndef FLEXDIPCFACTORY_H
-#define FLEXDIPCFACTORY_H
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-#include "FleXdIPCBufferTypes.h"
-#include "FleXdIPCMsg.h"
-#include "BitStream.h"
-#include <vector>
-#include <queue>
-
-
-namespace flexd {
-    namespace ilc {
-        namespace epoll {
-
-            class FleXdIPCFactory {
-            public:
-                FleXdIPCFactory(std::function<void(pSharedFleXdIPCMsg msg)> releaseMsg);
-                virtual ~FleXdIPCFactory();
-                
-                void parseData(const pSharedArray8192& data,const size_t size);
-                void releaseMsg(bool complete, uint16_t crc16, uint16_t msgSize, uint8_t type, uint16_t msgID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl,const std::vector<uint8_t>& payload);
-                void findNonCoruptedMessage(uint16_t CoruptedMsgSize);
-                FleXdIPCFactory(const FleXdIPCFactory& orig) = delete;
-                FleXdIPCFactory& operator=(const FleXdIPCFactory& orig) = delete;
-                
-            private:
-                BiteStream m_data;
-                std::function<void(pSharedFleXdIPCMsg) > m_releaseMsg;
-            };
-        }
-    }
+int main(int argc, char **argv) {
+    ::testing::InitGoogleMock(&argc, argv);
+    return RUN_ALL_TESTS();
 }
-#endif /* FLEXDIPCFACTORY_H */
-

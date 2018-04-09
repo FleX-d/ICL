@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     uint32_t ttl = 600;
     std::vector<uint8_t> payload {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
                                     ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76
-                                    ,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102};
+                                    ,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,105};
     
     crc16 = fleXdMsg::calkCRC16(&msgSize , sizeof(msgSize));
     crc16 = fleXdMsg::calkCRC16(&type , sizeof(type), crc16);
@@ -71,12 +71,12 @@ int main(int argc, char** argv)
     uint16_t mcrc16 = 0;
     uint16_t mmsgSize = 33;
     uint8_t mtype = 1;
-    uint16_t mmsgID = 555;
-    uint64_t mfrom = 9999;
-    uint64_t mto = 1111;
-    uint32_t mtimeStamp = 444;
-    uint32_t mttl = 600;
-    std::vector<uint8_t> mpayload {1};/*,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
+    uint16_t mmsgID = 2;
+    uint64_t mfrom = 3;
+    uint64_t mto = 4;
+    uint32_t mtimeStamp = 5;
+    uint32_t mttl = 6;
+    std::vector<uint8_t> mpayload {7};/*,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
                                     ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76
                                     ,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102};*/
     
@@ -89,12 +89,12 @@ int main(int argc, char** argv)
     mcrc16 = fleXdMsg::calkCRC16(&mttl , sizeof(mttl), mcrc16);
     mcrc16 = fleXdMsg::calkCRC16(&mpayload[0] , mpayload.size(), mcrc16);
     
-    fleXdMsg mmsg(true, mcrc16, mmsgSize, mtype, mmsgID,  mfrom, mto, mtimeStamp, mttl, std::move(mpayload));
+    fleXdMsg mmsg(true, 0, mmsgSize, mtype, mmsgID,  mfrom, mto, mtimeStamp, mttl, std::move(mpayload));
     std::shared_ptr<fleXdMsg> mmsg_ptr = std::make_shared<fleXdMsg>(mmsg);
     client.init();
 
-    client.onConnect();
     client.onWrite(msg_ptr);
+    client.onWrite(mmsg_ptr);
     client.onWrite(mmsg_ptr);
     client.onWrite(msg_ptr);
     

@@ -34,41 +34,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDUDSCLIENT_H
 #define FLEXDUDSCLIENT_H
 
-#include <string>
-#include <memory>
 #include "FleXdIPCBufferTypes.h"
 #include "FleXdIPCMsg.h"
-#include "FleXdEpoll.h"
 #include "FleXdIPCBuffer.h"
+#include "../FleXdUDS.h"
+
 
 namespace flexd {
     namespace ilc {
         namespace epoll {
 
-            class FleXdUDSClient {
+            class FleXdUDSClient : public FleXdUDS {
             public:
                 FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDSClient();
-                
-                bool init();
+                /**
+                 * Function initialize Unix domain sockets for Client. 
+                 * @return true if initialization is done, false otherwise.
+                 */
+                virtual bool initialization();
+                /**
+                 * Function send message to Server
+                 * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
+                 */
+                virtual void onWrite(pSharedFleXdIPCMsg msg);
                 
                 FleXdUDSClient(const FleXdUDSClient&) = delete;
                 FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
                 
-                void onWrite(pSharedFleXdIPCMsg msg);
-                void onRead(FleXdEpoll::Event e);
-                void onConnect();
-                void onReConnect();
-                void onMsg(pSharedFleXdIPCMsg msg);
+            private:
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
+                virtual void onMessage(pSharedFleXdIPCMsg msg);
+                virtual bool onReConnect(int fd);
                 
                 
             private:
-                class Ctx;
-                std::unique_ptr<Ctx> m_ctx;
-                const std::string m_socPath;
                 pSharedArray8192 m_array;
                 pUniqueFleXdIPCBuffer m_buffer;
-                FleXdEpoll& m_poller;
             };
 
         } // namespace epoll

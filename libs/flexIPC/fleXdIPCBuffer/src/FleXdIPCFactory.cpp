@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Created on February 21, 2018, 8:32 AM
  */
 
+#define HEADERSIZE 32
+
 #include "FleXdIPCFactory.h"
 #include "CRC.h"
 #include <iostream>
@@ -74,51 +76,61 @@ namespace flexd {
                         if (startHeaderFlag == 1)
                         {
                             msgSize = m_data.get<uint16_t>(16);
-                            if((m_data.getData().size() >= msgSize) && (msgSize >= 32))
+                            if(msgSize >= HEADERSIZE)
                             {
-                                type = m_data.get<uint8_t>(8);
-                                msgID = m_data.get<uint16_t>(16);
-                                from = m_data.get<uint64_t>(64);
-                                to = m_data.get<uint64_t>(64);
-                                timeStamp = m_data.get<uint32_t>(32);
-                                ttl = m_data.get<uint32_t>(32);
-                                endHeaderFlag = m_data.get<uint8_t>(2);
-                                if(endHeaderFlag == 2)
+                                if(m_data.getData().size() >= HEADERSIZE)
                                 {
-                                    size_t headerSize = 32;
-                                    size_t payloadSize = 0;
-                                    payloadSize = msgSize - headerSize;      
-                                    std::vector<uint8_t> payload;
-                                    for(size_t i = 0; i < payloadSize; i++)
+                                    type = m_data.get<uint8_t>(8);
+                                    msgID = m_data.get<uint16_t>(16);
+                                    from = m_data.get<uint64_t>(64);
+                                    to = m_data.get<uint64_t>(64);
+                                    timeStamp = m_data.get<uint32_t>(32);
+                                    ttl = m_data.get<uint32_t>(32);
+                                    endHeaderFlag = m_data.get<uint8_t>(2);
+                                    if(endHeaderFlag == 2)
                                     {
-                                        payload.push_back(m_data.get<uint8_t>(8));
-                                    }
-                                    uint16_t calculateCRC = 0;
-                                    calculateCRC = CRC::Calculate(&msgSize , sizeof(msgSize), CRC::CRC_16_ARC());
-                                    calculateCRC = CRC::Calculate(&type , sizeof(type), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&msgID , sizeof(msgID), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&from , sizeof(from), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&to , sizeof(to), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&timeStamp , sizeof(timeStamp), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&ttl , sizeof(ttl), CRC::CRC_16_ARC(), calculateCRC);
-                                    calculateCRC = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), calculateCRC);
-                                    if(crc16 == calculateCRC){
-                                        releaseMsg(true,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
-                                    } else 
-                                    {
+                                        if(m_data.getData().size() >= msgSize)
+                                        {       
+                                            size_t headerSize = HEADERSIZE;
+                                            size_t payloadSize = 0;
+                                            payloadSize = msgSize - headerSize;      
+                                            std::vector<uint8_t> payload;
+                                            for(size_t i = 0; i < payloadSize; i++)
+                                            {
+                                                payload.push_back(m_data.get<uint8_t>(8));
+                                            }
+                                            uint16_t calculateCRC = 0;
+                                            calculateCRC = CRC::Calculate(&msgSize , sizeof(msgSize), CRC::CRC_16_ARC());
+                                            calculateCRC = CRC::Calculate(&type , sizeof(type), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&msgID , sizeof(msgID), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&from , sizeof(from), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&to , sizeof(to), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&timeStamp , sizeof(timeStamp), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&ttl , sizeof(ttl), CRC::CRC_16_ARC(), calculateCRC);
+                                            calculateCRC = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), calculateCRC);
+                                            if(crc16 == calculateCRC){
+                                                releaseMsg(true,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
+                                            } else {
+                                                releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
+                                            } 
+                                        } else {
+                                            std::cout << "Wait for next read!" << std::endl;
+                                        }    
+                                    }else {
+                                        std::vector<uint8_t> payload;
                                         releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
-                                    } 
-                                }else 
-                                {
-                                    std::vector<uint8_t> payload;
-                                    releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
-                                }  
-                            }else 
-                            {
-                                std::vector<uint8_t> payload;
-                                releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
-                            }     
-                        }
+                                    }
+                                } else {
+                                    std::cout << "Wait for next read!" << std::endl;
+                                }
+                            }else {
+                                findNonCoruptedMessage(msgSize);
+                            }
+                        } else {
+                            findNonCoruptedMessage(0);
+                        }  
+                    } else {
+                        findNonCoruptedMessage(0);
                     }
                 }
             }
@@ -140,8 +152,56 @@ namespace flexd {
                     parseData(array_ptr, data.size());
                 }                                            
             }
-    
-    
+            
+            void FleXdIPCFactory::findNonCoruptedMessage(uint16_t CoruptedMsgSize)
+            {
+                uint8_t startMsgFlag = 255;
+                uint16_t crc16 = 0;
+                uint8_t startHeaderFlag = 0;
+                std::array<uint8_t, 8192> array;
+                std::vector<uint8_t> data;
+                unsigned counter = CoruptedMsgSize/8;
+
+                if(CoruptedMsgSize < HEADERSIZE)
+                {           
+                    while(counter <= (m_data.getData().size()))
+                    {
+                        startMsgFlag = m_data.getWithOffset<uint8_t>(counter*8, 4);
+                        crc16 = m_data.get<uint16_t>(16);
+                        startHeaderFlag = m_data.get<uint8_t>(2);
+                        if((startMsgFlag == 0) && (startHeaderFlag == 1))
+                        {
+                            uint16_t msgSize = m_data.get<uint16_t>(16);
+                            if(msgSize <= m_data.getData().size())
+                            {
+                                uint8_t type = m_data.get<uint8_t>(8);
+                                uint16_t msgID = m_data.get<uint16_t>(16);
+                                uint64_t from = m_data.get<uint64_t>(64);
+                                uint64_t to = m_data.get<uint64_t>(64);
+                                uint32_t timeStamp = m_data.get<uint32_t>(32);
+                                uint32_t ttl = m_data.get<uint32_t>(32);
+                                uint8_t endHeaderFlag = m_data.get<uint8_t>(2);
+                                if(endHeaderFlag == 2)
+                                {
+                                    m_data.getWithOffset<uint8_t>(counter*8 - 8); // last byte from previous message
+                                    data = std::move(m_data.getRest());
+                                    std::vector<uint8_t> payload;
+                                    m_releaseMsg(std::move(std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload))));
+                                    std::memcpy(&array[0], data.data(), data.size());
+                                    std::shared_ptr<std::array<uint8_t, 8192> > array_ptr = std::make_shared<std::array<uint8_t, 8192> >(array);
+                                    BiteStream oldData;
+                                    std::swap(m_data, oldData);
+                                    parseData(std::move(array_ptr), data.size());
+                                    break;   
+                                }
+                            }
+                        } 
+                        counter++;   
+                    }
+                }   
+            }   
+            
+            
         }
     }
 }

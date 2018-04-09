@@ -87,3 +87,7 @@ message(STATUS "*Export fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
 message(STATUS "*Export fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
 
 add_dependencies(${PROJECT_NAME} crcpp bitstream)
+
+if(${ENABLE_TESTS})
+    add_subdirectory(gtest)
+endif(${ENABLE_TESTS})

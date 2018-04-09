@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDSClient.h"
 #include "FleXdIPCBuffer.h"
+#include "FleXdUDS.h"
 #include <cstring>
 #include <iostream>
 
@@ -46,104 +47,56 @@ namespace flexd {
     namespace ilc {
         namespace epoll {
 
-            struct FleXdUDSClient::Ctx {
-                struct sockaddr_un addr;
-                int fd;
-            };
-
-            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller)
-            : m_ctx(std::make_unique<Ctx>()),
-            m_socPath(socPath),
-            m_poller(poller)
+            
+            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller) 
+            : FleXdUDS(socPath, poller)
             {
             }
 
-            FleXdUDSClient::~FleXdUDSClient() {
+            FleXdUDSClient::~FleXdUDSClient() 
+            {
             }
 
-            bool FleXdUDSClient::init() {
-                if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-                    std::cerr << "socket error...\n";
-                    return false;
-                }
-
-                std::memset(&(m_ctx->addr), 0, sizeof (m_ctx->addr));
-                m_ctx->addr.sun_family = AF_UNIX;
-                if (m_socPath[0] == '\0') {
-                    *(m_ctx->addr.sun_path) = '\0';
-                    std::strncpy(m_ctx->addr.sun_path + 1, m_socPath.c_str() + 1, sizeof (m_ctx->addr.sun_path) - 2);
-                } else {
-                    std::strncpy(m_ctx->addr.sun_path, m_socPath.c_str(), sizeof (m_ctx->addr.sun_path) - 1);
-                    //unlink(m_socPath.c_str());
-                }
-               
-                
-                m_buffer = std::make_unique<FleXdIPCBuffer>([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
-                m_poller.addEvent(m_ctx->fd, [this](FleXdEpoll::Event e)
-                {
-                    onRead(e);
-                });
-                
-                return true;         
-            }
-            
-            
-            void FleXdUDSClient::onConnect()
+            bool FleXdUDSClient::initialization() 
             {
-                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) 
+                if(connectClient())
                 {
-                   std::cerr << "connect error...\n";
-                }
-            }
-            
-            void FleXdUDSClient::onReConnect()
-            {
-                
-            }
-            
-            void FleXdUDSClient::onRead(FleXdEpoll::Event e)
-            {
-                std::cout << "FleXdUDSClient::onRead() " << e.fd << std::endl;
-                if (e.type == EpollEvent::EpollOut)
-                {
-
-                } else if (e.type == EpollEvent::EpollIn)
-                {
-                    int rc;
-                    std::array<uint8_t, 8192> array;
-                    while ((rc=read(m_ctx->fd, &array[0], sizeof(array))) > 0) 
+                    m_buffer = std::make_unique<FleXdIPCBuffer>([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
+                    m_poller.addEvent(getFd(), [this](FleXdEpoll::Event e)
                     {
-                        m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
-                        m_buffer->rcvMsg(m_array, rc);
-                    }
+                        onRead(e);
+                    });
+                    return true;         
                 }
+                return false;             
+            }          
+            
+            void FleXdUDSClient::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
+            {
+                m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
+                m_buffer->rcvMsg(m_array, size);
             }
             
             void FleXdUDSClient::onWrite(pSharedFleXdIPCMsg msg)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
-                unsigned sendData = 0;
+                size_t sendData = 0;
                 while(data.size() > sendData)
                 {
-                    sendData += write(m_ctx->fd,  &data[sendData] , data.size());
+                    sendData += write(getFd(),  &data[sendData] , data.size());
                 }
             }
 
-            void FleXdUDSClient::onMsg(pSharedFleXdIPCMsg msg)
+            void FleXdUDSClient::onMessage(pSharedFleXdIPCMsg msg)
             {
-                std::cout << "FleXdUDSClient::onMsg() " << std::endl;
-                if(msg)
-                {
-                    std::vector<uint8_t> data = msg->releaseMsg();
-                    for(auto it : data)
-                    {
-                        std::cout << (int)it << " "; 
-                    }
-                    std::cout << std::endl;         
-                } else {
-                    std::cout << "Message is Invalid!" << std::endl;
-                }
+                // TODO log, but this fcn will be overwritten 
             }
+            
+            bool FleXdUDSClient::onReConnect(int fd)
+            {
+                return connectClient();
+            }
+            
         } // namespace epoll
     } // namespace ilc
 } // namespace flexd

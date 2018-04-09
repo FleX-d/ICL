@@ -33,12 +33,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Created on March 15, 2018, 14:32 PM
  */
 
+
 #include "FleXdUDSServer.h"
 #include <iostream>
 
 int main(int argc, char** argv)
 {
-    
     flexd::ilc::epoll::FleXdEpoll poller(10);
     flexd::ilc::epoll::FleXdUDSServer server("/tmp/test", poller);
     std::cout << "FleXdUDSServer.init() " << std::endl;

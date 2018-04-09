@@ -120,12 +120,12 @@ namespace flexd {
             {
                 if(otherCrc)
                 {
-                    return CRC::Calculate(data , sizeof(size), CRC::CRC_16_ARC(), otherCrc);
+                    return CRC::Calculate(data , size, CRC::CRC_16_ARC(), otherCrc);
                 }
-                return CRC::Calculate(data , sizeof(size), CRC::CRC_16_ARC());
+                return CRC::Calculate(data , size, CRC::CRC_16_ARC());
             }
 
-            const bool FleXdIPCMsg::isComplete() const
+            bool FleXdIPCMsg::isComplete() const
             {
                 return m_complete;
             }

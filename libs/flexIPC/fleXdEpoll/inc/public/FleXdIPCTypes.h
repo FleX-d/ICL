@@ -57,7 +57,7 @@ namespace flexd {
             
             namespace IPCMsgType{
                 enum Enum {
-                    SyncMsg = 0x00, 
+                    SyncMsg, 
                     DefMsg, 
                     ContMsg,
                     AckMsg,

@@ -31,9 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDS.h"
 #include <cstring>
-#include <sys/un.h>
-#include <sys/socket.h>
 #include <iostream>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <thread>
+
 
 namespace flexd {
     namespace ilc {
@@ -41,35 +46,120 @@ namespace flexd {
 
             struct FleXdUDS::Ctx {
                 struct sockaddr_un addr;
+                int fd;
             };
-            
-            FleXdUDS::FleXdUDS(const std::string& socPath)
-            : m_fd(),
-              m_socPath(socPath),
-              m_ctx(std::make_unique<Ctx>()) {
+
+            FleXdUDS::FleXdUDS(const std::string& socPath, FleXdEpoll& poller)
+            : m_socPath(socPath),
+              m_ctx(std::make_unique<Ctx>()),
+              m_poller(poller)
+            {
             }
 
-            FleXdUDS::~FleXdUDS() {
+            FleXdUDS::~FleXdUDS()
+            {
             }
 
-            bool FleXdUDS::init() {
-                if ((m_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+            bool FleXdUDS::init()
+            {
+                if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
+                {
                     std::cerr << "socket error...\n";
                     return false;
                 }
 
                 std::memset(&(m_ctx->addr), 0, sizeof (m_ctx->addr));
                 m_ctx->addr.sun_family = AF_UNIX;
-                if (m_socPath[0] == '\0') {
+                if (m_socPath[0] == '\0')
+                {
                     *(m_ctx->addr.sun_path) = '\0';
                     std::strncpy(m_ctx->addr.sun_path + 1, m_socPath.c_str() + 1, sizeof (m_ctx->addr.sun_path) - 2);
-                } else {
+                } else
+                {
                     std::strncpy(m_ctx->addr.sun_path, m_socPath.c_str(), sizeof (m_ctx->addr.sun_path) - 1);
-                    //unlink(m_socPath.c_str());
+                }
+                
+                return initialization();                
+            }
+
+            void FleXdUDS::onRead(FleXdEpoll::Event e)
+            {
+                std::cout << "FleXdUDS::onRead() " << e.fd << std::endl;
+                if (e.type == EpollEvent::EpollOut)
+                {
+                    // TODO log
+                } else if (e.type == EpollEvent::EpollIn)
+                {
+                    int rc;
+                    std::array<uint8_t, 8192> array;
+                    while ((rc = read(e.fd, &array[0], sizeof (array))) > 0)
+                    { 
+                        readMsg(e, std::move(array), rc);
+                    }
+                } else if (e.type == EpollEvent::EpollError){
+                    onReConnect(e.fd);
+                }
+            }
+
+            void FleXdUDS::onMsg(pSharedFleXdIPCMsg msg)
+            {
+                std::cout << "FleXdUDS::onMsg() " << std::endl;
+                if (msg)
+                {
+                    std::cout << "FleXdUDS::onMsg() -> Message is valid!" << std::endl;
+                    std::vector<uint8_t> data = msg->releaseMsg();
+                    // TMP print
+                    for (auto it : data)
+                    {
+                        std::cout << (int) it << " ";
+                    }
+                    std::cout << std::endl;
+                    
+                    onMessage(msg);
+                } else
+                {
+                    std::cout << "FleXdUDS::onMsg() -> Message is Invalid!" << std::endl;
+                    onMessage(msg);
+                }
+            }
+            
+            int FleXdUDS::getFd() const
+            {
+                return m_ctx->fd;
+            }
+            
+            bool FleXdUDS::connectClient()
+            {
+                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) 
+                {
+                   std::cerr << "connect error...\n";
+                   return false;
                 }
                 return true;
             }
+             
+            bool FleXdUDS::listenClient()
+            {
+                if (m_socPath[0] != '\0')
+                {
+                    unlink(m_socPath.c_str());
+                }
+                if (bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1)
+                {
+                    std::cerr << "bind error\n";
+                    return false;
+                }
+
+                if (listen(m_ctx->fd, 5) == -1)
+                {
+                    std::cerr << "listen error\n";
+                    return false;
+                }
+                return true;
+            }
+
             
+
         } // namespace epoll
     } // namespace ilc
 } // namespace flexd

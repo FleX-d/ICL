@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdEpoll.h"
 #include "FleXdIPCBuffer.h"
+#include "../FleXdUDS.h"
 #include <memory>
 #include <string>
 #include <atomic>
@@ -46,29 +47,32 @@ namespace flexd {
     namespace ilc {
         namespace epoll {
 
-            class FleXdUDSServer {
+            class FleXdUDSServer : public FleXdUDS {
             public:
                 explicit FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDSServer();
-                
-                bool init();
-                void sendMsg(pSharedFleXdIPCMsg msg);
-                
+                /**
+                 * Function initialize Unix domain sockets for Server. 
+                 * @return true if initialization is done, false otherwise.
+                 */
+                virtual bool initialization();
+                /**
+                 * Function send message to connected Client
+                 * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
+                 */
+                virtual void onWrite(pSharedFleXdIPCMsg msg);
                 
                 FleXdUDSServer(const FleXdUDSServer&) = delete;
                 FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;     
                 
-            public:
+            private:
                 void onAccept(FleXdEpoll::Event e);
-                void onMsg(FleXdEpoll::Event e);
-                void onMsg(pSharedFleXdIPCMsg msg);
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
+                virtual void onMessage(pSharedFleXdIPCMsg msg);
+                virtual bool onReConnect(int fd);
+                bool removeFdFromList(int fd);
                 
             private:
-                class Ctx;
-                std::unique_ptr<Ctx> m_ctx;
-                const std::string m_socPath;
-                FleXdEpoll& m_poller;
-                std::map<int, std::string> m_clientList;
                 std::map<int, pUniqueFleXdIPCBuffer> m_list;
             };
             
