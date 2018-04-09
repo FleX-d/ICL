@@ -154,8 +154,8 @@ namespace flexd {
              */
             void dump(int d = 2, int flat = 0) const; // print content of json
             /**
-             * 
-             * @param other
+             * Function store instance of other object JsonParser 
+             * @param other - object JsonParse to store
              */
             void storeJson(JsonParser* other);
 
