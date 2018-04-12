@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 #include <stdint.h>
 #include "BitStream.h"
+#include "vector"
 //#include "CRC.h"
 
 namespace {

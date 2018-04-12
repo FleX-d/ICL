@@ -34,9 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdUDSClient.h"
 #include "FleXdIPCBuffer.h"
 #include "FleXdUDS.h"
+#include "FleXdLogger.h"
 #include <cstring>
 #include <iostream>
-
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdio.h>
@@ -51,10 +51,13 @@ namespace flexd {
             FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller) 
             : FleXdUDS(socPath, poller)
             {
+                FLEX_LOG_INIT("FleXdUDSClient");
+                FLEX_LOG_INFO("FleXdUDSClient -> Start");
             }
 
             FleXdUDSClient::~FleXdUDSClient() 
             {
+                FLEX_LOG_TRACE("FleXdUDSClient -> Destroyed");
             }
 
             bool FleXdUDSClient::initialization() 
@@ -66,8 +69,10 @@ namespace flexd {
                     {
                         onRead(e);
                     });
+                    FLEX_LOG_TRACE("FleXdUDSClient::initialization()  -> Initialization Success!");
                     return true;         
                 }
+                FLEX_LOG_WARN("FleXdUDSClient::initialization() -> Initialization Fail!");
                 return false;             
             }          
             
@@ -85,15 +90,18 @@ namespace flexd {
                 {
                     sendData += write(getFd(),  &data[sendData] , data.size());
                 }
+                FLEX_LOG_TRACE("FleXdUDSClient::onWrite() -> Write Success!");
             }
 
             void FleXdUDSClient::onMessage(pSharedFleXdIPCMsg msg)
             {
-                // TODO log, but this fcn will be overwritten 
+                FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
+                // TODO This fcn will be overwritten 
             }
             
             bool FleXdUDSClient::onReConnect(int fd)
             {
+                FLEX_LOG_INFO("FleXdUDSClient::onReConnect() -> Try to Reconnect!");
                 return connectClient();
             }
             

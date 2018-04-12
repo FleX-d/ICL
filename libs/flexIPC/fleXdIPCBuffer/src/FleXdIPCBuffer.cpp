@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Created on January 31, 2018, 8:32 PM
  */
 
+#include "FleXdLogger.h"
 #include "FleXdIPCBuffer.h"
 #include "FleXdIPCFactory.h"
 #include <iostream>
@@ -49,7 +50,8 @@ namespace flexd {
               m_onMsg(nullptr), 
               m_factory(new FleXdIPCFactory([this](pSharedFleXdIPCMsg msg){releaseMsg(msg);}))
             {
-                
+                  FLEX_LOG_INIT("FleXdIPCBuffer");
+                  FLEX_LOG_TRACE("FleXdIPCBuffer -> Start");
             }
 
             FleXdIPCBuffer::FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize)
@@ -58,17 +60,21 @@ namespace flexd {
               m_onMsg(onMsg),
               m_factory(new FleXdIPCFactory([this](pSharedFleXdIPCMsg msg){releaseMsg(msg);}))
             {
+                  FLEX_LOG_INIT("FleXdIPCBuffer");
+                  FLEX_LOG_TRACE("FleXdIPCBuffer -> Start");
             }
             
             FleXdIPCBuffer::~FleXdIPCBuffer()
 	    {
+                FLEX_LOG_TRACE("FleXdIPCBuffer -> Destroyed");
 	    }
                         
             void FleXdIPCBuffer::rcvMsg(pSharedArray8192& data, size_t size) {
                 if(m_factory) {
+                    FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() -> Send data to Factory");
                     m_factory->parseData(data,size);
 		} else {
-                    // TODO error
+                    FLEX_LOG_ERROR("FleXdIPCBuffer::rcvMsg() -> Error: Factory does not exist!");
 		}
             }
 	    

@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define HEADERSIZE 32
 
 #include "FleXdIPCFactory.h"
+#include "FleXdLogger.h"
 #include "CRC.h"
 #include <iostream>
 
@@ -43,15 +44,18 @@ namespace flexd {
             FleXdIPCFactory::FleXdIPCFactory(std::function<void(pSharedFleXdIPCMsg msg)> releaseMsg)
             : m_releaseMsg(releaseMsg)
             {      
+                FLEX_LOG_INIT("FleXdIPCFactory");
+                FLEX_LOG_TRACE("FleXdIPCFactory -> Start");
             }
 
             FleXdIPCFactory::~FleXdIPCFactory()
             {
+                FLEX_LOG_TRACE("FleXdIPCFactory -> Destroyed");
             }
 
             void FleXdIPCFactory::parseData(const pSharedArray8192& data, const size_t size)
             {
-                
+                FLEX_LOG_TRACE("FleXdIPCFactory::parseData() -> Start parse data, size: ", size);
                 uint16_t msgSize = 0;
                 uint8_t startMsgFlag = 0;
                 uint16_t crc16 = 0;
@@ -110,18 +114,21 @@ namespace flexd {
                                             calculateCRC = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), calculateCRC);
                                             if(crc16 == calculateCRC){
                                                 releaseMsg(true,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
+                                                FLEX_LOG_TRACE("FleXdIPCFactory::parseData() ->  Release complete message");
                                             } else {
                                                 releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
+                                                FLEX_LOG_WARN("FleXdIPCFactory::parseData() ->  Non complete message!");
                                             } 
                                         } else {
-                                            std::cout << "Wait for next read!" << std::endl;
+                                            FLEX_LOG_TRACE("FleXdIPCFactory::parseData() ->  Wait for next read");
                                         }    
                                     }else {
                                         std::vector<uint8_t> payload;
                                         releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
+                                        FLEX_LOG_WARN("FleXdIPCFactory::parseData() ->  Non complete message!");
                                     }
                                 } else {
-                                    std::cout << "Wait for next read!" << std::endl;
+                                    FLEX_LOG_TRACE("FleXdIPCFactory::parseData() ->  Wait for next read");
                                 }
                             }else {
                                 findNonCoruptedMessage(msgSize);
@@ -139,6 +146,8 @@ namespace flexd {
             void FleXdIPCFactory::releaseMsg(bool complete ,uint16_t crc16,uint16_t msgSize, uint8_t type,uint16_t msgID,uint64_t from,uint64_t to,uint32_t timeStamp,uint32_t ttl,const std::vector<uint8_t>& payload)
             {
                 m_releaseMsg(std::move(std::make_shared<FleXdIPCMsg>(complete, crc16, msgSize, type, msgID, from, to, timeStamp, ttl, payload)));
+                FLEX_LOG_DEBUG("FleXdIPCFactory::releaseMsg() -> MSG: complete: ", complete, " crc16: ", crc16, " msgSize: ", msgSize, " type: ", type, " msgID: ", msgID,
+                                " from: ", from, " to: ", to, " timeStamp: ", timeStamp, " ttl: ", ttl, "payload: ", payload.data());
                 BiteStream newData(std::move(m_data.getRest()));
                 std::swap(m_data, newData);
                 if(m_data.getData().size() != 0)
@@ -155,8 +164,8 @@ namespace flexd {
             
             void FleXdIPCFactory::findNonCoruptedMessage(uint16_t CoruptedMsgSize)
             {
+                FLEX_LOG_TRACE("FleXdIPCFactory::findNonCoruptedMessage() ->  Try to find next non-corrupted Msg");
                 uint8_t startMsgFlag = 255;
-                uint16_t crc16 = 0;
                 uint8_t startHeaderFlag = 0;
                 std::array<uint8_t, 8192> array;
                 std::vector<uint8_t> data;
@@ -167,22 +176,23 @@ namespace flexd {
                     while(counter <= (m_data.getData().size()))
                     {
                         startMsgFlag = m_data.getWithOffset<uint8_t>(counter*8, 4);
-                        crc16 = m_data.get<uint16_t>(16);
+                        m_data.get<uint16_t>(16);
                         startHeaderFlag = m_data.get<uint8_t>(2);
                         if((startMsgFlag == 0) && (startHeaderFlag == 1))
                         {
                             uint16_t msgSize = m_data.get<uint16_t>(16);
                             if(msgSize <= m_data.getData().size())
                             {
-                                uint8_t type = m_data.get<uint8_t>(8);
-                                uint16_t msgID = m_data.get<uint16_t>(16);
-                                uint64_t from = m_data.get<uint64_t>(64);
-                                uint64_t to = m_data.get<uint64_t>(64);
-                                uint32_t timeStamp = m_data.get<uint32_t>(32);
-                                uint32_t ttl = m_data.get<uint32_t>(32);
+                                m_data.get<uint8_t>(8);
+                                m_data.get<uint16_t>(16);
+                                m_data.get<uint64_t>(64);
+                                m_data.get<uint64_t>(64);
+                                m_data.get<uint32_t>(32);
+                                m_data.get<uint32_t>(32);
                                 uint8_t endHeaderFlag = m_data.get<uint8_t>(2);
                                 if(endHeaderFlag == 2)
                                 {
+                                    FLEX_LOG_TRACE("FleXdIPCFactory::findNonCoruptedMessage() ->  Find Message Success");
                                     m_data.getWithOffset<uint8_t>(counter*8 - 8); // last byte from previous message
                                     data = std::move(m_data.getRest());
                                     std::vector<uint8_t> payload;

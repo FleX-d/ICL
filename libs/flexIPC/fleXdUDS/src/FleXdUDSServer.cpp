@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDSServer.h"
 #include "FleXdUDS.h"
+#include "FleXdLogger.h"
 #include "FleXdIPCMsg.h"
 #include <iostream>
 #include <stdio.h>
@@ -49,10 +50,13 @@ namespace flexd {
             FleXdUDSServer::FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller)
             : FleXdUDS(socPath, poller)
             {
+                FLEX_LOG_INIT("FleXdUDSServer");
+                FLEX_LOG_INFO("FleXdUDSServer -> Start");
             }
 
             FleXdUDSServer::~FleXdUDSServer()
             {
+                FLEX_LOG_TRACE("FleXdUDSServer -> Destroyed");
             }
 
             bool FleXdUDSServer::initialization()
@@ -63,8 +67,10 @@ namespace flexd {
                     {
                         onAccept(evn);
                     });
+                    FLEX_LOG_TRACE("FleXdUDSServer::initialization()  -> Initialization Success!");
                     return true;
                 }
+                FLEX_LOG_WARN("FleXdUDSServer::initialization() -> Initialization Fail!");
                 return false;
             }
 
@@ -75,9 +81,9 @@ namespace flexd {
                     int clientFd;
                     if ((clientFd = accept(getFd(), NULL, NULL)) == -1)
                     {
-                        std::cerr << "accept error\n";
+                        FLEX_LOG_ERROR("FleXdUDSServer::onAccept() -> Accept Error!");
                     }
-                    std::cout << "FleXdUDSServer::onAccept() -> " << e.fd << std::endl;
+                    FLEX_LOG_TRACE("FleXdUDSServer::onAccept()  -> Accept Success, fd: ", e.fd);
                     // TODO make a move operator for buffer in order to avoid pointer
                     auto buffer = std::make_unique<FleXdIPCBuffer>([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
                     m_list.insert(std::pair<int, pUniqueFleXdIPCBuffer>(clientFd, std::move(buffer)));
@@ -106,16 +112,19 @@ namespace flexd {
                 {
                     sendData += write(m_list.begin()->first,  &data[sendData] , data.size());
                 }
+                FLEX_LOG_TRACE("FleXdUDSServer::onWrite() -> Write Success!");
             }
             
             void FleXdUDSServer::onMessage(pSharedFleXdIPCMsg msg)
             {
                 if(msg)
                 {
+                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
                     std::vector<uint8_t> payload;
                     std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(true, 0, 32, 1, 1, 1, 1, 1, 1, std::move(payload));
                     onWrite(std::move(msg_ptr));
                 } else {
+                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> Massage Invalid!");
                     std::vector<uint8_t> payload;
                     std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload));
                     onWrite(std::move(msg_ptr));
@@ -124,6 +133,7 @@ namespace flexd {
             
             bool FleXdUDSServer::onReConnect(int fd) 
             {
+                FLEX_LOG_TRACE("FleXdUDSServer::onReConnect()");
                 return removeFdFromList(fd);
             }
             
@@ -132,8 +142,10 @@ namespace flexd {
                 auto it = m_list.find(fd);
                 if (it != m_list.end()) {
                     std::ignore = m_list.erase(it);
-                    return true;
+                    FLEX_LOG_TRACE("FleXdUDSServer::removeFdFromList() -> Remove fd Success!");
+                    return true;  
                 }
+                FLEX_LOG_WARN("FleXdUDSServer::removeFdFromList() -> Remove fd Fail!");
                 return false;
             }
             

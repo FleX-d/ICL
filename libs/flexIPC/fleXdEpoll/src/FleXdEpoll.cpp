@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "FleXdEpoll.h"
+#include "FleXdLogger.h"
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -87,22 +88,27 @@ namespace flexd {
 
             FleXdEpoll::FleXdEpoll(size_t maxEventh)
             :  m_epoll(std::make_unique<FleXdEpoll::Epoll>(maxEventh)),
-               m_safeStop(false) {
+               m_safeStop(false)
+            {
+                FLEX_LOG_INIT("FleXdEpoll");
+                FLEX_LOG_TRACE("FleXdEpoll() -> Start");
             }
 
             FleXdEpoll::~FleXdEpoll() {
+                FLEX_LOG_TRACE("FleXdEpoll() -> Destroyed");
             }
 
             bool FleXdEpoll::addEvent(int fd, std::function<void(Event)> onEvent) {
-                std::cout << "FleXdEpoll::addEvent() -> " << fd << "\n";
+                FLEX_LOG_TRACE("FleXdEpoll::addEvent() -> ", fd) ;
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer == m_epoll->buffer.end()) {
                     EpollClient epollClient;
-                    //TODO add fd to buffer
                     auto ret = m_epoll->buffer.insert(std::make_pair(fd, epollClient));
                     if (!ret.second) {
-                        std::cerr << "FleXdEpoll::addEvent() -> " << fd << " insert fail\n";
+                        FLEX_LOG_ERROR("FleXdEpoll::addEvent() -> Insert fd fail: ", fd);
                         return false;
+                    } else {
+                        FLEX_LOG_TRACE("FleXdEpoll::addEvent() -> Insert fd success: ", fd) ;
                     }
                     ret.first->second.onEvent = onEvent;
                     epoll_event& ev = ret.first->second.epollEvent;
@@ -118,21 +124,18 @@ namespace flexd {
             }
 
             bool FleXdEpoll::rmEvent(int fd) {
-                std::cout << "FleXdEpoll::rmEvent -> " << fd << "\n";
+                FLEX_LOG_TRACE("FleXdEpoll::rmEvent() -> ", fd);
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer != m_epoll->buffer.end()) {
-                    // rm fd from epoll
                     std::ignore = epoll_ctl(m_epoll->efd, EPOLL_CTL_DEL, fd, &(itBuffer->second.epollEvent)); // TODO check return
 //                    close(fd);
                     std::ignore = m_epoll->buffer.erase(itBuffer);
+                    FLEX_LOG_TRACE("FleXdEpoll::rmEvent() -> Remove fd success: ", fd) ;
                     return true;
                 } else {
-                    // TODO log buffer not found in map
+                    FLEX_LOG_WARN("FleXdEpoll::rmEvent() -> fd not found in map!");
                     return false;
                 }
-
-
-                // TODO log fd not found in evs vector
                 return false;
             }
 
@@ -143,6 +146,7 @@ namespace flexd {
             }
 
             void FleXdEpoll::loop() {
+                FLEX_LOG_TRACE("FleXdEpoll::loop() -> Start") ;
                 int fd = 0;
                 uint32_t flags = 0;
                 std::queue<int> rmEvQueue{};
@@ -161,16 +165,16 @@ namespace flexd {
                         auto onEvent = itBuffer->second.onEvent;
                         
                         if ((flags & EPOLLERR) || (flags & EPOLLHUP)) {
-                            std::cerr << "FlexdEpoll::loop() -> error\n";
+                            FLEX_LOG_ERROR("FleXdEpoll::loop() -> ERROR: ", flags);
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollError));
                             rmEvQueue.push(fd);
                             continue;
                         } else if ((flags & EPOLLIN) || (flags & EPOLLRDNORM)) {
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollIn));
+                            FLEX_LOG_TRACE("FleXdEpoll::loop() -> IN: ", flags);
                         } else if ((flags & EPOLLOUT) || (flags & EPOLLWRNORM)) {
-                            // TODO add log 
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollOut));
-                            std::cout << "FlexdEpoll::loop() -> out" << flags << "\n";
+                            FLEX_LOG_TRACE("FleXdEpoll::loop() -> OUT: ", flags);
                         } else {
                             onEvent(Event(fd, flags, EpollEvent::Enum::UndefinedError));
                             rmEvQueue.push(fd);
@@ -190,6 +194,7 @@ namespace flexd {
                 if (blocking) {
                     // TODO check if loop stop
                 }
+                FLEX_LOG_TRACE("FleXdEpoll::loop() -> Stop") ;
             }
 
         } // namespace epoll
