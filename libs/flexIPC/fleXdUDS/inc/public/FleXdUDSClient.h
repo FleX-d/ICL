@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCBufferTypes.h"
 #include "FleXdIPCMsg.h"
 #include "FleXdIPCBuffer.h"
-#include "../FleXdUDS.h"
+#include "FleXdUDS.h"
 
 
 namespace flexd {
@@ -48,29 +48,22 @@ namespace flexd {
             public:
                 FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDSClient();
-                /**
-                 * Function initialize Unix domain sockets for Client. 
-                 * @return true if initialization is done, false otherwise.
-                 */
+
                 virtual bool initialization();
-                /**
-                 * Function send message to Server
-                 * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
-                 */
-                virtual void onWrite(pSharedFleXdIPCMsg msg);
+                virtual void sendMsg(pSharedFleXdIPCMsg msg);
+                virtual void onMsg(pSharedFleXdIPCMsg msg);
                 
                 FleXdUDSClient(const FleXdUDSClient&) = delete;
                 FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
                 
             private:
-                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
-                virtual void onMessage(pSharedFleXdIPCMsg msg);
+                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
                 virtual bool onReConnect(int fd);
                 
                 
             private:
                 pSharedArray8192 m_array;
-                pUniqueFleXdIPCBuffer m_buffer;
+                FleXdIPCBuffer m_buffer;
             };
 
         } // namespace epoll

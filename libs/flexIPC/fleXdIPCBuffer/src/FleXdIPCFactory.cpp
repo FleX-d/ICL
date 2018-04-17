@@ -42,7 +42,8 @@ namespace flexd {
         namespace epoll {
 
             FleXdIPCFactory::FleXdIPCFactory(std::function<void(pSharedFleXdIPCMsg msg)> releaseMsg)
-            : m_releaseMsg(releaseMsg)
+            : m_data(),
+              m_releaseMsg(releaseMsg)
             {      
                 FLEX_LOG_INIT("FleXdIPCFactory");
                 FLEX_LOG_TRACE("FleXdIPCFactory -> Start");
@@ -118,7 +119,7 @@ namespace flexd {
                                             } else {
                                                 releaseMsg(false,crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload));
                                                 FLEX_LOG_WARN("FleXdIPCFactory::parseData() ->  Non complete message!");
-                                            } 
+                                            }
                                         } else {
                                             FLEX_LOG_TRACE("FleXdIPCFactory::parseData() ->  Wait for next read");
                                         }    
@@ -210,8 +211,7 @@ namespace flexd {
                     }
                 }   
             }   
-            
-            
+
         }
     }
 }

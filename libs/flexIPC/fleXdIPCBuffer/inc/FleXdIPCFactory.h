@@ -52,8 +52,9 @@ namespace flexd {
                 void parseData(const pSharedArray8192& data,const size_t size);
                 void releaseMsg(bool complete, uint16_t crc16, uint16_t msgSize, uint8_t type, uint16_t msgID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl,const std::vector<uint8_t>& payload);
                 void findNonCoruptedMessage(uint16_t CoruptedMsgSize);
-                FleXdIPCFactory(const FleXdIPCFactory& orig) = delete;
-                FleXdIPCFactory& operator=(const FleXdIPCFactory& orig) = delete;
+
+                FleXdIPCFactory(const FleXdIPCFactory&) = delete;
+                FleXdIPCFactory& operator=(const FleXdIPCFactory&) = delete;
                 
             private:
                 BiteStream m_data;

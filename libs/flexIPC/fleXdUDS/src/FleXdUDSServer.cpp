@@ -61,7 +61,7 @@ namespace flexd {
 
             bool FleXdUDSServer::initialization()
             {
-                if(listenClient())
+                if(listenUDS())
                 {
                     m_poller.addEvent(getFd(), [this](FleXdEpoll::Event evn)
                     {
@@ -89,22 +89,24 @@ namespace flexd {
                     m_list.insert(std::pair<int, pUniqueFleXdIPCBuffer>(clientFd, std::move(buffer)));
                     m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn)
                     {
-                        onRead(evn);
+                        onEvent(evn);
                     });
                 }
             }
 
-            void FleXdUDSServer::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
+            void FleXdUDSServer::readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
             {
                 std::shared_ptr<std::array<uint8_t, 8192> > array_ptr = std::make_shared<std::array<uint8_t, 8192> >(array);
                 auto search = m_list.find(e.fd);
                 if(search != m_list.end()) 
                 {
                     search->second->rcvMsg(array_ptr, size);
-                } 
+                } else {
+                    FLEX_LOG_WARN("FleXdUDSServer::readMessage() -> sender not found in list! Message will be discarded!");
+                }
             }
 
-            void FleXdUDSServer::onWrite(pSharedFleXdIPCMsg msg)
+            void FleXdUDSServer::sendMsg(pSharedFleXdIPCMsg msg)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
                 unsigned sendData = 0;
@@ -115,25 +117,27 @@ namespace flexd {
                 FLEX_LOG_TRACE("FleXdUDSServer::onWrite() -> Write Success!");
             }
             
-            void FleXdUDSServer::onMessage(pSharedFleXdIPCMsg msg)
+            void FleXdUDSServer::onMsg(pSharedFleXdIPCMsg msg)
             {
-                if(msg)
-                {
-                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
-                    std::vector<uint8_t> payload;
-                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(true, 0, 32, 1, 1, 1, 1, 1, 1, std::move(payload));
-                    onWrite(std::move(msg_ptr));
-                } else {
-                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> Massage Invalid!");
-                    std::vector<uint8_t> payload;
-                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload));
-                    onWrite(std::move(msg_ptr));
-                } 
+                FLEX_LOG_WARN("FleXdUDSServer::onMessage() function shall be overwritten.");
+                // TODO This fcn will be overwritten 
+//                if(msg)
+//                {
+//                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
+//                    std::vector<uint8_t> payload;
+//                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(true, 0, 32, 1, 1, 1, 1, 1, 1, std::move(payload));
+//                    sendMsg(std::move(msg_ptr));
+//                } else {
+//                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> Massage Invalid!");
+//                    std::vector<uint8_t> payload;
+//                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload));
+//                    sendMsg(std::move(msg_ptr));
+//                } 
             }
             
             bool FleXdUDSServer::onReConnect(int fd) 
             {
-                FLEX_LOG_TRACE("FleXdUDSServer::onReConnect()");
+                FLEX_LOG_TRACE("FleXdUDSServer::onReConnect() -> ", fd);
                 return removeFdFromList(fd);
             }
             
@@ -142,10 +146,10 @@ namespace flexd {
                 auto it = m_list.find(fd);
                 if (it != m_list.end()) {
                     std::ignore = m_list.erase(it);
-                    FLEX_LOG_TRACE("FleXdUDSServer::removeFdFromList() -> Remove fd Success!");
+                    FLEX_LOG_TRACE("FleXdUDSServer::removeFdFromList() -> Remove ", fd, " Success!");
                     return true;  
                 }
-                FLEX_LOG_WARN("FleXdUDSServer::removeFdFromList() -> Remove fd Fail!");
+                FLEX_LOG_WARN("FleXdUDSServer::removeFdFromList() -> Remove ", fd," Fail, client not found!");
                 return false;
             }
             

@@ -93,10 +93,10 @@ int main(int argc, char** argv)
     std::shared_ptr<fleXdMsg> mmsg_ptr = std::make_shared<fleXdMsg>(mmsg);
     client.init();
 
-    client.onWrite(msg_ptr);
-    client.onWrite(mmsg_ptr);
-    client.onWrite(mmsg_ptr);
-    client.onWrite(msg_ptr);
+    client.sendMsg(msg_ptr);
+    client.sendMsg(mmsg_ptr);
+    client.sendMsg(mmsg_ptr);
+    client.sendMsg(msg_ptr);
     
     poller.loop();
     while(true){}

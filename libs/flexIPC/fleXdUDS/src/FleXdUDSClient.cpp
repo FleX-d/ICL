@@ -49,7 +49,8 @@ namespace flexd {
 
             
             FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller) 
-            : FleXdUDS(socPath, poller)
+            : FleXdUDS(socPath, poller),
+              m_buffer([this](pSharedFleXdIPCMsg msg){onMessage(msg);})
             {
                 FLEX_LOG_INIT("FleXdUDSClient");
                 FLEX_LOG_INFO("FleXdUDSClient -> Start");
@@ -62,12 +63,11 @@ namespace flexd {
 
             bool FleXdUDSClient::initialization() 
             {
-                if(connectClient())
+                if(connectUDS())
                 {
-                    m_buffer = std::make_unique<FleXdIPCBuffer>([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
                     m_poller.addEvent(getFd(), [this](FleXdEpoll::Event e)
                     {
-                        onRead(e);
+                        onEvent(e);
                     });
                     FLEX_LOG_TRACE("FleXdUDSClient::initialization()  -> Initialization Success!");
                     return true;         
@@ -76,13 +76,13 @@ namespace flexd {
                 return false;             
             }          
             
-            void FleXdUDSClient::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
+            void FleXdUDSClient::readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
             {
                 m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
-                m_buffer->rcvMsg(m_array, size);
+                m_buffer.rcvMsg(m_array, size);
             }
             
-            void FleXdUDSClient::onWrite(pSharedFleXdIPCMsg msg)
+            void FleXdUDSClient::sendMsg(pSharedFleXdIPCMsg msg)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
                 size_t sendData = 0;
@@ -93,16 +93,16 @@ namespace flexd {
                 FLEX_LOG_TRACE("FleXdUDSClient::onWrite() -> Write Success!");
             }
 
-            void FleXdUDSClient::onMessage(pSharedFleXdIPCMsg msg)
+            void FleXdUDSClient::onMsg(pSharedFleXdIPCMsg msg)
             {
-                FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
+                FLEX_LOG_WARN("FleXdUDSClient::onMessage() -> function shall be overwritten.");
                 // TODO This fcn will be overwritten 
             }
             
             bool FleXdUDSClient::onReConnect(int fd)
             {
                 FLEX_LOG_INFO("FleXdUDSClient::onReConnect() -> Try to Reconnect!");
-                return connectClient();
+                return connectUDS();
             }
             
         } // namespace epoll

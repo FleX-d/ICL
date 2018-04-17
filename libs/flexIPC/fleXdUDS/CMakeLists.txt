@@ -14,11 +14,11 @@ message(STATUS "fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
 include(GNUInstallDirs)
 
 SET(publicHeaders
+    inc/public/FleXdUDS.h
     inc/public/FleXdUDSClient.h
     inc/public/FleXdUDSServer.h
 )
 SET(privateHeaders
-    inc/FleXdUDS.h
 )
 SET(privateSources
     src/FleXdUDS.cpp

@@ -50,7 +50,6 @@ namespace flexd {
               m_onMsg(nullptr), 
               m_factory(new FleXdIPCFactory([this](pSharedFleXdIPCMsg msg){releaseMsg(msg);}))
             {
-                  FLEX_LOG_INIT("FleXdIPCBuffer");
                   FLEX_LOG_TRACE("FleXdIPCBuffer -> Start");
             }
 
@@ -60,7 +59,6 @@ namespace flexd {
               m_onMsg(onMsg),
               m_factory(new FleXdIPCFactory([this](pSharedFleXdIPCMsg msg){releaseMsg(msg);}))
             {
-                  FLEX_LOG_INIT("FleXdIPCBuffer");
                   FLEX_LOG_TRACE("FleXdIPCBuffer -> Start");
             }
             
@@ -68,14 +66,34 @@ namespace flexd {
 	    {
                 FLEX_LOG_TRACE("FleXdIPCBuffer -> Destroyed");
 	    }
+            
+
+            FleXdIPCBuffer::FleXdIPCBuffer(FleXdIPCBuffer&& other)
+            : m_maxBufferSize(other.m_maxBufferSize),
+              m_queue(std::move(other.m_queue)),
+              m_onMsg(other.m_onMsg),
+              m_factory(std::move(other.m_factory))            
+            {
+                FLEX_LOG_TRACE("FleXdIPCBuffer moved");
+            }
+            
+            FleXdIPCBuffer& FleXdIPCBuffer::operator=(FleXdIPCBuffer&& other)
+            {
+                FLEX_LOG_TRACE("FleXdIPCBuffer moved");
+                m_maxBufferSize = other.m_maxBufferSize;
+                m_queue = std::move(other.m_queue);
+                m_onMsg = other.m_onMsg;
+                m_factory = std::move(other.m_factory);
+                return *this;
+            }
                         
             void FleXdIPCBuffer::rcvMsg(pSharedArray8192& data, size_t size) {
                 if(m_factory) {
-                    FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() -> Send data to Factory");
+                FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() -> Send data to Factory");
                     m_factory->parseData(data,size);
 		} else {
                     FLEX_LOG_ERROR("FleXdIPCBuffer::rcvMsg() -> Error: Factory does not exist!");
-		}
+                }
             }
 	    
             pSharedFleXdIPCMsg FleXdIPCBuffer::front() const {
@@ -91,7 +109,7 @@ namespace flexd {
                 m_queue.pop();
                 return std::move(ret);
             }
-
+            
             void FleXdIPCBuffer::releaseMsg(pSharedFleXdIPCMsg msg)
             {
                 if(msg->isComplete())
@@ -105,11 +123,16 @@ namespace flexd {
                             m_queue.push(std::move(msg));
                             m_bufferSize += msg->getMsgSize();
                         } else {
-                            m_onMsg(nullptr);
+                            FLEX_LOG_WARN("FleXdIPCBuffer::releaseMsg() -> onMsg = NULL and buffer is full");
                         }       
                     }
                 } else {
-                     m_onMsg(nullptr);
+                    if(m_onMsg)
+                    {
+                        m_onMsg(nullptr);
+                    } else {
+                        FLEX_LOG_ERROR("FleXdIPCBuffer::releaseMsg() -> onMsg = NULL!");
+                    }
                 }
             }
         } // namespace epoll

@@ -134,6 +134,7 @@ namespace flexd {
  
             private:
                 bool m_complete;
+                const uint16_t m_CRC16;
                 const uint16_t m_msgSize;
                 const uint8_t m_msgType;
                 const uint16_t m_msgID;
@@ -141,7 +142,6 @@ namespace flexd {
                 const uint64_t m_to;
                 const uint32_t m_timeStamp;
                 const uint32_t m_ttl;
-                const uint16_t m_CRC16;
                 const std::vector<uint8_t> m_payload;
             };
             typedef std::shared_ptr<FleXdIPCMsg> pSharedFleXdIPCMsg;

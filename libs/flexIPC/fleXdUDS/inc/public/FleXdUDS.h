@@ -44,23 +44,34 @@ namespace flexd {
             public:
                 FleXdUDS(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDS();
-
-                bool init();
-                void onRead(FleXdEpoll::Event e);
-                void onMsg(pSharedFleXdIPCMsg msg);
-                virtual void onWrite(pSharedFleXdIPCMsg msg) = 0; 
+                /**
+                 * Function initialize Unix domain sockets for Client. 
+                 * @return true if initialization is done, false otherwise.
+                 */
+                virtual bool init();
+                /**
+                 * Function send message to Server
+                 * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
+                 */
+                virtual void sendMsg(pSharedFleXdIPCMsg msg) = 0; 
+                /**
+                 * 
+                 * @param msg
+                 */
+                virtual void onMsg(pSharedFleXdIPCMsg msg) = 0;
                 
                 FleXdUDS(const FleXdUDS&) = delete;
                 FleXdUDS& operator=(const FleXdUDS&) = delete;
                 
             protected:
-                int getFd() const;
-                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
-                virtual void onMessage(pSharedFleXdIPCMsg msg) = 0;
                 virtual bool initialization() = 0;
+                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
                 virtual bool onReConnect(int fd) = 0;
-                bool connectClient();
-                bool listenClient();
+                void onEvent(FleXdEpoll::Event e);
+                void onMessage(pSharedFleXdIPCMsg msg);
+                bool connectUDS();
+                bool listenUDS();
+                int getFd() const;
                 
             protected:    
                 FleXdEpoll& m_poller;
@@ -70,7 +81,7 @@ namespace flexd {
                 const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };
-
+            typedef std::shared_ptr<FleXdUDS> pSharedFleXdUDS;
         } // namespace epoll
     } // namespace ilc
 } // namespace flexd

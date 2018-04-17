@@ -52,7 +52,9 @@ namespace flexd {
             public:
                 explicit FleXdIPCBuffer(size_t maxBufferSize = 65536);
                 explicit FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize = 65536);
-                ~FleXdIPCBuffer();
+                virtual ~FleXdIPCBuffer();
+                FleXdIPCBuffer(FleXdIPCBuffer&&);
+                FleXdIPCBuffer& operator=(FleXdIPCBuffer&&);
                 /**
                  * Function send data to Factory for parsing message 
                  * @param data - shared pointer to Array of data which will be parsed 
@@ -74,7 +76,7 @@ namespace flexd {
                  * @return shared pointer to FleXdIPCMsg from front of queue
                  */
                 pSharedFleXdIPCMsg pop();
-
+                
                 FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;
                 FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
                 
@@ -82,13 +84,13 @@ namespace flexd {
                 void releaseMsg(pSharedFleXdIPCMsg msg);
                 
             private:
-                const size_t m_maxBufferSize;
+                size_t m_maxBufferSize;
                 size_t m_bufferSize;
                 std::queue<pSharedFleXdIPCMsg> m_queue;
                 std::function<void(pSharedFleXdIPCMsg)> m_onMsg;
                 std::unique_ptr<FleXdIPCFactory> m_factory;
             };
-            typedef std::shared_ptr<FleXdIPCBuffer> pUniqueFleXdIPCBuffer;
+            typedef std::unique_ptr<FleXdIPCBuffer> pUniqueFleXdIPCBuffer;
             
         } // namespace epoll
     } // namespace ilc

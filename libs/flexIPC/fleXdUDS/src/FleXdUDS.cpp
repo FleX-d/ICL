@@ -52,9 +52,9 @@ namespace flexd {
             };
 
             FleXdUDS::FleXdUDS(const std::string& socPath, FleXdEpoll& poller)
-            : m_socPath(socPath),
-              m_ctx(std::make_unique<Ctx>()),
-              m_poller(poller)
+            : m_poller(poller),
+              m_socPath(socPath),
+              m_ctx(std::make_unique<Ctx>())
             {
                 FLEX_LOG_INIT("FleXdUDS");
                 FLEX_LOG_TRACE("FleXdUDS -> Start");
@@ -87,7 +87,7 @@ namespace flexd {
                 return initialization();                
             }
 
-            void FleXdUDS::onRead(FleXdEpoll::Event e)
+            void FleXdUDS::onEvent(FleXdEpoll::Event e)
             {
                 if (e.type == EpollEvent::EpollOut)
                 {
@@ -99,7 +99,7 @@ namespace flexd {
                     std::array<uint8_t, 8192> array;
                     while ((rc = read(e.fd, &array[0], sizeof (array))) > 0)
                     { 
-                        readMsg(e, std::move(array), rc);
+                        readMessage(e, std::move(array), rc);
                     }
                 } else if (e.type == EpollEvent::EpollError){
                     FLEX_LOG_ERROR("FleXdUDS::onRead() -> EpollError, fd: ", e.fd);
@@ -107,11 +107,11 @@ namespace flexd {
                 }
             }
 
-            void FleXdUDS::onMsg(pSharedFleXdIPCMsg msg)
+            void FleXdUDS::onMessage(pSharedFleXdIPCMsg msg)
             {
                 if (msg)
                 {
-                    FLEX_LOG_TRACE("FleXdUDS::onMsg() -> Message is valid!");
+                    FLEX_LOG_TRACE("FleXdUDS::onMsg() -> receive message");
                     std::vector<uint8_t> data = msg->releaseMsg();
                     // TMP print
                     for (auto it : data)
@@ -120,11 +120,10 @@ namespace flexd {
                     }
                     std::cout << std::endl;
                     
-                    onMessage(msg);
+                    onMsg(msg);
                 } else
                 {
-                    FLEX_LOG_TRACE("FleXdUDS::onMsg() -> Message is invalid!");
-                    onMessage(msg);
+                    FLEX_LOG_WARN("FleXdUDS::onMsg() -> Message is invalid!");
                 }
             }
             
@@ -133,7 +132,7 @@ namespace flexd {
                 return m_ctx->fd;
             }
             
-            bool FleXdUDS::connectClient()
+            bool FleXdUDS::connectUDS()
             {
                 
                 if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) 
@@ -145,7 +144,7 @@ namespace flexd {
                 return true;
             }
              
-            bool FleXdUDS::listenClient()
+            bool FleXdUDS::listenUDS()
             {
                 if (m_socPath[0] != '\0')
                 {
