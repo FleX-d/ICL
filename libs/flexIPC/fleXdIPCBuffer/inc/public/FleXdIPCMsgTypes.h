@@ -22,46 +22,34 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /* 
- * File:   FleXdIPCFactory.h
- * Author: Matus Bodorik
+ * File:   FleXdIPCMsgTypes.h
+ * Author: Adrian Peniak
  *
- * Created on February 21, 2018, 8:32 AM
+ * Created on April 18, 2018, 11:00 AM
  */
 
-#ifndef FLEXDIPCFACTORY_H
-#define FLEXDIPCFACTORY_H
-
-#include "FleXdIPCBufferTypes.h"
-#include "FleXdIPCMsg.h"
-#include "BitStream.h"
-#include <vector>
-#include <queue>
-
+#ifndef FLEXDIPCMSGTYPES_H
+#define FLEXDIPCMSGTYPES_H
 
 namespace flexd {
     namespace ilc {
         namespace epoll {
+            
+            namespace FleXdIPCMsgTypes {
+                enum Enum {
+                    Handshake = 0x00,
+                    IPCMsg,
+                    IPCMsgAck = 0xFC,
+                    HandshakeSuccess = 0xFD,
+                    HandshakeFail = 0xFE,
+                    Undefined = 0xFF
+                };
+            } // namespace FleXdIPCMsgTypes
+            
+        } // namespace epoll
+    } // namespace ilc
+} // namespace flexd
 
-            class FleXdIPCFactory {
-            public:
-                FleXdIPCFactory(std::function<void(pSharedFleXdIPCMsg msg)> releaseMsg);
-                virtual ~FleXdIPCFactory();
-                
-                void parseData(const pSharedArray8192& data,const size_t size);
-                void releaseMsg(bool complete, uint16_t crc16, uint16_t msgSize, uint8_t type, uint16_t msgID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl,const std::vector<uint8_t>& payload);
-                void findNonCoruptedMessage(uint16_t CoruptedMsgSize);
-
-                FleXdIPCFactory(const FleXdIPCFactory&) = delete;
-                FleXdIPCFactory& operator=(const FleXdIPCFactory&) = delete;
-                
-            private:
-                BiteStream m_data;
-                std::function<void(pSharedFleXdIPCMsg) > m_releaseMsg;
-            };
-        }
-    }
-}
-#endif /* FLEXDIPCFACTORY_H */
+#endif /* FLEXDIPCMSGTYPES_H */
 

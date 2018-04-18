@@ -84,13 +84,15 @@ namespace flexd {
                         FLEX_LOG_ERROR("FleXdUDSServer::onAccept() -> Accept Error!");
                     }
                     FLEX_LOG_TRACE("FleXdUDSServer::onAccept()  -> Accept Success, fd: ", e.fd);
-                    // TODO make a move operator for buffer in order to avoid pointer
-                    auto buffer = std::make_unique<FleXdIPCBuffer>([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
-                    m_list.insert(std::pair<int, pUniqueFleXdIPCBuffer>(clientFd, std::move(buffer)));
-                    m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn)
+                    auto it = m_list.find(clientFd);
+                    if(it == m_list.end())
                     {
-                        onEvent(evn);
-                    });
+                        FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
+                        m_list[clientFd] = std::move(buffer);
+                        m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
+                    } else {
+                        FLEX_LOG_ERROR("FleXdUDSServer::onAccept() -> FD exist in list!!!");
+                    }
                 }
             }
 
@@ -100,7 +102,7 @@ namespace flexd {
                 auto search = m_list.find(e.fd);
                 if(search != m_list.end()) 
                 {
-                    search->second->rcvMsg(array_ptr, size);
+                    search->second.rcvMsg(array_ptr, size);
                 } else {
                     FLEX_LOG_WARN("FleXdUDSServer::readMessage() -> sender not found in list! Message will be discarded!");
                 }

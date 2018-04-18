@@ -66,7 +66,7 @@ namespace flexd {
                 bool removeFdFromList(int fd);
                 
             private:
-                std::map<int, pUniqueFleXdIPCBuffer> m_list;
+                std::map<int, FleXdIPCBuffer> m_list;
             };
             
         } // namespace epoll

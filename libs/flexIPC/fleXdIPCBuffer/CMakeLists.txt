@@ -50,13 +50,12 @@ SET(publicHeaders
     inc/public/FleXdIPCBuffer.h
     inc/public/FleXdIPCMsg.h
     inc/public/FleXdIPCBufferTypes.h
+    inc/public/FleXdIPCMsgTypes.h
 )
 SET(privateHeaders
-    inc/FleXdIPCFactory.h
 )
 SET(privateSources
     src/FleXdIPCBuffer.cpp
-    src/FleXdIPCFactory.cpp
     src/FleXdIPCMsg.cpp
 )
 

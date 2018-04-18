@@ -36,12 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdIPCMsg.h"
 #include "FleXdIPCBufferTypes.h"
+#include "BitStream.h"
 #include <functional>
 #include <cstdint>
-#include <array>
 #include <queue>
-#include <atomic>
-#include <memory>
+#include <array>
 
 namespace flexd {
     namespace ilc {
@@ -81,16 +80,17 @@ namespace flexd {
                 FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
                 
             private:
+                void rcvMsg();
                 void releaseMsg(pSharedFleXdIPCMsg msg);
+                void findNonCoruptedMessage(uint16_t coruptedMsgSize);
                 
             private:
                 size_t m_maxBufferSize;
                 size_t m_bufferSize;
+                BiteStream m_cache;
                 std::queue<pSharedFleXdIPCMsg> m_queue;
                 std::function<void(pSharedFleXdIPCMsg)> m_onMsg;
-                std::unique_ptr<FleXdIPCFactory> m_factory;
             };
-            typedef std::unique_ptr<FleXdIPCBuffer> pUniqueFleXdIPCBuffer;
             
         } // namespace epoll
     } // namespace ilc
