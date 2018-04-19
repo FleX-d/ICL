@@ -34,7 +34,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE inc/)
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 
 target_link_libraries(${PROJECT_NAME}
-    nlohmann_json
+#    nlohmann_json # lib not exist
 )
 
 SET(jsonParserPublicInc "${publicHeaders}" PARENT_SCOPE)
