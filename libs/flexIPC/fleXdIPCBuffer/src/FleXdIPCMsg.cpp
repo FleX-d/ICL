@@ -36,11 +36,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdIPCMsg.h"
 #include "FleXdIPCBufferTypes.h"
+#include "FleXdIPCMsgTypes.h"
 #include "BitStream.h"
 #include "CRC.h"
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             FleXdIPCMsg::FleXdIPCMsg(bool complete, uint16_t crc16, uint16_t size, uint8_t type, uint16_t ID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, std::vector<uint8_t>&& payload)
@@ -130,7 +131,7 @@ namespace flexd {
                 return m_complete;
             }
 
-            void FleXdIPCMsg::setComplete(const bool complete)
+            void FleXdIPCMsg::setComplete(bool complete)
             {
                 m_complete = complete;
             }
@@ -139,18 +140,18 @@ namespace flexd {
             {
                 BiteStream bs;
                 uint16_t crc  = calculateCRC();
-                bs.put((uint8_t) 0, 4);
-                if(m_CRC16 == 0){bs.put(crc, 16);}
-                else {bs.put(m_CRC16, 16);}
-                bs.put((uint8_t) 1, 2);
-                bs.put(m_msgSize, 16);
-                bs.put(m_msgType, 8);
-                bs.put(m_msgID, 16);
-                bs.put((uint64_t) m_from, 64);
-                bs.put((uint64_t) m_to, 64);
-                bs.put(m_timeStamp, 32);
-                bs.put(m_ttl, 32);
-                bs.put((uint8_t) 2, 2);
+                bs.put((uint8_t) START_MSG_FLAG, IPC_MSG_START_BIT_COUNT);
+                if(m_CRC16 == 0){bs.put(crc, IPC_MSG_CRC_BIT_COUNT);}
+                else {bs.put(m_CRC16, IPC_MSG_CRC_BIT_COUNT);}
+                bs.put((uint8_t) START_HEADER_FLAG, IPC_HEADER_FLAG_BIT_COUNT);
+                bs.put(m_msgSize, IPC_MSG_SIZE_BIT_COUNT);
+                bs.put(m_msgType, IPC_MSG_TYPE_BIT_COUNT);
+                bs.put(m_msgID, IPC_MSG_ID_BIT_COUNT);
+                bs.put((uint64_t) m_from, IPC_MSG_APP_ID_BIT_COUNT);
+                bs.put((uint64_t) m_to, IPC_MSG_APP_ID_BIT_COUNT);
+                bs.put(m_timeStamp, IPC_MSG_TIMESTAMP_BIT_COUNT);
+                bs.put(m_ttl, IPC_MSG_TTL_BIT_COUNT);
+                bs.put((uint8_t) END_HEADER_FLAG, IPC_HEADER_FLAG_BIT_COUNT);
                 bs.put(m_payload.begin(), m_payload.end());
                 std::vector<uint8_t> msg = bs.releaseData();
                 return std::move(msg);
@@ -166,9 +167,12 @@ namespace flexd {
                 crc = CRC::Calculate(&m_to , sizeof(m_to), CRC::CRC_16_ARC(), crc);
                 crc = CRC::Calculate(&m_timeStamp , sizeof(m_timeStamp), CRC::CRC_16_ARC(), crc);
                 crc = CRC::Calculate(&m_ttl , sizeof(m_ttl), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_payload[0] , m_payload.size(), CRC::CRC_16_ARC(), crc);
+                if(m_payload.size() != 0)
+                {
+                    crc = CRC::Calculate(&m_payload[0] , m_payload.size(), CRC::CRC_16_ARC(), crc);
+                }
                 return crc;
             }
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd

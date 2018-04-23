@@ -34,14 +34,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDUDSCLIENT_H
 #define FLEXDUDSCLIENT_H
 
-#include "FleXdIPCBufferTypes.h"
 #include "FleXdIPCMsg.h"
 #include "FleXdIPCBuffer.h"
 #include "FleXdUDS.h"
 
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             class FleXdUDSClient : public FleXdUDS {
@@ -67,7 +66,7 @@ namespace flexd {
             };
 
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDUDSCLIENT_H */

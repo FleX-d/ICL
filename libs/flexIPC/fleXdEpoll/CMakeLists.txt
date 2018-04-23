@@ -39,7 +39,7 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdEpoll/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
     
-SET(fleXdEpollPublicInc "${fleXdEpoll_SOURCE_DIR}/inc/public" PARENT_SCOPE)
-SET(fleXdEpollLib "${PROJECT_NAME}" PARENT_SCOPE)
+SET(fleXdEpollPublicInc "${fleXdEpoll_SOURCE_DIR}/inc/public" CACHE STRING "")
+SET(fleXdEpollLib "${PROJECT_NAME}" CACHE STRING "")
 message(STATUS "*Export fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
 message(STATUS "*Export fleXdEpollLib: " ${fleXdEpollLib})

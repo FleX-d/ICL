@@ -32,8 +32,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDIPCMSGTYPES_H
 #define FLEXDIPCMSGTYPES_H
 
+#define HEADER_SIZE 32
+#define START_MSG_FLAG 0
+#define START_HEADER_FLAG 1
+#define END_HEADER_FLAG 2
+#define MIN_SIZE_OF_CACHE_TO_PARSE 5
+
+#define IPC_MSG_START_BIT_COUNT 4
+#define IPC_MSG_CRC_BIT_COUNT 16
+#define IPC_HEADER_FLAG_BIT_COUNT 2
+#define IPC_MSG_SIZE_BIT_COUNT 16
+#define IPC_MSG_TYPE_BIT_COUNT 8
+#define IPC_MSG_ID_BIT_COUNT 16
+#define IPC_MSG_APP_ID_BIT_COUNT 64
+#define IPC_MSG_TIMESTAMP_BIT_COUNT 32
+#define IPC_MSG_TTL_BIT_COUNT 32
+
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
             
             namespace FleXdIPCMsgTypes {
@@ -46,9 +62,9 @@ namespace flexd {
                     Undefined = 0xFF
                 };
             } // namespace FleXdIPCMsgTypes
-            
+ 
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDIPCMSGTYPES_H */

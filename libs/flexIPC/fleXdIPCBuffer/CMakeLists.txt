@@ -58,7 +58,6 @@ SET(privateSources
     src/FleXdIPCBuffer.cpp
     src/FleXdIPCMsg.cpp
 )
-
 add_library(${PROJECT_NAME} SHARED ${privateSources})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
@@ -80,8 +79,8 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCBuffer/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
     
-SET(fleXdIPCBufferPublicInc "${fleXdIPCBuffer_SOURCE_DIR}/inc/public" PARENT_SCOPE)
-SET(fleXdIPCBufferLib "${PROJECT_NAME}" PARENT_SCOPE)    
+SET(fleXdIPCBufferPublicInc "${fleXdIPCBuffer_SOURCE_DIR}/inc/public" CACHE STRING "")
+SET(fleXdIPCBufferLib "${PROJECT_NAME}" CACHE STRING "")    
 message(STATUS "*Export fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
 message(STATUS "*Export fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
 

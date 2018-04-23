@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             
@@ -106,5 +106,5 @@ namespace flexd {
             }
             
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd

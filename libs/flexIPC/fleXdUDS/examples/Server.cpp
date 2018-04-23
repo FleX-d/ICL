@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   JsonObj.h
+ * File:   Server.cpp
  * 
  * Author: Matus Bodorik
  *
@@ -39,8 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char** argv)
 {
-    flexd::ilc::epoll::FleXdEpoll poller(10);
-    flexd::ilc::epoll::FleXdUDSServer server("/tmp/test", poller);
+    flexd::icl::epoll::FleXdEpoll poller(10);
+    flexd::icl::epoll::FleXdUDSServer server("/tmp/test", poller);
     std::cout << "FleXdUDSServer.init() " << std::endl;
     server.init();
     poller.loop();

@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             /*
@@ -56,52 +56,52 @@ namespace flexd {
                 explicit FleXdIPCMsg(bool complete, uint16_t CRC16, uint16_t size, uint8_t type, uint16_t ID,  uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, const std::vector<uint8_t>& payload);
                 ~FleXdIPCMsg() = default;
                 /**
-                 * Function return Size of message 
+                 * Function return size of message. 
                  * @return size of Message - uint16_t
                  */
                 uint16_t getMsgSize() const;
                 /**
-                 * Function return type of message 
+                 * Function return type of message. 
                  * @return type of Message - uint8_t
                  */
                 uint8_t getMsgType() const;
                 /**
-                 * Function return message ID 
+                 * Function return message ID. 
                  * @return ID of Message - uint16_t
                  */
                 uint16_t getMsgID() const;
                 /**
-                 * Function return ID of sender  
+                 * Function return ID of sender.  
                  * @return ID of sender - uint64_t
                  */
                 uint64_t getFrom() const;
                 /**
-                 * Function return ID of receiver  
+                 * Function return ID of receiver.  
                  * @return ID of receiver - uint64_t
                  */
                 uint64_t getTo() const;
                 /**
-                 * Function return time stamp  
+                 * Function return time stamp.  
                  * @return time stamp - uint32_t
                  */
                 uint32_t getTimeStamp() const;
                 /**
-                 * Function return time to live of message 
+                 * Function return time to live of message. 
                  * @return time to live of message - uint32_t
                  */
                 uint32_t getTtl() const;
                 /**
-                 * Function return CRC16 of all atributes  
+                 * Function return CRC16 of all atributes.  
                  * @return CRC16 of all atributes - uint16_t
                  */
                 uint16_t getCRC16() const;
                 /**
-                 * Function return payload data     
+                 * Function return payload of data. 
                  * @return vector uint16_t CRC16
                  */
                 const std::vector<uint8_t>& getPayload() const;
                 /**
-                 * Static function calculate CRC16 from input data
+                 * Static function calculate CRC16 from input data.
                  * @param data - data to calculate CRC16 
                  * @param size - size of data 
                  * @param otherCrc - default 0, other CRC16 which will be included at new CRC16
@@ -109,22 +109,22 @@ namespace flexd {
                  */
                 static uint16_t calkCRC16(const void * data, size_t size, uint16_t otherCrc = 0);
                 /**
-                 * Function return bool value of completed message 
+                 * Function return bool value of completed message. 
                  * @return true if message is complete, false otherwise.
                  */
                 bool isComplete() const;
                 /**
-                 * Function set bool value of completed message 
+                 * Function set bool value of completed message. 
                  * @param complete -bool value of completed message 
                  */
-                void setComplete(const bool complete);
+                void setComplete(bool complete);
                 /**
-                 * Function create vector of bytes from attributes FleXdIPCMsg which is ready to send
+                 * Function creates a vector of bytes from attributes of a FleXdIPCMsg, which is ready to send.
                  * @return std::vector<uint8_t> of bytes
                  */
                 std::vector<uint8_t> releaseMsg();
                 /**
-                 * Function calculate CRC16 from all members of class 
+                 * Function calculate CRC16 from all attributes of a FleXdIPCMsg. 
                  * @return uint16_t CRC16
                  */
                 uint16_t calculateCRC();
@@ -147,7 +147,7 @@ namespace flexd {
             typedef std::shared_ptr<FleXdIPCMsg> pSharedFleXdIPCMsg;
             
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDIPCMSG_H */

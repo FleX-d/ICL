@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   JsonObj.h
+ * File:   FleXdIPCMsgTest.cpp
  * 
  * Author: Matus Bodorik
  *
@@ -38,71 +38,71 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include "BitStream.h"
 #include "vector"
-//#include "CRC.h"
+#include "CRC.h"
 
 namespace {
     
     std::vector<uint8_t> payload = {7};
-    flexd::ilc::epoll::FleXdIPCMsg msg (false, 0, 33, 1, 2, 3, 4, 5, 6, std::move(payload)); 
+    flexd::icl::epoll::FleXdIPCMsg msg (false, 0, 33, 1, 2, 3, 4, 5, 6, std::move(payload)); 
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getCRC16)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getCRC16)
     {
         EXPECT_EQ(msg.getCRC16(), 0);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getMsgSize)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getMsgSize)
     {
         EXPECT_EQ(msg.getMsgSize(), 33);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getMsgType)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getMsgType)
     {
         EXPECT_EQ(msg.getMsgType(), 1);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getMsgID)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getMsgID)
     {
         EXPECT_EQ(msg.getMsgID(), 2);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getFrom)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getFrom)
     {
         EXPECT_EQ(msg.getFrom(), 3);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getTo)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getTo)
     {
         EXPECT_EQ(msg.getTo(), 4);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getTimeStamp)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getTimeStamp)
     {
         EXPECT_EQ(msg.getTimeStamp(), 5);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getTtl)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getTtl)
     {
         EXPECT_EQ(msg.getTtl(), 6);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_getPayload)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_getPayload)
     {
         std::vector<uint8_t> vector = msg.getPayload();
         EXPECT_EQ(vector.front(), 7);
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_isComplete)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_isComplete)
     {
         EXPECT_FALSE(msg.isComplete());
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_setComplete)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_setComplete)
     {
         msg.setComplete(true);
         EXPECT_TRUE(msg.isComplete());
     }
     
-    TEST(fleXdMsg, Positive_Response_Funcion_releaseMsg)
+    TEST(FleXdIPCMsg, Positive_Response_Funcion_releaseMsg)
     {
         std::vector<uint8_t> vector = msg.releaseMsg();
         std::vector<uint8_t> msg = {8, 216, 228, 0, 132,4, 0, 8, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 20, 0, 0, 0, 26, 7 }; 
@@ -110,10 +110,11 @@ namespace {
         EXPECT_EQ(vector.size(), msg.size());
     }
     
-    TEST(fleXdMsg, Calculate_CRC16)
+    TEST(FleXdIPCMsg, Calculate_CRC16)
     {
+        std::vector<uint8_t> vector = msg.releaseMsg();
         uint16_t crc16 = 0;
-        uint16_t msgSize = 32;
+        uint16_t msgSize = 33;
         uint8_t type = 1;
         uint16_t msgID = 2;
         uint64_t from = 3;
@@ -132,10 +133,10 @@ namespace {
         crc16 = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), crc16);
         
         EXPECT_EQ(crc16, 36238); 
-        EXPECT_EQ(vector.size(), msg.size());
+        EXPECT_EQ(vector.size(), msg.getMsgSize());
     }
     
-    TEST(fleXdMsg, Calculate_CRC_From_Msg)
+    TEST(FleXdIPCMsg, Calculate_CRC_From_Msg)
     {
         uint16_t crc16 = msg.calculateCRC();
         EXPECT_EQ(crc16, 36238); 

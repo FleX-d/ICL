@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             class FleXdEpoll {
@@ -72,7 +72,7 @@ namespace flexd {
             };
             
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDEPOLL_H */

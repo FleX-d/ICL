@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCMsg.h"
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             class FleXdUDS {
@@ -50,13 +50,13 @@ namespace flexd {
                  */
                 virtual bool init();
                 /**
-                 * Function send message to Server
+                 * Function send message to Server.
                  * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
                  */
                 virtual void sendMsg(pSharedFleXdIPCMsg msg) = 0; 
                 /**
-                 * 
-                 * @param msg
+                 * Function is pure virtual, and its called after valid message is received and parsed.
+                 * @param msg  - shared pointer to FleXdIPCMsg
                  */
                 virtual void onMsg(pSharedFleXdIPCMsg msg) = 0;
                 
@@ -83,7 +83,7 @@ namespace flexd {
             };
             typedef std::shared_ptr<FleXdUDS> pSharedFleXdUDS;
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDUDS_H */

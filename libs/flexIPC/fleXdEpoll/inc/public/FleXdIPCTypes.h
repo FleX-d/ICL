@@ -24,21 +24,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   FleXdTypes.h
+ * File:   FleXdIPCTypes.h
  * Author: Adrian Peniak
  *
  * Created on February 1, 2018, 9:19 AM
  */
 
-#ifndef FLEXDTYPES_H
-#define FLEXDTYPES_H
+#ifndef FLEXDIPCTYPES_H
+#define FLEXDIPCTYPES_H
 
 #include <cstdint>
 #include <memory>
 #include <array>
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             namespace EpollEvent {
@@ -53,7 +53,7 @@ namespace flexd {
                     UndefinedError = 0xFF
                 };
                 
-            } // namespace EpollError 
+            } // namespace EpollEvent
             
             namespace IPCMsgType{
                 enum Enum {
@@ -62,10 +62,10 @@ namespace flexd {
                     ContMsg,
                     AckMsg,
                 };
-            }
+            } //namespace IPCMsgType
 
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
-#endif /* FLEXDTYPES_H */
+#endif /* FLEXDIPCTYPES_H */

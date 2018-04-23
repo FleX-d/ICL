@@ -34,19 +34,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdLogger.h"
 #include "FleXdIPCBuffer.h"
+#include "FleXdIPCBufferTypes.h"
+#include "FleXdIPCMsgTypes.h"
 #include "CRC.h"
 #include <unistd.h>
 #include <vector>
 
 // TODO define as static var for IPCMSG
-#define HEADERSIZE 32
-
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
             
             FleXdIPCBuffer::FleXdIPCBuffer(size_t maxBufferSize)
             : m_maxBufferSize(maxBufferSize),
+              m_bufferSize(0),
               m_cache(),
               m_queue(),
               m_onMsg(nullptr)
@@ -56,6 +57,7 @@ namespace flexd {
 
             FleXdIPCBuffer::FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize)
             : m_maxBufferSize(maxBufferSize),
+              m_bufferSize(0),
               m_cache(),
               m_queue(),
               m_onMsg(onMsg)
@@ -71,6 +73,7 @@ namespace flexd {
 
             FleXdIPCBuffer::FleXdIPCBuffer(FleXdIPCBuffer&& other)       
             : m_maxBufferSize(other.m_maxBufferSize),
+              m_bufferSize(other.m_bufferSize),
               m_cache(std::move(other.m_cache)),
               m_queue(std::move(other.m_queue)),
               m_onMsg(std::move(other.m_onMsg))           
@@ -82,6 +85,7 @@ namespace flexd {
             {
                 FLEX_LOG_TRACE("FleXdIPCBuffer moved");
                 m_maxBufferSize = other.m_maxBufferSize;
+                m_bufferSize = other.m_bufferSize;
                 m_cache = std::move(other.m_cache);
                 m_queue = std::move(other.m_queue);
                 m_onMsg = std::move(other.m_onMsg);
@@ -98,33 +102,33 @@ namespace flexd {
             void FleXdIPCBuffer::rcvMsg() 
             {
                 FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() -> Start parse data");
-                if(m_cache.getData().size() >= 5)
+                if(m_cache.getData().size() >= MIN_SIZE_OF_CACHE_TO_PARSE)
                 {
                     m_cache.reset();
-                    uint8_t startMsgFlag = m_cache.get<uint8_t>(4);
-                    if (startMsgFlag == 0)
+                    uint8_t startMsgFlag = m_cache.get<uint8_t>(IPC_MSG_START_BIT_COUNT);
+                    if (startMsgFlag == START_MSG_FLAG)
                     {
-                        uint16_t crc16 = m_cache.get<uint16_t>(16);
-                        uint8_t startHeaderFlag = m_cache.get<uint8_t>(2);
-                        if (startHeaderFlag == 1)
+                        uint16_t crc16 = m_cache.get<uint16_t>(IPC_MSG_CRC_BIT_COUNT);
+                        uint8_t startHeaderFlag = m_cache.get<uint8_t>(IPC_HEADER_FLAG_BIT_COUNT);
+                        if (startHeaderFlag == START_HEADER_FLAG)
                         {
-                            uint16_t msgSize = m_cache.get<uint16_t>(16);
-                            if(msgSize >= HEADERSIZE)
+                            uint16_t msgSize = m_cache.get<uint16_t>(IPC_MSG_SIZE_BIT_COUNT);
+                            if(msgSize >= HEADER_SIZE)
                             {
-                                if(m_cache.getData().size() >= HEADERSIZE)
+                                if(m_cache.getData().size() >= HEADER_SIZE)
                                 {
-                                    uint8_t type = m_cache.get<uint8_t>(8);
-                                    uint16_t msgID = m_cache.get<uint16_t>(16);
-                                    uint64_t from = m_cache.get<uint64_t>(64);
-                                    uint64_t to = m_cache.get<uint64_t>(64);
-                                    uint32_t timeStamp = m_cache.get<uint32_t>(32);
-                                    uint32_t ttl = m_cache.get<uint32_t>(32);
-                                    uint8_t endHeaderFlag = m_cache.get<uint8_t>(2);
-                                    if(endHeaderFlag == 2)
+                                    uint8_t type = m_cache.get<uint8_t>(IPC_MSG_TYPE_BIT_COUNT);
+                                    uint16_t msgID = m_cache.get<uint16_t>(IPC_MSG_ID_BIT_COUNT);
+                                    uint64_t from = m_cache.get<uint64_t>(IPC_MSG_APP_ID_BIT_COUNT);
+                                    uint64_t to = m_cache.get<uint64_t>(IPC_MSG_APP_ID_BIT_COUNT);
+                                    uint32_t timeStamp = m_cache.get<uint32_t>(IPC_MSG_TIMESTAMP_BIT_COUNT);
+                                    uint32_t ttl = m_cache.get<uint32_t>(IPC_MSG_TTL_BIT_COUNT);
+                                    uint8_t endHeaderFlag = m_cache.get<uint8_t>(IPC_HEADER_FLAG_BIT_COUNT);
+                                    if(endHeaderFlag == END_HEADER_FLAG)
                                     {
                                         if(m_cache.getData().size() >= msgSize)
                                         {
-                                            size_t payloadSize = msgSize - HEADERSIZE;      
+                                            size_t payloadSize = msgSize - HEADER_SIZE;   
                                             std::vector<uint8_t> tmp(m_cache.getRest());
                                             std::vector<uint8_t> payload(tmp.begin(), tmp.begin() + payloadSize);
                                             BiteStream newData(std::vector<uint8_t>(tmp.begin() + payloadSize, tmp.end()));
@@ -137,32 +141,43 @@ namespace flexd {
                                             calculateCRC = CRC::Calculate(&to , sizeof(to), CRC::CRC_16_ARC(), calculateCRC);
                                             calculateCRC = CRC::Calculate(&timeStamp , sizeof(timeStamp), CRC::CRC_16_ARC(), calculateCRC);
                                             calculateCRC = CRC::Calculate(&ttl , sizeof(ttl), CRC::CRC_16_ARC(), calculateCRC);
-                                            calculateCRC = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), calculateCRC);
+                                            if(payloadSize != 0)
+                                            {
+                                                calculateCRC = CRC::Calculate(&payload[0] , payload.size(), CRC::CRC_16_ARC(), calculateCRC);
+                                            }
                                             if(crc16 == calculateCRC){
                                                 releaseMsg(std::make_shared<FleXdIPCMsg>(true, crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload)));
                                                 FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() ->  Release complete message");
+                                                
                                             } else {
-                                                //releaseMsg(std::make_shared<FleXdIPCMsg>(false, crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload)))
-                                                FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive complete message, but CRC16 is not valid!");
+                                                //TODO - Acknowledge message is corrupted
+                                                FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive no complete message, CRC16 is not valid!");
+                                                rcvMsg();
                                             }
                                         } else {
                                             FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() ->  Wait for next read");
                                         }    
                                     } else {
-                                        //std::vector<uint8_t> payload;
-                                        //releaseMsg(std::make_shared<FleXdIPCMsg>(false, crc16, msgSize, type, msgID, from, to, timeStamp, ttl, std::move(payload)))
+                                        //TODO - Acknowledge message is corrupted
                                         FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive invalid message, endHeaderFlag != 2!");
+                                        findNonCoruptedMessage(0);
                                     }
                                 } else {
                                     FLEX_LOG_TRACE("FleXdIPCBuffer::rcvMsg() ->  Wait for next read");
                                 }
                             } else {
+                                //TODO - Acknowledge message is corrupted
+                                FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive invalid message, header size < 32");
                                 findNonCoruptedMessage(msgSize);
                             }
                         } else {
+                            //TODO - Acknowledge message is corrupted
+                            FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive invalid message, start header flag != 1!");
                             findNonCoruptedMessage(0);
                         }  
                     } else {
+                        //TODO - Acknowledge message is corrupted
+                        FLEX_LOG_WARN("FleXdIPCBuffer::rcvMsg() ->  Receive invalid message, start message flag != 0!");
                         findNonCoruptedMessage(0);
                     }
                 }
@@ -211,26 +226,27 @@ namespace flexd {
                 } else {
                     FLEX_LOG_ERROR("FleXdIPCBuffer::releaseMsg() -> msg = NULL!");
                 }
+                rcvMsg();
             }
             
             void FleXdIPCBuffer::findNonCoruptedMessage(uint16_t coruptedMsgSize)
             {
                 FLEX_LOG_TRACE("FleXdIPCBuffer::findNonCoruptedMessage() ->  Try to find next non-corrupted Msg");
                 unsigned counter = coruptedMsgSize/8;
-                if(coruptedMsgSize < HEADERSIZE)
+                if(coruptedMsgSize < HEADER_SIZE)
                 {           
                     while(counter <= (m_cache.getData().size()))
                     {
-                        uint8_t startMsgFlag = m_cache.getWithOffset<uint8_t>(counter*8, 4);
-                        m_cache.get<uint16_t>(16);
-                        uint8_t startHeaderFlag = m_cache.get<uint8_t>(2);
-                        if((startMsgFlag == 0) && (startHeaderFlag == 1))
+                        uint8_t startMsgFlag = m_cache.getWithOffset<uint8_t>(counter*8, IPC_MSG_START_BIT_COUNT);
+                        m_cache.get<uint16_t>(IPC_MSG_CRC_BIT_COUNT);
+                        uint8_t startHeaderFlag = m_cache.get<uint8_t>(IPC_HEADER_FLAG_BIT_COUNT);
+                        if((startMsgFlag == START_MSG_FLAG) && (startHeaderFlag == START_HEADER_FLAG))
                         {
-                            uint16_t msgSize = m_cache.get<uint16_t>(16);
+                            uint16_t msgSize = m_cache.get<uint16_t>(IPC_MSG_SIZE_BIT_COUNT);
                             if(msgSize <= m_cache.getData().size())
                             {
-                                uint8_t endHeaderFlag = m_cache.getWithOffset<uint8_t>(216,2);
-                                if(endHeaderFlag == 2)
+                                uint8_t endHeaderFlag = m_cache.getWithOffset<uint8_t>(216, IPC_HEADER_FLAG_BIT_COUNT); 
+                                if(endHeaderFlag == END_HEADER_FLAG)
                                 {
                                     FLEX_LOG_TRACE("FleXdIPCBuffer::findNonCoruptedMessage() ->  Find Message Success");
                                     m_cache.getWithOffset<uint8_t>(counter*8 - 8); // last byte from previous message
@@ -245,7 +261,7 @@ namespace flexd {
                     }
                 }   
             } 
-            
+              
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd

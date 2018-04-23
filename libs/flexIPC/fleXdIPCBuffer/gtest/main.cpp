@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   JsonObj.h
+ * File:   main.cpp
  * 
  * Author: Matus Bodorik
  *

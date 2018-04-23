@@ -49,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             class EpollClient {
@@ -198,5 +198,5 @@ namespace flexd {
             }
 
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd

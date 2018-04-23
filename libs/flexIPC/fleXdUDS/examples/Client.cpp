@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
- * File:   JsonObj.h
+ * File:   Client.cpp
  * 
  * Author: Matus Bodorik
  *
@@ -36,12 +36,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCMsg.h"
 #include <iostream>
 
-typedef flexd::ilc::epoll::FleXdIPCMsg  fleXdMsg;
+typedef flexd::icl::epoll::FleXdIPCMsg  fleXdMsg;
 
 int main(int argc, char** argv)
 {
-    flexd::ilc::epoll::FleXdEpoll poller(10);
-    flexd::ilc::epoll::FleXdUDSClient client("/tmp/test", poller);
+    flexd::icl::epoll::FleXdEpoll poller(10);
+    flexd::icl::epoll::FleXdUDSClient client("/tmp/test", poller);
         
     uint16_t crc16 = 0;
     uint16_t msgSize = 134;

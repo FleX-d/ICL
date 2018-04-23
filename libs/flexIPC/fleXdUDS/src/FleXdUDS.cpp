@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDS.h"
 #include "FleXdLogger.h"
+#include "FleXdIPCBufferTypes.h"
 #include <cstring>
 #include <iostream>
 #include <sys/socket.h>
@@ -43,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             struct FleXdUDS::Ctx {
@@ -96,7 +97,7 @@ namespace flexd {
                 {
                     FLEX_LOG_TRACE("FleXdUDS::onRead() -> EpollIn, fd: ", e.fd);
                     int rc;
-                    std::array<uint8_t, 8192> array;
+                    byteArray8192 array;
                     while ((rc = read(e.fd, &array[0], sizeof (array))) > 0)
                     { 
                         readMessage(e, std::move(array), rc);
@@ -168,5 +169,5 @@ namespace flexd {
             
 
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd

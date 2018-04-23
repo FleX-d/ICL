@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDIPCBUFFER_H
 #define FLEXDIPCBUFFER_H
 
+#define MAXBUFFERSIZE 65536
+
 #include "FleXdIPCMsg.h"
 #include "FleXdIPCBufferTypes.h"
 #include "BitStream.h"
@@ -43,19 +45,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <array>
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
-
-	    class FleXdIPCFactory;
+            
             class FleXdIPCBuffer {
             public:
-                explicit FleXdIPCBuffer(size_t maxBufferSize = 65536);
-                explicit FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize = 65536);
+                explicit FleXdIPCBuffer(size_t maxBufferSize = MAXBUFFERSIZE);
+                explicit FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize = MAXBUFFERSIZE);
                 virtual ~FleXdIPCBuffer();
                 FleXdIPCBuffer(FleXdIPCBuffer&&);
                 FleXdIPCBuffer& operator=(FleXdIPCBuffer&&);
                 /**
-                 * Function send data to Factory for parsing message 
+                 * Function receive data, push them to end of cache and call function rcvMsg()
                  * @param data - shared pointer to Array of data which will be parsed 
                  * @param size - size of data
                  */
@@ -75,13 +76,24 @@ namespace flexd {
                  * @return shared pointer to FleXdIPCMsg from front of queue
                  */
                 pSharedFleXdIPCMsg pop();
-                
                 FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;
                 FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
                 
             private:
+                /**
+                 * Function parse data from cache, when find non-corrupted message call function releaseMsg()
+                 * when find corrupted message, call function findNonCoruptedMessage() 
+                 */
                 void rcvMsg();
+                /**
+                 * Function call lambda method with complete message if exist, otherwise push complete message to buffer
+                 * @param msg - shared pointer to FleXdIPCMsg
+                 */
                 void releaseMsg(pSharedFleXdIPCMsg msg);
+                /**
+                 * Function try to find next non-corrupted message at cache and remove corrupted message
+                 * @param coruptedMsgSize - Size of corrupted message, otherwise 0
+                 */
                 void findNonCoruptedMessage(uint16_t coruptedMsgSize);
                 
             private:
@@ -93,7 +105,7 @@ namespace flexd {
             };
             
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
 
 #endif /* FLEXDIPCBUFFER_H */

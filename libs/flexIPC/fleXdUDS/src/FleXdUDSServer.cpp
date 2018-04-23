@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 
 namespace flexd {
-    namespace ilc {
+    namespace icl {
         namespace epoll {
 
             FleXdUDSServer::FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller)
@@ -156,5 +156,5 @@ namespace flexd {
             }
             
         } // namespace epoll
-    } // namespace ilc
+    } // namespace icl
 } // namespace flexd
