@@ -5,7 +5,7 @@ Library for working with Json data and encode/decode file to Base64
 
 ## Example Usecase
 
-JsonObj - Facade for serialization and de-serialization Json data to object by using Nlohmann library from https//:github.com/nlohmann/json
+JsonObj - Facade for serialization and de-serialization Json data to object base on Nlohmann library from https//:github.com/nlohmann/json
 Base64 - Utility function to decode and encode file to Base64, put Base64 to JsonObj
 
 ## Usage JsonObj
