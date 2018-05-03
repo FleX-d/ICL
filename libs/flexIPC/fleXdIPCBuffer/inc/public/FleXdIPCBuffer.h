@@ -99,7 +99,7 @@ namespace flexd {
             private:
                 size_t m_maxBufferSize;
                 size_t m_bufferSize;
-                BiteStream m_cache;
+                BitStream m_cache;
                 std::queue<pSharedFleXdIPCMsg> m_queue;
                 std::function<void(pSharedFleXdIPCMsg)> m_onMsg;
             };

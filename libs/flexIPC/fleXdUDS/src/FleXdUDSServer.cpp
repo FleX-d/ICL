@@ -122,7 +122,7 @@ namespace flexd {
             void FleXdUDSServer::onMsg(pSharedFleXdIPCMsg msg)
             {
                 FLEX_LOG_WARN("FleXdUDSServer::onMessage() function shall be overwritten.");
-                // TODO This fcn will be overwritten 
+                  // TODO This fcn will be overwritten 
 //                if(msg)
 //                {
 //                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());

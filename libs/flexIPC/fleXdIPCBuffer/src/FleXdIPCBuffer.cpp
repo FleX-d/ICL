@@ -131,7 +131,7 @@ namespace flexd {
                                             size_t payloadSize = msgSize - HEADER_SIZE;   
                                             std::vector<uint8_t> tmp(m_cache.getRest());
                                             std::vector<uint8_t> payload(tmp.begin(), tmp.begin() + payloadSize);
-                                            BiteStream newData(std::vector<uint8_t>(tmp.begin() + payloadSize, tmp.end()));
+                                            BitStream newData(std::vector<uint8_t>(tmp.begin() + payloadSize, tmp.end()));
                                             std::swap(m_cache, newData);
                                             
                                             uint16_t calculateCRC = CRC::Calculate(&msgSize , sizeof(msgSize), CRC::CRC_16_ARC());
@@ -250,7 +250,7 @@ namespace flexd {
                                 {
                                     FLEX_LOG_TRACE("FleXdIPCBuffer::findNonCoruptedMessage() ->  Find Message Success");
                                     m_cache.getWithOffset<uint8_t>(counter*8 - 8); // last byte from previous message
-                                    BiteStream oldData(m_cache.getRest());
+                                    BitStream oldData(m_cache.getRest());
                                     std::swap(m_cache, oldData);
                                     rcvMsg();
                                     break;   

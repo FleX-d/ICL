@@ -138,7 +138,7 @@ namespace flexd {
 
             std::vector<uint8_t> FleXdIPCMsg::releaseMsg()
             {
-                BiteStream bs;
+                BitStream bs;
                 uint16_t crc  = calculateCRC();
                 bs.put((uint8_t) START_MSG_FLAG, IPC_MSG_START_BIT_COUNT);
                 if(m_CRC16 == 0){bs.put(crc, IPC_MSG_CRC_BIT_COUNT);}
