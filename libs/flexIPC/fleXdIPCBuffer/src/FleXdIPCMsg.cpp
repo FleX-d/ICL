@@ -140,11 +140,17 @@ namespace flexd {
             {
                 BitStream bs;
                 uint16_t crc  = calculateCRC();
+                uint16_t size = calculateSize();
                 bs.put((uint8_t) START_MSG_FLAG, IPC_MSG_START_BIT_COUNT);
+                
                 if(m_CRC16 == 0){bs.put(crc, IPC_MSG_CRC_BIT_COUNT);}
                 else {bs.put(m_CRC16, IPC_MSG_CRC_BIT_COUNT);}
+                
                 bs.put((uint8_t) START_HEADER_FLAG, IPC_HEADER_FLAG_BIT_COUNT);
-                bs.put(m_msgSize, IPC_MSG_SIZE_BIT_COUNT);
+                
+                if(m_msgSize == 0){bs.put(size, IPC_MSG_SIZE_BIT_COUNT);}
+                else {bs.put(m_msgSize, IPC_MSG_SIZE_BIT_COUNT);}
+                
                 bs.put(m_msgType, IPC_MSG_TYPE_BIT_COUNT);
                 bs.put(m_msgID, IPC_MSG_ID_BIT_COUNT);
                 bs.put((uint64_t) m_from, IPC_MSG_APP_ID_BIT_COUNT);
@@ -173,6 +179,14 @@ namespace flexd {
                 }
                 return crc;
             }
+            
+            uint16_t FleXdIPCMsg::calculateSize()
+            {
+                uint16_t size = 0;
+                size = HEADER_SIZE + m_payload.size();
+                return size;
+            }
+            
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

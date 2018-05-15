@@ -128,6 +128,11 @@ namespace flexd {
                  * @return uint16_t CRC16
                  */
                 uint16_t calculateCRC();
+                /**
+                 * Function calculate size from all attributes of a FleXdIPCMsg. 
+                 * @return uint16_t CRC16
+                 */
+                uint16_t calculateSize();
                 
                 FleXdIPCMsg(const FleXdIPCMsg&) = default;
                 FleXdIPCMsg& operator=(const FleXdIPCMsg&) = default;
