@@ -325,14 +325,19 @@ namespace flexd
             {
                 std::cout << m_obj->m_ctx.flatten().dump(d) << std::endl;
             }
-
-
         }
 
         void JsonObj::storeJson(JsonParser* other)
         {
             m_obj->m_ctx = other->m_ctx;
         }
+        
+        std::string JsonObj::getJson()
+        {
+            std::string str = m_obj->m_ctx.dump();
+            return std::move(str);
+        }
+
 
         ReturnType JsonObj::merge(const JsonObj& other)
         {

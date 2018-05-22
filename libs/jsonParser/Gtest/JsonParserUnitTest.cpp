@@ -323,4 +323,10 @@ namespace {
         o3.dump();
     }
    
+    TEST(JsonParser, Positive_Response_Funcion_GetJson_)
+    {
+        flexd::icl::JsonObj temp2("{\"happy\": true, \"pi\": 3.14, \"test\": \"/lalal/aafd\"}");
+        std::string str = temp2.getJson();
+        EXPECT_EQ(str, "{\"happy\":true,\"pi\":3.14,\"test\":\"/lalal/aafd\"}");
+    }
 }

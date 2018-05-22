@@ -158,6 +158,11 @@ namespace flexd {
              * @param other - object JsonParse to store
              */
             void storeJson(JsonParser* other);
+            /**
+             * Function return reference to string with json
+             * @param other - reference to string with json
+             */
+            std::string getJson();
 
         private:
             ReturnType pathIsValid(const std::string& path) const;
