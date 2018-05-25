@@ -23,18 +23,17 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdUDSClient.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
- * 
+ *
  * Created on February 1, 2018, 2:45 PM
  */
 
 #include "FleXdUDSClient.h"
 #include "FleXdIPCBuffer.h"
 #include "FleXdUDS.h"
-#include "FleXdLogger.h"
 #include <cstring>
 #include <iostream>
 #include <sys/socket.h>
@@ -47,21 +46,18 @@ namespace flexd {
     namespace icl {
         namespace epoll {
 
-            
-            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller) 
+
+            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller)
             : FleXdUDS(socPath, poller),
               m_buffer([this](pSharedFleXdIPCMsg msg){onMessage(msg);})
             {
-                FLEX_LOG_INIT("FleXdUDSClient");
-                FLEX_LOG_INFO("FleXdUDSClient -> Start");
             }
 
-            FleXdUDSClient::~FleXdUDSClient() 
+            FleXdUDSClient::~FleXdUDSClient()
             {
-                FLEX_LOG_TRACE("FleXdUDSClient -> Destroyed");
             }
 
-            bool FleXdUDSClient::initialization() 
+            bool FleXdUDSClient::initialization()
             {
                 if(connectUDS())
                 {
@@ -69,19 +65,17 @@ namespace flexd {
                     {
                         onEvent(e);
                     });
-                    FLEX_LOG_TRACE("FleXdUDSClient::initialization()  -> Initialization Success!");
-                    return true;         
+                    return true;
                 }
-                FLEX_LOG_WARN("FleXdUDSClient::initialization() -> Initialization Fail!");
-                return false;             
-            }          
-            
+                return false;
+            }
+
             void FleXdUDSClient::readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
             {
                 m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
                 m_buffer.rcvMsg(m_array, size);
             }
-            
+
             void FleXdUDSClient::sendMsg(pSharedFleXdIPCMsg msg)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
@@ -90,21 +84,18 @@ namespace flexd {
                 {
                     sendData += write(getFd(),  &data[sendData] , data.size());
                 }
-                FLEX_LOG_TRACE("FleXdUDSClient::onWrite() -> Write Success!");
             }
 
             void FleXdUDSClient::onMsg(pSharedFleXdIPCMsg msg)
             {
-                FLEX_LOG_WARN("FleXdUDSClient::onMessage() -> function shall be overwritten.");
-                // TODO This fcn will be overwritten 
+                // TODO This fcn will be overwritten
             }
-            
+
             bool FleXdUDSClient::onReConnect(int fd)
             {
-                FLEX_LOG_INFO("FleXdUDSClient::onReConnect() -> Try to Reconnect!");
                 return connectUDS();
             }
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

@@ -22,7 +22,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* 
+/*
  * File:   FleXdIPCMsg.h
  * Author: Adrian Peniak
  * Author: Matus Bodorik
@@ -42,115 +42,149 @@ namespace flexd {
     namespace icl {
         namespace epoll {
 
+            class FleXdIPCAdtHdr {
+            public:
+                FleXdIPCAdtHdr();
+                explicit FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5);
+                ~FleXdIPCAdtHdr();
+                FleXdIPCAdtHdr(const FleXdIPCAdtHdr&) = delete;
+                FleXdIPCAdtHdr& operator=(const FleXdIPCAdtHdr&) = delete;
+                FleXdIPCAdtHdr(FleXdIPCAdtHdr&&);
+                FleXdIPCAdtHdr& operator=(FleXdIPCAdtHdr&&);
+                const uint8_t getMask() const;
+                void reset();
+                const uint8_t getValue_0() const;
+                void setValue_0(uint8_t value);
+                void resetValue_0();
+                const uint8_t getValue_1() const;
+                void setValue_1(uint8_t value);
+                void resetValue_1();
+                const uint16_t getValue_2() const;
+                void setValue_2(uint16_t value);
+                void resetValue_2();
+                const uint32_t getValue_3() const;
+                void setValue_3(uint32_t value);
+                void resetValue_3();
+                const uint32_t getValue_4() const;
+                void setValue_4(uint32_t value);
+                void resetValue_4();
+                const uint32_t getValue_5() const;
+                void setValue_5(uint32_t value);
+                void resetValue_5();
+                const uint8_t getNextHeaderMask() const;
+                const uint16_t getSize() const;
+                FleXdIPCAdtHdr* createNext();
+                void deleteNext();
+                const FleXdIPCAdtHdr* getNext() const;
+                FleXdIPCAdtHdr* getNext();
+
+            private:
+                uint8_t m_headerMask;
+                uint8_t m_value0;
+                uint8_t m_value1;
+                uint16_t m_value2;
+                uint32_t m_value3;
+                uint32_t m_value4;
+                uint32_t m_value5;
+                FleXdIPCAdtHdr* m_next;
+            };
+
             /*
-             *  start msg........start header......................................................... end header.............
-             * |    4    |  16   |    2    |  16     |    8    |  16   |  64  | 64 |    32     | 32  |     2      |    n    |
-             * |   0x0   | CRC16 |   0x1   | msgSize | msgType | msgID | from | to | timeStamp | ttl |    0x2     | payload |
-             * 
-             * msgSize = start byte + header + payload + end byte;
+             * GENERAL MESSAGE FORMAT
+             *              ...msg start....header start.....................................................header end................................
+             * BITCOUNT     |      3      |      2      |      1      |           8            |    16     |      2     |      0 - 136      |    n    |
+             * VALUE        |     0x0     |     0x1     | header type |     header parameter   |  msgSize  |     0x2    | additional header | payload |
+             *
+             * POSSIBLE MESSAGE TYPES
+             *              |     0x0     |     0x1     |      0      |      message type      |  msgSize  |     0x2    |        ---        | payload |
+             *              |     0x0     |     0x1     |      1      | additional header mask |  msgSize  |     0x2    | additional header | payload |
+             *              |     0x0     |     0x1     |      1      |         0xFF           |  msgSize  |     0x2    |        ---        | payload |
+             *
+             * msgSize = msg start + header + additional header + payload;
              */
             class FleXdIPCMsg {
             public:
-                //TODOD Constructor empty
-                explicit FleXdIPCMsg(bool complete, uint16_t CRC16, uint16_t size, uint8_t type, uint16_t ID,  uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, std::vector<uint8_t>&& payload);
-                explicit FleXdIPCMsg(bool complete, uint16_t CRC16, uint16_t size, uint8_t type, uint16_t ID,  uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, const std::vector<uint8_t>& payload);
-                ~FleXdIPCMsg() = default;
-                /**
-                 * Function return size of message. 
-                 * @return size of Message - uint16_t
+                explicit FleXdIPCMsg(uint8_t msgType, std::vector<uint8_t>&& payload);
+                explicit FleXdIPCMsg(bool headerParamType, uint8_t headerParam, std::vector<uint8_t>&& payload);
+                explicit FleXdIPCMsg(FleXdIPCAdtHdr*& additionalHeader, std::vector<uint8_t>&& payload);
+                explicit FleXdIPCMsg(std::vector<uint8_t>&& payload, bool calculateCRC = true);
+                virtual ~FleXdIPCMsg();
+                FleXdIPCMsg(const FleXdIPCMsg&) = delete;
+                FleXdIPCMsg& operator=(const FleXdIPCMsg&) = delete;
+                FleXdIPCMsg(FleXdIPCMsg&&);
+                FleXdIPCMsg& operator=(FleXdIPCMsg&&);
+                /*
+                 * Function returns header parameter type
+                 * @return header parameter type - 0 = message type, 1 = additional header mask
                  */
-                uint16_t getMsgSize() const;
-                /**
-                 * Function return type of message. 
-                 * @return type of Message - uint8_t
+                const bool getHeaderParamType() const;
+                /*
+                 * Function returns header parameter
+                 * @return header parameter - message type or additional header mask
                  */
-                uint8_t getMsgType() const;
-                /**
-                 * Function return message ID. 
-                 * @return ID of Message - uint16_t
+                const uint8_t getHeaderParam() const;
+                /*
+                 * Function sets header parameter, works only when header parameter type = 0
                  */
-                uint16_t getMsgID() const;
-                /**
-                 * Function return ID of sender.  
-                 * @return ID of sender - uint64_t
+                void setHeaderParam(uint8_t headerParam);
+                /*
+                 * Function resets header parameter and deletes the additional header if exists
+                 * @param headerParam - header parameter
                  */
-                uint64_t getFrom() const;
-                /**
-                 * Function return ID of receiver.  
-                 * @return ID of receiver - uint64_t
+                void resetHeaderParam();
+                /*
+                 * Function returns size of the message
+                 * @return size of the message
                  */
-                uint64_t getTo() const;
-                /**
-                 * Function return time stamp.  
-                 * @return time stamp - uint32_t
+                const uint16_t getMsgSize() const;
+                /*
+                 * Function creates and returns pointer to additional header, works only when header parameter type = 1
+                 * @return pointer to additional header object or nullptr
                  */
-                uint32_t getTimeStamp() const;
-                /**
-                 * Function return time to live of message. 
-                 * @return time to live of message - uint32_t
+                FleXdIPCAdtHdr* createAdditionalHeader();
+                /*
+                 * Function returns pointer to additional header
+                 * @return pointer to additional header object or nullptr
                  */
-                uint32_t getTtl() const;
-                /**
-                 * Function return CRC16 of all atributes.  
-                 * @return CRC16 of all atributes - uint16_t
+                const FleXdIPCAdtHdr* getAdditionalHeader() const;
+                FleXdIPCAdtHdr* getAdditionalHeader();
+                /*
+                 * Function deletes additional header if exists
                  */
-                uint16_t getCRC16() const;
-                /**
-                 * Function return payload of data. 
-                 * @return vector uint16_t CRC16
+                void deleteAdditionalHeader();
+                /*
+                 * Function returns payload data
+                 * @return data uint8_t vector
                  */
                 const std::vector<uint8_t>& getPayload() const;
-                /**
-                 * Static function calculate CRC16 from input data.
-                 * @param data - data to calculate CRC16 
-                 * @param size - size of data 
-                 * @param otherCrc - default 0, other CRC16 which will be included at new CRC16
-                 * @return uint16_t CRC16 from input data 
+                /*
+                 * Function returns validity of the message
+                 * @return message validity
                  */
-                static uint16_t calkCRC16(const void * data, size_t size, uint16_t otherCrc = 0);
-                /**
-                 * Function return bool value of completed message. 
-                 * @return true if message is complete, false otherwise.
-                 */
-                bool isComplete() const;
-                /**
-                 * Function set bool value of completed message. 
-                 * @param complete -bool value of completed message 
-                 */
-                void setComplete(bool complete);
-                /**
+                const bool isValid() const;
+                /*
                  * Function creates a vector of bytes from attributes of a FleXdIPCMsg, which is ready to send.
                  * @return std::vector<uint8_t> of bytes
                  */
                 std::vector<uint8_t> releaseMsg();
-                /**
-                 * Function calculate CRC16 from all attributes of a FleXdIPCMsg. 
-                 * @return uint16_t CRC16
+                /*
+                 * Static function calculate CRC16 from input data.
+                 * @param data - data to calculate CRC16
+                 * @param size - size of data
+                 * @param otherCrc - default 0, other CRC16 which will be included at new CRC16
+                 * @return uint16_t CRC16 from input data
                  */
-                uint16_t calculateCRC();
-                /**
-                 * Function calculate size from all attributes of a FleXdIPCMsg. 
-                 * @return uint16_t CRC16
-                 */
-                uint16_t calculateSize();
-                
-                FleXdIPCMsg(const FleXdIPCMsg&) = default;
-                FleXdIPCMsg& operator=(const FleXdIPCMsg&) = default;
- 
+                static uint16_t calcCRC16(const void* data, size_t size, uint16_t otherCrc = 0);
+
             private:
-                bool m_complete;
-                const uint16_t m_CRC16;
-                const uint16_t m_msgSize;
-                const uint8_t m_msgType;
-                const uint16_t m_msgID;
-                const uint64_t m_from;
-                const uint64_t m_to;
-                const uint32_t m_timeStamp;
-                const uint32_t m_ttl;
-                const std::vector<uint8_t> m_payload;
+                std::vector<uint8_t> m_payload;
+                uint8_t m_headerParamType;
+                uint8_t m_headerParam;
+                FleXdIPCAdtHdr* m_additionalHeader;
+                bool m_valid;
             };
             typedef std::shared_ptr<FleXdIPCMsg> pSharedFleXdIPCMsg;
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

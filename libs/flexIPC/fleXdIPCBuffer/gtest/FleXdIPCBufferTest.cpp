@@ -25,10 +25,41 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCBufferTest.cpp
- * 
+ *
  * Author: Matus Bodorik
  *
  * Created on April 06, 2018, 10:02 AM
  */
+
+#include "FleXdIPCBuffer.h"
+#include <gtest/gtest.h>
+#include <stdint.h>
+#include "BitStream.h"
+#include "vector"
+
+namespace {
+
+    using FleXdIPCBuffer = flexd::icl::epoll::FleXdIPCBuffer;
+    using FleXdIPCMsg = flexd::icl::epoll::FleXdIPCMsg;
+    using pSharedArray8192 = flexd::icl::epoll::pSharedArray8192;
+    using pSharedFleXdIPCMsg = flexd::icl::epoll::pSharedFleXdIPCMsg;
+
+    TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg)
+    {
+        /*FleXdIPCBuffer buffer;
+        //TODO fill data with { 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
+        pSharedArray8192 data; //{ 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
+
+        buffer.rcvMsg(data, data->size());
+
+        pSharedFleXdIPCMsg msg = std::make_shared<FleXdIPCMsg>(buffer.pop());
+
+        std::vector<uint8_t> vector = msg->releaseMsg();
+        std::vector<uint8_t> vmsg = { 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
+        EXPECT_EQ(vector, vmsg);
+        EXPECT_EQ(vector.size(), msg->getMsgSize());*/
+    }
+
+}

@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCBufferTypes.h
  * Author: Adrian Peniak
  *
@@ -33,14 +33,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDIPCBUFFERTYPES_H
 #define FLEXDIPCBUFFERTYPES_H
 
-#include <cstdint>
 #include <memory>
 #include <array>
 
 namespace flexd {
     namespace icl {
         namespace epoll {
-            
+
             typedef std::array<uint8_t, 8192> byteArray8192;
             typedef std::shared_ptr<std::array<uint8_t, 8192> > pSharedArray8192;
 

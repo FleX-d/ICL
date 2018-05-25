@@ -22,17 +22,16 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* 
+/*
  * File:   FleXdUDSServer.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
- * 
+ *
  * Created on February 1, 2018, 2:45 PM
  */
 
 #include "FleXdUDSServer.h"
 #include "FleXdUDS.h"
-#include "FleXdLogger.h"
 #include "FleXdIPCMsg.h"
 #include <iostream>
 #include <stdio.h>
@@ -50,13 +49,10 @@ namespace flexd {
             FleXdUDSServer::FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller)
             : FleXdUDS(socPath, poller)
             {
-                FLEX_LOG_INIT("FleXdUDSServer");
-                FLEX_LOG_INFO("FleXdUDSServer -> Start");
             }
 
             FleXdUDSServer::~FleXdUDSServer()
             {
-                FLEX_LOG_TRACE("FleXdUDSServer -> Destroyed");
             }
 
             bool FleXdUDSServer::initialization()
@@ -67,10 +63,8 @@ namespace flexd {
                     {
                         onAccept(evn);
                     });
-                    FLEX_LOG_TRACE("FleXdUDSServer::initialization()  -> Initialization Success!");
                     return true;
                 }
-                FLEX_LOG_WARN("FleXdUDSServer::initialization() -> Initialization Fail!");
                 return false;
             }
 
@@ -79,19 +73,13 @@ namespace flexd {
                 if (e.type == EpollEvent::EpollOut || e.type == EpollEvent::EpollIn)
                 {
                     int clientFd;
-                    if ((clientFd = accept(getFd(), NULL, NULL)) == -1)
-                    {
-                        FLEX_LOG_ERROR("FleXdUDSServer::onAccept() -> Accept Error!");
-                    }
-                    FLEX_LOG_TRACE("FleXdUDSServer::onAccept()  -> Accept Success, fd: ", e.fd);
+                    clientFd = accept(getFd(), NULL, NULL);
                     auto it = m_list.find(clientFd);
                     if(it == m_list.end())
                     {
                         FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
                         m_list[clientFd] = std::move(buffer);
                         m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
-                    } else {
-                        FLEX_LOG_ERROR("FleXdUDSServer::onAccept() -> FD exist in list!!!");
                     }
                 }
             }
@@ -100,11 +88,9 @@ namespace flexd {
             {
                 std::shared_ptr<std::array<uint8_t, 8192> > array_ptr = std::make_shared<std::array<uint8_t, 8192> >(array);
                 auto search = m_list.find(e.fd);
-                if(search != m_list.end()) 
+                if(search != m_list.end())
                 {
                     search->second.rcvMsg(array_ptr, size);
-                } else {
-                    FLEX_LOG_WARN("FleXdUDSServer::readMessage() -> sender not found in list! Message will be discarded!");
                 }
             }
 
@@ -116,45 +102,38 @@ namespace flexd {
                 {
                     sendData += write(m_list.begin()->first,  &data[sendData] , data.size());
                 }
-                FLEX_LOG_TRACE("FleXdUDSServer::onWrite() -> Write Success!");
             }
-            
+
             void FleXdUDSServer::onMsg(pSharedFleXdIPCMsg msg)
             {
-                FLEX_LOG_WARN("FleXdUDSServer::onMessage() function shall be overwritten.");
-                  // TODO This fcn will be overwritten 
+                  // TODO This fcn will be overwritten
 //                if(msg)
 //                {
-//                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> ", msg->releaseMsg().data());
 //                    std::vector<uint8_t> payload;
 //                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(true, 0, 32, 1, 1, 1, 1, 1, 1, std::move(payload));
 //                    sendMsg(std::move(msg_ptr));
 //                } else {
-//                    FLEX_LOG_DEBUG("FleXdUDSClient::onMessage() -> Massage Invalid!");
 //                    std::vector<uint8_t> payload;
 //                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload));
 //                    sendMsg(std::move(msg_ptr));
-//                } 
+//                }
             }
-            
-            bool FleXdUDSServer::onReConnect(int fd) 
+
+            bool FleXdUDSServer::onReConnect(int fd)
             {
-                FLEX_LOG_TRACE("FleXdUDSServer::onReConnect() -> ", fd);
                 return removeFdFromList(fd);
             }
-            
+
             bool FleXdUDSServer::removeFdFromList(int fd)
             {
                 auto it = m_list.find(fd);
                 if (it != m_list.end()) {
                     std::ignore = m_list.erase(it);
-                    FLEX_LOG_TRACE("FleXdUDSServer::removeFdFromList() -> Remove ", fd, " Success!");
-                    return true;  
+                    return true;
                 }
-                FLEX_LOG_WARN("FleXdUDSServer::removeFdFromList() -> Remove ", fd," Fail, client not found!");
                 return false;
             }
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

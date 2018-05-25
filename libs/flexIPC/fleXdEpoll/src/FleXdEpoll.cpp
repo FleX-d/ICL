@@ -23,15 +23,14 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdEpoll.cpp
  * Author: Adrian Peniak
- * 
+ *
  * Created on January 31, 2018, 9:55 AM
  */
 
 #include "FleXdEpoll.h"
-#include "FleXdLogger.h"
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -73,13 +72,13 @@ namespace flexd {
                 : efd(epoll_create(_maxEventh)),
                 maxEventh(_maxEventh),
                 ev(_maxEventh),
-                buffer() 
+                buffer()
                 {
-                  
+
                 }
 
                 ~Epoll() = default;
-                
+
                 int efd;
                 size_t maxEventh;
                 std::vector<epoll_event> ev;
@@ -90,26 +89,18 @@ namespace flexd {
             :  m_epoll(std::make_unique<FleXdEpoll::Epoll>(maxEventh)),
                m_safeStop(false)
             {
-                FLEX_LOG_INIT("FleXdEpoll");
-                FLEX_LOG_TRACE("FleXdEpoll() -> Start");
+
             }
 
-            FleXdEpoll::~FleXdEpoll() {
-                FLEX_LOG_TRACE("FleXdEpoll() -> Destroyed");
-            }
+            FleXdEpoll::~FleXdEpoll() {}
 
             bool FleXdEpoll::addEvent(int fd, std::function<void(Event)> onEvent) {
-                FLEX_LOG_TRACE("FleXdEpoll::addEvent() -> ", fd) ;
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer == m_epoll->buffer.end()) {
                     EpollClient epollClient;
                     auto ret = m_epoll->buffer.insert(std::make_pair(fd, epollClient));
-                    if (!ret.second) {
-                        FLEX_LOG_ERROR("FleXdEpoll::addEvent() -> Insert fd fail: ", fd);
-                        return false;
-                    } else {
-                        FLEX_LOG_TRACE("FleXdEpoll::addEvent() -> Insert fd success: ", fd) ;
-                    }
+                    if (!ret.second) return false;
+
                     ret.first->second.onEvent = onEvent;
                     epoll_event& ev = ret.first->second.epollEvent;
                     ev.data.u64 = 0;
@@ -117,23 +108,20 @@ namespace flexd {
                     ev.events |= EPOLLIN | EPOLLPRI | EPOLLHUP;
                     //TODO add fd to epoll
                     std::ignore = epoll_ctl(m_epoll->efd, EPOLL_CTL_ADD, fd, &ev); // TODO check return
-                    
+
                     return true;
                 }
                 return false;
             }
 
             bool FleXdEpoll::rmEvent(int fd) {
-                FLEX_LOG_TRACE("FleXdEpoll::rmEvent() -> ", fd);
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer != m_epoll->buffer.end()) {
                     std::ignore = epoll_ctl(m_epoll->efd, EPOLL_CTL_DEL, fd, &(itBuffer->second.epollEvent)); // TODO check return
 //                    close(fd);
                     std::ignore = m_epoll->buffer.erase(itBuffer);
-                    FLEX_LOG_TRACE("FleXdEpoll::rmEvent() -> Remove fd success: ", fd) ;
                     return true;
                 } else {
-                    FLEX_LOG_WARN("FleXdEpoll::rmEvent() -> fd not found in map!");
                     return false;
                 }
                 return false;
@@ -146,15 +134,14 @@ namespace flexd {
             }
 
             void FleXdEpoll::loop() {
-                FLEX_LOG_TRACE("FleXdEpoll::loop() -> Start") ;
                 int fd = 0;
                 uint32_t flags = 0;
                 std::queue<int> rmEvQueue{};
                 while (!m_safeStop) {
                     int nfds = epoll_wait(m_epoll->efd, m_epoll->ev.data(), m_epoll->maxEventh, -1);
-                    
+
                     for (int i = 0; i < nfds; i++) {
-                        
+
                         fd = m_epoll->ev.at(i).data.fd;
                         flags = m_epoll->ev.at(i).events;
                         auto itBuffer = m_epoll->buffer.find(fd);
@@ -163,18 +150,15 @@ namespace flexd {
                             continue;
                         }
                         auto onEvent = itBuffer->second.onEvent;
-                        
+
                         if ((flags & EPOLLERR) || (flags & EPOLLHUP)) {
-                            FLEX_LOG_ERROR("FleXdEpoll::loop() -> ERROR: ", flags);
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollError));
                             rmEvQueue.push(fd);
                             continue;
                         } else if ((flags & EPOLLIN) || (flags & EPOLLRDNORM)) {
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollIn));
-                            FLEX_LOG_TRACE("FleXdEpoll::loop() -> IN: ", flags);
                         } else if ((flags & EPOLLOUT) || (flags & EPOLLWRNORM)) {
                             onEvent(Event(fd, flags, EpollEvent::Enum::EpollOut));
-                            FLEX_LOG_TRACE("FleXdEpoll::loop() -> OUT: ", flags);
                         } else {
                             onEvent(Event(fd, flags, EpollEvent::Enum::UndefinedError));
                             rmEvQueue.push(fd);
@@ -194,7 +178,6 @@ namespace flexd {
                 if (blocking) {
                     // TODO check if loop stop
                 }
-                FLEX_LOG_TRACE("FleXdEpoll::loop() -> Stop") ;
             }
 
         } // namespace epoll

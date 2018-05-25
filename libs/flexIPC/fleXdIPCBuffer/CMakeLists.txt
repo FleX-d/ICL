@@ -65,8 +65,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     PUBLIC_HEADER "${publicHeaders}")
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
-target_include_directories(${PROJECT_NAME} PUBLIC inc/public)
-target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${CRCPP_INCLUDE_DIR} ${BITSTREAM_INCLUDE_DIR} )
+target_include_directories(${PROJECT_NAME} PUBLIC inc/public ${BITSTREAM_INCLUDE_DIR} )
+target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${CRCPP_INCLUDE_DIR} )
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 
 target_link_libraries(${PROJECT_NAME}
@@ -78,9 +78,9 @@ install(TARGETS ${PROJECT_NAME}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCBuffer/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
-    
+
 SET(fleXdIPCBufferPublicInc "${fleXdIPCBuffer_SOURCE_DIR}/inc/public" CACHE STRING "")
-SET(fleXdIPCBufferLib "${PROJECT_NAME}" CACHE STRING "")    
+SET(fleXdIPCBufferLib "${PROJECT_NAME}" CACHE STRING "")
 message(STATUS "*Export fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
 message(STATUS "*Export fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
 

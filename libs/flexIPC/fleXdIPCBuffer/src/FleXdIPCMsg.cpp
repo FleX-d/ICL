@@ -24,18 +24,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-/* 
+/*
  * File:   FleXdIPCMsg.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
- * 
+ *
  * Created on January 31, 2018, 8:36 PM
  */
 
-#define IPCMSGHEADERSIZE 256
-
 #include "FleXdIPCMsg.h"
-#include "FleXdIPCBufferTypes.h"
 #include "FleXdIPCMsgTypes.h"
 #include "BitStream.h"
 #include "CRC.h"
@@ -44,80 +41,411 @@ namespace flexd {
     namespace icl {
         namespace epoll {
 
-            FleXdIPCMsg::FleXdIPCMsg(bool complete, uint16_t crc16, uint16_t size, uint8_t type, uint16_t ID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, std::vector<uint8_t>&& payload)
-            : m_complete(complete),
-            m_CRC16(crc16),
-            m_msgSize(size),
-            m_msgType(type),
-            m_msgID(ID),
-            m_from(from),
-            m_to(to),
-            m_timeStamp(timeStamp),
-            m_ttl(ttl),
-            m_payload(std::move(payload))
+            FleXdIPCAdtHdr::FleXdIPCAdtHdr()
+            : m_headerMask(0),
+              m_value0(0),
+              m_value1(0),
+              m_value2(0),
+              m_value3(0),
+              m_value4(0),
+              m_value5(0),
+              m_next(nullptr)
             {
             }
 
-            FleXdIPCMsg::FleXdIPCMsg(bool complete, uint16_t crc16, uint16_t size, uint8_t type, uint16_t ID, uint64_t from, uint64_t to, uint32_t timeStamp, uint32_t ttl, const std::vector<uint8_t>& payload)
-            : m_complete(complete),
-            m_CRC16(crc16),
-            m_msgSize(size),
-            m_msgType(type),
-            m_msgID(ID),
-            m_from(from),
-            m_to(to),
-            m_timeStamp(timeStamp),
-            m_ttl(ttl),
-            m_payload(payload)
+            FleXdIPCAdtHdr::FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5)
+            : m_headerMask(headerMask),
+              m_value0(headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG ? value0 : 0),
+              m_value1(headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG ? value1 : 0),
+              m_value2(headerMask & IPC_MSG_ADDITIONAL_HEADER_2_FLAG ? value2 : 0),
+              m_value3(headerMask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG ? value3 : 0),
+              m_value4(headerMask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG ? value4 : 0),
+              m_value5(headerMask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG ? value5 : 0),
+              m_next(nullptr)
             {
             }
 
-            uint16_t FleXdIPCMsg::getMsgSize() const
+            FleXdIPCAdtHdr::~FleXdIPCAdtHdr()
             {
-                return m_msgSize;
+                m_headerMask = 0;
+                if (m_next != nullptr)
+                {
+                    delete m_next;
+                    m_next = nullptr;
+                }
             }
 
-            uint8_t FleXdIPCMsg::getMsgType() const
+            FleXdIPCAdtHdr::FleXdIPCAdtHdr(FleXdIPCAdtHdr&& other)
+            : m_headerMask(other.m_headerMask),
+              m_value0(other.m_value0),
+              m_value1(other.m_value1),
+              m_value2(other.m_value2),
+              m_value3(other.m_value3),
+              m_value4(other.m_value4),
+              m_value5(other.m_value5),
+              m_next(other.m_next)
             {
-                return m_msgType;
+                other.m_headerMask = other.m_value0 = other.m_value1 = 0;
+                other.m_value2 = 0;
+                other.m_value3 = other.m_value4 = other.m_value5 = 0;
+                other.m_next = nullptr;
             }
 
-            uint16_t FleXdIPCMsg::getMsgID() const
+            FleXdIPCAdtHdr& FleXdIPCAdtHdr::operator=(FleXdIPCAdtHdr&& other)
             {
-                return m_msgID;
+                if (this != &other)
+                {
+                    if (m_next != nullptr) delete m_next;
+
+                    m_headerMask = other.m_headerMask;
+                    m_value0 = other.m_value0;
+                    m_value1 = other.m_value1;
+                    m_value2 = other.m_value2;
+                    m_value3 = other.m_value3;
+                    m_value4 = other.m_value4;
+                    m_value5 = other.m_value5;
+                    m_next = other.m_next;
+
+                    other.m_headerMask = other.m_value0 = other.m_value1 = 0;
+                    other.m_value2 = 0;
+                    other.m_value3 = other.m_value4 = other.m_value5 = 0;
+                    other.m_next = nullptr;
+                }
+                return *this;
             }
 
-            uint64_t FleXdIPCMsg::getFrom() const
+            const uint8_t FleXdIPCAdtHdr::getMask() const
             {
-                return m_from;
+                return m_headerMask;
+            }
+            void FleXdIPCAdtHdr::reset()
+            {
+                m_headerMask = m_value0 = m_value1 = m_value2 = m_value3 = m_value4 = m_value5 = 0;
+                if (m_next != nullptr)
+                {
+                    delete m_next;
+                    m_next = nullptr;
+                }
             }
 
-            uint64_t FleXdIPCMsg::getTo() const
+            const uint8_t FleXdIPCAdtHdr::getValue_0() const
             {
-                return m_to;
+                return m_value0;
+            }
+            void FleXdIPCAdtHdr::setValue_0(uint8_t value)
+            {
+                m_value0 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_0_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_0()
+            {
+                m_value0 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_0_FLAG;
             }
 
-            uint32_t FleXdIPCMsg::getTimeStamp() const
+            const uint8_t FleXdIPCAdtHdr::getValue_1() const
             {
-                return m_timeStamp;
+                return m_value1;
+            }
+            void FleXdIPCAdtHdr::setValue_1(uint8_t value)
+            {
+                m_value1 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_1_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_1()
+            {
+                m_value1 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_1_FLAG;
             }
 
-            uint32_t FleXdIPCMsg::getTtl() const
+            const uint16_t FleXdIPCAdtHdr::getValue_2() const
             {
-                return m_ttl;
+                return m_value2;
+            }
+            void FleXdIPCAdtHdr::setValue_2(uint16_t value)
+            {
+                m_value2 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_2_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_2()
+            {
+                m_value2 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_2_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_2_FLAG;
             }
 
-            uint16_t FleXdIPCMsg::getCRC16() const
+            const uint32_t FleXdIPCAdtHdr::getValue_3() const
             {
-                return m_CRC16;
+                return m_value3;
+            }
+            void FleXdIPCAdtHdr::setValue_3(uint32_t value)
+            {
+                m_value3 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_3_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_3()
+            {
+                m_value3 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_3_FLAG;
+            }
+
+            const uint32_t FleXdIPCAdtHdr::getValue_4() const
+            {
+                return m_value4;
+            }
+            void FleXdIPCAdtHdr::setValue_4(uint32_t value)
+            {
+                m_value4 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_4_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_4()
+            {
+                m_value4 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_4_FLAG;
+            }
+
+            const uint32_t FleXdIPCAdtHdr::getValue_5() const
+            {
+                return m_value5;
+            }
+            void FleXdIPCAdtHdr::setValue_5(uint32_t value)
+            {
+                m_value5 = value;
+                m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_5_FLAG;
+            }
+            void FleXdIPCAdtHdr::resetValue_5()
+            {
+                m_value5 = 0;
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_5_FLAG;
+            }
+
+            const uint8_t FleXdIPCAdtHdr::getNextHeaderMask() const
+            {
+                return m_next != nullptr ? m_next->getMask() : 0;
+            }
+
+            const uint16_t FleXdIPCAdtHdr::getSize() const
+            {
+                return (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG ? sizeof(m_value0) : 0) +
+                    (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG ? sizeof(m_value1) : 0) +
+                    (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_2_FLAG ? sizeof(m_value2) : 0) +
+                    (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG ? sizeof(m_value3) : 0) +
+                    (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG ? sizeof(m_value4) : 0) +
+                    (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG ? sizeof(m_value5) : 0) +
+                    (m_next != nullptr ? sizeof(IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_BIT_COUNT) + m_next->getSize() : 0);
+            }
+
+            FleXdIPCAdtHdr* FleXdIPCAdtHdr::createNext()
+            {
+                if (m_next == nullptr)
+                {
+                    m_next = new FleXdIPCAdtHdr();
+                    m_headerMask |= IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG;
+                }
+                return m_next;
+            }
+
+            void FleXdIPCAdtHdr::deleteNext()
+            {
+                if (m_next != nullptr)
+                {
+                    delete m_next;
+                    m_next = nullptr;
+                }
+                if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG;
+            }
+
+            const FleXdIPCAdtHdr* FleXdIPCAdtHdr::getNext() const
+            {
+                return m_next;
+            }
+            FleXdIPCAdtHdr* FleXdIPCAdtHdr::getNext()
+            {
+                return m_next;
+            }
+
+            ////////////////
+            // FleXdIPCMsg
+            ////////////////
+
+            FleXdIPCMsg::FleXdIPCMsg(uint8_t msgType, std::vector<uint8_t>&& payload)
+            : m_payload(payload),
+              m_headerParamType(0),
+              m_headerParam(msgType),
+              m_additionalHeader(nullptr),
+              m_valid(true)
+            {
+            }
+
+            FleXdIPCMsg::FleXdIPCMsg(bool headerParamType, uint8_t headerParam, std::vector<uint8_t>&& payload)
+            : m_payload(payload),
+              m_headerParamType(headerParamType ? IPC_MSG_HEADER_PARAM_TYPE_ADDITIONAL_HEADER : IPC_MSG_HEADER_PARAM_TYPE_MSG_TYPE),
+              m_headerParam(headerParamType ? IPC_MSG_HEADER_IN_PAYLOAD_FLAG : headerParam),
+              m_additionalHeader(nullptr),
+              m_valid(true)
+            {
+            }
+
+            FleXdIPCMsg::FleXdIPCMsg(FleXdIPCAdtHdr*& additionalHeader, std::vector<uint8_t>&& payload)
+            : m_payload(payload),
+              m_headerParamType(IPC_MSG_HEADER_PARAM_TYPE_ADDITIONAL_HEADER),
+              m_headerParam(additionalHeader != nullptr ? additionalHeader->getMask() : 0),
+              m_additionalHeader(additionalHeader),
+              m_valid(true)
+            {
+                additionalHeader = nullptr;
+            }
+
+            FleXdIPCMsg::FleXdIPCMsg(std::vector<uint8_t>&& payload, bool calcCRC /*= true*/)
+            : m_payload(payload),
+              m_headerParamType(1),
+              m_headerParam(0),
+              m_additionalHeader(calcCRC ? new FleXdIPCAdtHdr() : nullptr),
+              m_valid(true)
+            {
+                if (calcCRC) m_additionalHeader->setValue_3(calcCRC16(&m_payload[0] , m_payload.size()));
+            }
+
+            FleXdIPCMsg::~FleXdIPCMsg()
+            {
+                if (m_additionalHeader != nullptr)
+                {
+                    delete m_additionalHeader;
+                }
+            }
+
+            FleXdIPCMsg::FleXdIPCMsg(FleXdIPCMsg&& other)
+            : m_payload(std::move(other.m_payload)),
+              m_headerParamType(other.m_headerParamType),
+              m_headerParam(other.m_headerParam),
+              m_additionalHeader(other.m_additionalHeader),
+              m_valid(other.m_valid)
+            {
+                other.m_headerParamType = 0;
+                other.m_headerParam = 0;
+                other.m_additionalHeader = nullptr;
+                other.m_valid = false;
+            }
+
+            FleXdIPCMsg& FleXdIPCMsg::operator=(FleXdIPCMsg&& other)
+            {
+                if (this != &other)
+                {
+                    m_payload.clear();
+                    if (m_additionalHeader != nullptr) delete m_additionalHeader;
+
+                    m_payload = std::move(other.m_payload);
+                    m_headerParamType = other.m_headerParamType;
+                    m_headerParam = other.m_headerParam;
+                    m_additionalHeader = other.m_additionalHeader;
+                    m_valid = other.m_valid;
+
+                    other.m_additionalHeader = nullptr;
+                    other.m_valid = false;
+                }
+                return *this;
+            }
+
+            const bool FleXdIPCMsg::getHeaderParamType() const
+            {
+                return m_headerParamType;
+            }
+
+            const uint8_t FleXdIPCMsg::getHeaderParam() const
+            {
+                if (m_headerParamType && m_additionalHeader != nullptr) return m_additionalHeader->getMask();
+                return m_headerParam;
+            }
+
+            void FleXdIPCMsg::setHeaderParam(uint8_t headerParam)
+            {
+                if (!m_headerParamType) m_headerParam = headerParam;
+            }
+
+            void FleXdIPCMsg::resetHeaderParam()
+            {
+                m_headerParam = 0;
+                if (m_headerParamType) deleteAdditionalHeader();
+            }
+
+            const uint16_t FleXdIPCMsg::getMsgSize() const
+            {
+                return IPC_MSG_HEADER_SIZE + m_payload.size() + (m_additionalHeader == nullptr ? 0 : m_additionalHeader->getSize());
+            }
+
+            FleXdIPCAdtHdr* FleXdIPCMsg::createAdditionalHeader()
+            {
+                if (m_headerParamType && m_additionalHeader == nullptr && m_headerParam != IPC_MSG_HEADER_IN_PAYLOAD_FLAG)
+                {
+                    m_additionalHeader = new FleXdIPCAdtHdr();
+                }
+                return m_additionalHeader;
+            }
+
+            void FleXdIPCMsg::deleteAdditionalHeader()
+            {
+                if (m_additionalHeader != nullptr)
+                {
+                    delete m_additionalHeader;
+                    m_additionalHeader = nullptr;
+                }
+                if (m_headerParamType && m_headerParam != IPC_MSG_HEADER_IN_PAYLOAD_FLAG) m_headerParam = 0;
+            }
+
+            const FleXdIPCAdtHdr* FleXdIPCMsg::getAdditionalHeader() const
+            {
+                return m_additionalHeader;
+            }
+
+            FleXdIPCAdtHdr* FleXdIPCMsg::getAdditionalHeader()
+            {
+                return m_additionalHeader;
             }
 
             const std::vector<uint8_t>& FleXdIPCMsg::getPayload() const
             {
                 return m_payload;
             }
-            
-            uint16_t FleXdIPCMsg::calkCRC16(const void * data, size_t size, uint16_t otherCrc)
+
+            const bool FleXdIPCMsg::isValid() const
+            {
+                return m_valid;
+            }
+
+            std::vector<uint8_t> FleXdIPCMsg::releaseMsg()
+            {
+                BitStream bs;
+                bs.put((uint8_t) IPC_MSG_START_MSG_FLAG, IPC_MSG_START_MSG_FLAG_BIT_COUNT);
+                bs.put((uint8_t) IPC_MSG_START_HEADER_FLAG, IPC_MSG_HEADER_START_FLAG_BIT_COUNT);
+                bs.put(m_headerParamType, IPC_MSG_HEADER_PARAMETER_TYPE_BIT_COUNT);
+                if (m_headerParamType && m_additionalHeader != nullptr) m_headerParam = m_additionalHeader->getMask();
+                bs.put(m_headerParam, IPC_MSG_HEADER_PARAMETER_BIT_COUNT);
+                bs.put(getMsgSize(), IPC_MSG_MSG_SIZE_BIT_COUNT);
+                bs.put((uint8_t) IPC_MSG_END_HEADER_FLAG, IPC_MSG_HEADER_END_FLAG_BIT_COUNT);
+                if (m_headerParamType)
+                {
+                    FleXdIPCAdtHdr* ah = m_additionalHeader;
+                    while (ah != nullptr)
+                    {
+                        uint8_t mask = ah->getMask();
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG) bs.put(ah->getValue_0(), IPC_MSG_ADDITIONAL_HEADER_VALUE_0_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG) bs.put(ah->getValue_1(), IPC_MSG_ADDITIONAL_HEADER_VALUE_1_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_2_FLAG) bs.put(ah->getValue_2(), IPC_MSG_ADDITIONAL_HEADER_VALUE_2_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG) bs.put(ah->getValue_3(), IPC_MSG_ADDITIONAL_HEADER_VALUE_3_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG) bs.put(ah->getValue_4(), IPC_MSG_ADDITIONAL_HEADER_VALUE_4_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG) bs.put(ah->getValue_5(), IPC_MSG_ADDITIONAL_HEADER_VALUE_5_BIT_COUNT);
+                        if (mask & IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG)
+                        {
+                            bs.put(ah->getNextHeaderMask(), IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_BIT_COUNT);
+                            ah = ah->getNext();
+                        }
+                        else break;
+                    }
+                }
+                bs.put(m_payload.begin(), m_payload.end());
+                return std::move(bs.releaseData());
+            }
+
+            uint16_t FleXdIPCMsg::calcCRC16(const void * data, size_t size, uint16_t otherCrc)
             {
                 if(otherCrc)
                 {
@@ -126,67 +454,6 @@ namespace flexd {
                 return CRC::Calculate(data , size, CRC::CRC_16_ARC());
             }
 
-            bool FleXdIPCMsg::isComplete() const
-            {
-                return m_complete;
-            }
-
-            void FleXdIPCMsg::setComplete(bool complete)
-            {
-                m_complete = complete;
-            }
-
-            std::vector<uint8_t> FleXdIPCMsg::releaseMsg()
-            {
-                BitStream bs;
-                uint16_t crc  = calculateCRC();
-                uint16_t size = calculateSize();
-                bs.put((uint8_t) START_MSG_FLAG, IPC_MSG_START_BIT_COUNT);
-                
-                if(m_CRC16 == 0){bs.put(crc, IPC_MSG_CRC_BIT_COUNT);}
-                else {bs.put(m_CRC16, IPC_MSG_CRC_BIT_COUNT);}
-                
-                bs.put((uint8_t) START_HEADER_FLAG, IPC_HEADER_FLAG_BIT_COUNT);
-                
-                if(m_msgSize == 0){bs.put(size, IPC_MSG_SIZE_BIT_COUNT);}
-                else {bs.put(m_msgSize, IPC_MSG_SIZE_BIT_COUNT);}
-                
-                bs.put(m_msgType, IPC_MSG_TYPE_BIT_COUNT);
-                bs.put(m_msgID, IPC_MSG_ID_BIT_COUNT);
-                bs.put((uint64_t) m_from, IPC_MSG_APP_ID_BIT_COUNT);
-                bs.put((uint64_t) m_to, IPC_MSG_APP_ID_BIT_COUNT);
-                bs.put(m_timeStamp, IPC_MSG_TIMESTAMP_BIT_COUNT);
-                bs.put(m_ttl, IPC_MSG_TTL_BIT_COUNT);
-                bs.put((uint8_t) END_HEADER_FLAG, IPC_HEADER_FLAG_BIT_COUNT);
-                bs.put(m_payload.begin(), m_payload.end());
-                std::vector<uint8_t> msg = bs.releaseData();
-                return std::move(msg);
-            }
-            
-            uint16_t FleXdIPCMsg::calculateCRC()
-            {
-                uint16_t crc = 0;
-                crc = CRC::Calculate(&m_msgSize , sizeof(m_msgSize), CRC::CRC_16_ARC());
-                crc = CRC::Calculate(&m_msgType , sizeof(m_msgType), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_msgID , sizeof(m_msgID), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_from , sizeof(m_from), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_to , sizeof(m_to), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_timeStamp , sizeof(m_timeStamp), CRC::CRC_16_ARC(), crc);
-                crc = CRC::Calculate(&m_ttl , sizeof(m_ttl), CRC::CRC_16_ARC(), crc);
-                if(m_payload.size() != 0)
-                {
-                    crc = CRC::Calculate(&m_payload[0] , m_payload.size(), CRC::CRC_16_ARC(), crc);
-                }
-                return crc;
-            }
-            
-            uint16_t FleXdIPCMsg::calculateSize()
-            {
-                uint16_t size = 0;
-                size = HEADER_SIZE + m_payload.size();
-                return size;
-            }
-            
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

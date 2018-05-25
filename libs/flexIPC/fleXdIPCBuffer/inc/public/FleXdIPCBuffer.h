@@ -23,11 +23,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCBuffer.h
  * Author: Adrian Peniak
  * Author: Matus Bodorik
- * 
+ *
  * Created on January 31, 2018, 8:32 PM
  */
 
@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace flexd {
     namespace icl {
         namespace epoll {
-            
+
             class FleXdIPCBuffer {
             public:
                 explicit FleXdIPCBuffer(size_t maxBufferSize = MAXBUFFERSIZE);
@@ -57,7 +57,7 @@ namespace flexd {
                 FleXdIPCBuffer& operator=(FleXdIPCBuffer&&);
                 /**
                  * Function receive data, push them to end of cache and call function rcvMsg()
-                 * @param data - shared pointer to Array of data which will be parsed 
+                 * @param data - shared pointer to Array of data which will be parsed
                  * @param size - size of data
                  */
                 void rcvMsg(pSharedArray8192& data, size_t size);
@@ -78,11 +78,11 @@ namespace flexd {
                 pSharedFleXdIPCMsg pop();
                 FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;
                 FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
-                
+
             private:
                 /**
                  * Function parse data from cache, when find non-corrupted message call function releaseMsg()
-                 * when find corrupted message, call function findNonCoruptedMessage() 
+                 * when find corrupted message, call function findNonCoruptedMessage()
                  */
                 void rcvMsg();
                 /**
@@ -95,7 +95,7 @@ namespace flexd {
                  * @param coruptedMsgSize - Size of corrupted message, otherwise 0
                  */
                 void findNonCoruptedMessage(uint16_t coruptedMsgSize);
-                
+
             private:
                 size_t m_maxBufferSize;
                 size_t m_bufferSize;
@@ -103,7 +103,7 @@ namespace flexd {
                 std::queue<pSharedFleXdIPCMsg> m_queue;
                 std::function<void(pSharedFleXdIPCMsg)> m_onMsg;
             };
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

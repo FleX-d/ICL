@@ -47,7 +47,7 @@ install(TARGETS ${PROJECT_NAME}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdUDS/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
-    
+
 SET(fleXdUDSPublicInc "${fleXdUDS_SOURCE_DIR}/inc/public" CACHE STRING "")
 SET(fleXdUDSLib "${PROJECT_NAME}" CACHE STRING "")
 message(STATUS "*Export fleXdUDSPublicInc: " ${fleXdUDSPublicInc})

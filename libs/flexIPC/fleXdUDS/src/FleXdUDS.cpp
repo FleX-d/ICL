@@ -22,16 +22,15 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* 
+/*
  * File:   FleXdUDS.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
- * 
+ *
  * Created on February 2, 2018, 1:51 PM
  */
 
 #include "FleXdUDS.h"
-#include "FleXdLogger.h"
 #include "FleXdIPCBufferTypes.h"
 #include <cstring>
 #include <iostream>
@@ -57,20 +56,16 @@ namespace flexd {
               m_socPath(socPath),
               m_ctx(std::make_unique<Ctx>())
             {
-                FLEX_LOG_INIT("FleXdUDS");
-                FLEX_LOG_TRACE("FleXdUDS -> Start");
             }
 
             FleXdUDS::~FleXdUDS()
             {
-                FLEX_LOG_TRACE("FleXdUDS -> Destroyed");
             }
 
             bool FleXdUDS::init()
             {
                 if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
                 {
-                    FLEX_LOG_ERROR("FleXdUDS::init() -> Error: socket error!");
                     return false;
                 }
 
@@ -84,26 +79,20 @@ namespace flexd {
                 {
                     std::strncpy(m_ctx->addr.sun_path, m_socPath.c_str(), sizeof (m_ctx->addr.sun_path) - 1);
                 }
-                FLEX_LOG_TRACE("FleXdUDS::init() -> Initialization Success");
-                return initialization();                
+                return initialization();
             }
 
             void FleXdUDS::onEvent(FleXdEpoll::Event e)
             {
-                if (e.type == EpollEvent::EpollOut)
+                if (e.type == EpollEvent::EpollIn)
                 {
-                    FLEX_LOG_TRACE("FleXdUDS::onRead() -> EpollOut, fd: ", e.fd);
-                } else if (e.type == EpollEvent::EpollIn)
-                {
-                    FLEX_LOG_TRACE("FleXdUDS::onRead() -> EpollIn, fd: ", e.fd);
                     int rc;
                     byteArray8192 array;
                     while ((rc = read(e.fd, &array[0], sizeof (array))) > 0)
-                    { 
+                    {
                         readMessage(e, std::move(array), rc);
                     }
                 } else if (e.type == EpollEvent::EpollError){
-                    FLEX_LOG_ERROR("FleXdUDS::onRead() -> EpollError, fd: ", e.fd);
                     onReConnect(e.fd);
                 }
             }
@@ -112,7 +101,6 @@ namespace flexd {
             {
                 if (msg)
                 {
-                    FLEX_LOG_TRACE("FleXdUDS::onMsg() -> receive message");
                     std::vector<uint8_t> data = msg->releaseMsg();
                     // TMP print
                     for (auto it : data)
@@ -120,31 +108,26 @@ namespace flexd {
                         std::cout << (int) it << " ";
                     }
                     std::cout << std::endl;
-                    
+
                     onMsg(msg);
-                } else
-                {
-                    FLEX_LOG_WARN("FleXdUDS::onMsg() -> Message is invalid!");
                 }
             }
-            
+
             int FleXdUDS::getFd() const
             {
                 return m_ctx->fd;
             }
-            
+
             bool FleXdUDS::connectUDS()
             {
-                
-                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) 
+
+                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1)
                 {
-                   FLEX_LOG_ERROR("FleXdUDS::connectClient() -> Connect Error..!");
                    return false;
                 }
-                FLEX_LOG_INFO("FleXdUDS::connectClient() -> Connect Success!");
                 return true;
             }
-             
+
             bool FleXdUDS::listenUDS()
             {
                 if (m_socPath[0] != '\0')
@@ -153,20 +136,15 @@ namespace flexd {
                 }
                 if (bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1)
                 {
-                    FLEX_LOG_ERROR("FleXdUDS::listenClient() -> Bind Error..!");
                     return false;
                 }
 
                 if (listen(m_ctx->fd, 5) == -1)
                 {
-                    FLEX_LOG_ERROR("FleXdUDS::listenClient() -> Listen Error..!");
                     return false;
                 }
-                FLEX_LOG_INFO("FleXdUDS::listenClient() -> Listen Success!");
                 return true;
             }
-
-            
 
         } // namespace epoll
     } // namespace icl
