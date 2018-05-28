@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdUDSClient.h
  * Author: Adrian Peniak
  * Author: Matus Bodorik
@@ -48,18 +48,18 @@ namespace flexd {
                 FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDSClient();
 
-                virtual bool initialization();
-                virtual void sendMsg(pSharedFleXdIPCMsg msg);
-                virtual void onMsg(pSharedFleXdIPCMsg msg);
-                
+                virtual bool initialization() override;
+                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
+                virtual void onMsg(pSharedFleXdIPCMsg msg) override;
+
                 FleXdUDSClient(const FleXdUDSClient&) = delete;
                 FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
-                
+
             private:
-                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
-                virtual bool onReConnect(int fd);
-                
-                
+                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
+                virtual bool onReConnect(int fd) override;
+
+
             private:
                 pSharedArray8192 m_array;
                 FleXdIPCBuffer m_buffer;

@@ -80,6 +80,7 @@ namespace flexd {
                         FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
                         m_list[clientFd] = std::move(buffer);
                         m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
+                        onNewClient(clientFd);
                     }
                 }
             }
@@ -94,13 +95,19 @@ namespace flexd {
                 }
             }
 
-            void FleXdUDSServer::sendMsg(pSharedFleXdIPCMsg msg)
+            void FleXdUDSServer::sendMsg(pSharedFleXdIPCMsg msg, int fd)
             {
-                std::vector<uint8_t> data = msg->releaseMsg();
-                unsigned sendData = 0;
-                while(data.size() > sendData)
+                if(msg)
                 {
-                    sendData += write(m_list.begin()->first,  &data[sendData] , data.size());
+                    auto it = m_list.find(fd);
+                    if (it != m_list.end()) {
+                        std::vector<uint8_t> data = msg->releaseMsg();
+                        unsigned sendData = 0;
+                        while(data.size() > sendData)
+                        {
+                            sendData += write(it->first, &data[sendData], data.size());
+                        }
+                    }
                 }
             }
 

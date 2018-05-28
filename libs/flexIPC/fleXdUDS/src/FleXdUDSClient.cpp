@@ -76,7 +76,7 @@ namespace flexd {
                 m_buffer.rcvMsg(m_array, size);
             }
 
-            void FleXdUDSClient::sendMsg(pSharedFleXdIPCMsg msg)
+            void FleXdUDSClient::sendMsg(pSharedFleXdIPCMsg msg, int)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
                 size_t sendData = 0;

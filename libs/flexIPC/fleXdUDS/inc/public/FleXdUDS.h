@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdUDS.h
  * Author: Adrian Peniak
  *
@@ -45,7 +45,7 @@ namespace flexd {
                 FleXdUDS(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDS();
                 /**
-                 * Function initialize Unix domain sockets for Client. 
+                 * Function initialize Unix domain sockets for Client.
                  * @return true if initialization is done, false otherwise.
                  */
                 virtual bool init();
@@ -53,16 +53,16 @@ namespace flexd {
                  * Function send message to Server.
                  * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
                  */
-                virtual void sendMsg(pSharedFleXdIPCMsg msg) = 0; 
+                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
                 /**
                  * Function is pure virtual, and its called after valid message is received and parsed.
                  * @param msg  - shared pointer to FleXdIPCMsg
                  */
                 virtual void onMsg(pSharedFleXdIPCMsg msg) = 0;
-                
+
                 FleXdUDS(const FleXdUDS&) = delete;
                 FleXdUDS& operator=(const FleXdUDS&) = delete;
-                
+
             protected:
                 virtual bool initialization() = 0;
                 virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
@@ -72,12 +72,12 @@ namespace flexd {
                 bool connectUDS();
                 bool listenUDS();
                 int getFd() const;
-                
-            protected:    
+
+            protected:
                 FleXdEpoll& m_poller;
-                
+
             private:
-                class Ctx;
+                struct Ctx;
                 const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };

@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdUDSServer.h
  * Author: Adrian Peniak
  * Author: Matus Bodorik
@@ -52,23 +52,26 @@ namespace flexd {
                 explicit FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller);
                 virtual ~FleXdUDSServer();
 
-                virtual bool initialization();
-                virtual void sendMsg(pSharedFleXdIPCMsg msg);
-                virtual void onMsg(pSharedFleXdIPCMsg msg);
-                
+                virtual bool initialization() override;
+                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd) override;
+                virtual void onMsg(pSharedFleXdIPCMsg msg) override;
+
                 FleXdUDSServer(const FleXdUDSServer&) = delete;
-                FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;     
-                
+                FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;
+
+            protected:
+                virtual void onNewClient(int fd) {};
+
             private:
-                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size);
-                virtual bool onReConnect(int fd);
+                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
+                virtual bool onReConnect(int fd) override;
                 void onAccept(FleXdEpoll::Event e);
                 bool removeFdFromList(int fd);
-                
+
             private:
                 std::map<int, FleXdIPCBuffer> m_list;
             };
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd
