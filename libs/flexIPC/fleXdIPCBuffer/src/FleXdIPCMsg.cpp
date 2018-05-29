@@ -302,7 +302,7 @@ namespace flexd {
               m_additionalHeader(calcCRC ? new FleXdIPCAdtHdr() : nullptr),
               m_valid(true)
             {
-                if (calcCRC) m_additionalHeader->setValue_3(calcCRC16(&m_payload[0] , m_payload.size()));
+                if (calcCRC) m_additionalHeader->setValue_2(calcCRC16(&m_payload[0] , m_payload.size()));
             }
 
             FleXdIPCMsg::~FleXdIPCMsg()

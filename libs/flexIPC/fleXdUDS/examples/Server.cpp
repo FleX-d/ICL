@@ -25,9 +25,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   Server.cpp
- * 
+ *
  * Author: Matus Bodorik
  *
  * Created on March 15, 2018, 14:32 PM
@@ -37,15 +37,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdUDSServer.h"
 #include <iostream>
 
+class myUDSServer : public flexd::icl::epoll::FleXdUDSServer
+{
+    using FleXdIPCAdtHdr = flexd::icl::epoll::FleXdIPCAdtHdr;
+    using FleXdIPCMsg = flexd::icl::epoll::FleXdIPCMsg;
+
+public:
+    explicit myUDSServer(const std::string& socPath, flexd::icl::epoll::FleXdEpoll& poller)
+    : FleXdUDSServer(socPath, poller) {}
+    virtual ~myUDSServer() {}
+
+private:
+    virtual void onNewClient(int fd) override
+    {
+        std::vector<uint8_t> payload {69};
+        std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
+        FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
+        adtHdr->setValue_0(99);
+
+        std::cout << "FleXdUDSServer.sendMsg() " << std::endl;
+        sendMsg(msg_ptr, fd);
+    }
+};
+
 int main(int argc, char** argv)
 {
     flexd::icl::epoll::FleXdEpoll poller(10);
-    flexd::icl::epoll::FleXdUDSServer server("/tmp/test", poller);
+    myUDSServer server("/tmp/test", poller);
     std::cout << "FleXdUDSServer.init() " << std::endl;
     server.init();
     poller.loop();
-    
+
     while(true){}
-    
+
     return 0;
-} 
+}

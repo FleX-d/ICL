@@ -77,7 +77,7 @@ namespace flexd {
                     auto it = m_list.find(clientFd);
                     if(it == m_list.end())
                     {
-                        FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
+                        FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMessage(msg);});
                         m_list[clientFd] = std::move(buffer);
                         m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
                         onNewClient(clientFd);

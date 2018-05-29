@@ -46,20 +46,34 @@ namespace {
     using pSharedArray8192 = flexd::icl::epoll::pSharedArray8192;
     using pSharedFleXdIPCMsg = flexd::icl::epoll::pSharedFleXdIPCMsg;
 
-    TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg)
+    TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg_normal)
     {
-        /*FleXdIPCBuffer buffer;
-        //TODO fill data with { 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
-        pSharedArray8192 data; //{ 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
+        FleXdIPCBuffer buffer;
+        pSharedArray8192 data(std::make_shared<std::array<uint8_t, 8192>>(std::array<uint8_t, 8192>{ 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 }));
 
-        buffer.rcvMsg(data, data->size());
+        buffer.rcvMsg(data, 26);
 
-        pSharedFleXdIPCMsg msg = std::make_shared<FleXdIPCMsg>(buffer.pop());
+        pSharedFleXdIPCMsg msg(buffer.pop());
 
         std::vector<uint8_t> vector = msg->releaseMsg();
         std::vector<uint8_t> vmsg = { 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
         EXPECT_EQ(vector, vmsg);
-        EXPECT_EQ(vector.size(), msg->getMsgSize());*/
+        EXPECT_EQ(vector.size(), msg->getMsgSize());
+    }
+
+    TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg_corrupted)
+    {
+        FleXdIPCBuffer buffer;
+        pSharedArray8192 data(std::make_shared<std::array<uint8_t, 8192>>(std::array<uint8_t, 8192>{ 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 }));
+
+        buffer.rcvMsg(data, 26);
+
+        pSharedFleXdIPCMsg msg(buffer.pop());
+
+        std::vector<uint8_t> vector = msg->releaseMsg();
+        std::vector<uint8_t> vmsg = { 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 };
+        EXPECT_EQ(vector, vmsg);
+        EXPECT_EQ(vector.size(), msg->getMsgSize());
     }
 
 }

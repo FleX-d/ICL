@@ -68,11 +68,16 @@ int main(int argc, char** argv)
     madtHdr->setValue_4(3);
     madtHdr->setValue_5(4);
 
+    std::cout << "FleXdUDSClient.init() " << std::endl;
     client.init();
 
+    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
     client.sendMsg(msg_ptr);
+    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
     client.sendMsg(mmsg_ptr);
+    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
     client.sendMsg(mmsg_ptr);
+    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
     client.sendMsg(msg_ptr);
 
     poller.loop();
