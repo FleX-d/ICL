@@ -65,6 +65,7 @@ namespace flexd {
                     {
                         onEvent(e);
                     });
+                    onConnect();
                     return true;
                 }
                 return false;
@@ -93,6 +94,7 @@ namespace flexd {
 
             bool FleXdUDSClient::onReConnect(int fd)
             {
+                onDisconnect();
                 return connectUDS();
             }
 

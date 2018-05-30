@@ -158,6 +158,11 @@ namespace flexd {
                  */
                 const std::vector<uint8_t>& getPayload() const;
                 /*
+                 * Function moves payload data
+                 * @return data uint8_t vector
+                 */
+                std::vector<uint8_t>&& releasePayload();
+                /*
                  * Function returns validity of the message
                  * @return message validity
                  */

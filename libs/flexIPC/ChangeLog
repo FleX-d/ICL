@@ -64,15 +64,3 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - None
-
-## [0.0.1] - 2018-05-29
-### Added
-- None
-
-### Changed
-- sendMsg() for server [Martin Strenger]
-- Changed examples [Martin Strenger]
-- Bugfixes [Martin Strenger]
-
-### Removed
-- None

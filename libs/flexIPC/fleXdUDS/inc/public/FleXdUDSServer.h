@@ -60,7 +60,8 @@ namespace flexd {
                 FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;
 
             protected:
-                virtual void onNewClient(int fd) {};
+                virtual void onClientConnect(int fd) {};
+                virtual void onClientDisconnect(int fd) {};
 
             private:
                 virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;

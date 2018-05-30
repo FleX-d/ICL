@@ -80,7 +80,7 @@ namespace flexd {
                         FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMessage(msg);});
                         m_list[clientFd] = std::move(buffer);
                         m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
-                        onNewClient(clientFd);
+                        onClientConnect(clientFd);
                     }
                 }
             }
@@ -136,6 +136,7 @@ namespace flexd {
                 auto it = m_list.find(fd);
                 if (it != m_list.end()) {
                     std::ignore = m_list.erase(it);
+                    onClientDisconnect(fd);
                     return true;
                 }
                 return false;

@@ -55,10 +55,13 @@ namespace flexd {
                 FleXdUDSClient(const FleXdUDSClient&) = delete;
                 FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
 
+            protected:
+                virtual void onConnect() {};
+                virtual void onDisconnect() {};
+
             private:
                 virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
                 virtual bool onReConnect(int fd) override;
-
 
             private:
                 pSharedArray8192 m_array;

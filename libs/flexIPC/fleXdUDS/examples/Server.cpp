@@ -39,8 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class myUDSServer : public flexd::icl::epoll::FleXdUDSServer
 {
-    using FleXdIPCAdtHdr = flexd::icl::epoll::FleXdIPCAdtHdr;
-    using FleXdIPCMsg = flexd::icl::epoll::FleXdIPCMsg;
+    using fleXdAdtHdr = flexd::icl::epoll::FleXdIPCAdtHdr;
+    using fleXdMsg = flexd::icl::epoll::FleXdIPCMsg;
 
 public:
     explicit myUDSServer(const std::string& socPath, flexd::icl::epoll::FleXdEpoll& poller)
@@ -48,15 +48,19 @@ public:
     virtual ~myUDSServer() {}
 
 private:
-    virtual void onNewClient(int fd) override
+    virtual void onClientConnect(int fd) override
     {
         std::vector<uint8_t> payload {69};
-        std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
-        FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
+        std::shared_ptr<fleXdMsg> msg_ptr = std::make_shared<fleXdMsg>(std::move(payload));
+        fleXdAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
         adtHdr->setValue_0(99);
 
-        std::cout << "FleXdUDSServer.sendMsg() " << std::endl;
+        std::cout << "Client connected " << fd << std::endl;
         sendMsg(msg_ptr, fd);
+    }
+    virtual void onClientDisconnect(int fd) override
+    {
+        std::cout << "Client disconnected " << fd << std::endl;
     }
 };
 
@@ -64,11 +68,14 @@ int main(int argc, char** argv)
 {
     flexd::icl::epoll::FleXdEpoll poller(10);
     myUDSServer server("/tmp/test", poller);
-    std::cout << "FleXdUDSServer.init() " << std::endl;
+    if (server.init())
+    {
+        std::cout << "FleXdUDSServer.init() successful" << std::endl;
+        poller.loop();
+    } else {
+        std::cout << "FleXdUDSServer.init() failed" << std::endl;
+    }
     server.init();
-    poller.loop();
-
-    while(true){}
 
     return 0;
 }

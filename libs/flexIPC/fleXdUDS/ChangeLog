@@ -33,7 +33,7 @@ All notable changes to this project will be documented in this file.
 - Implementation of onConnect() function at Client - Sending connnect to Server [Matus Bodorik]
 - Implementation of onRead() function at Client - Reading message from Server and sending to buffer [Matus Bodorik]
 - Implementation of onWrite() function at Client - Function to write IPC message to Server [Matus Bodorik]
-- Implementation of onMsg() function at Client - Lambda fuction which is called by buffer when message is readed [Matus Bodorik] 
+- Implementation of onMsg() function at Client - Lambda fuction which is called by buffer when message is readed [Matus Bodorik]
 
 ### Changed
 - None
@@ -70,6 +70,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - None
+
+### Removed
+- None
+
+## [0.0.1] - 2018-05-29
+### Added
+- None
+
+### Changed
+- sendMsg() for server [Martin Strenger]
+- Changed examples [Martin Strenger]
+- Bugfixes [Martin Strenger]
+
+### Removed
+- None
+
+## [0.0.1] - 2018-05-30
+### Added
+- New function onClientDisconnect() for FleXdUDSServer [Martin Strenger]
+- New functions onConnect() and onDisconnect() for FleXdUDSClient [Martin Strenger]
+
+### Changed
+- Renamed function onNewClient() to onClientConnect() for FleXdUDSServer [Martin Strenger]
+- Updated examples with new functions [Martin Strenger]
 
 ### Removed
 - None

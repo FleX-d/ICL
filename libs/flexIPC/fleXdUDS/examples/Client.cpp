@@ -36,13 +36,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCMsg.h"
 #include <iostream>
 
-typedef flexd::icl::epoll::FleXdIPCAdtHdr  fleXdAdtHdr;
-typedef flexd::icl::epoll::FleXdIPCMsg  fleXdMsg;
+using fleXdAdtHdr = flexd::icl::epoll::FleXdIPCAdtHdr;
+using fleXdMsg = flexd::icl::epoll::FleXdIPCMsg;
+
+class myUDSClient : public flexd::icl::epoll::FleXdUDSClient
+{
+public:
+    explicit myUDSClient(const std::string& socPath, flexd::icl::epoll::FleXdEpoll& poller)
+    : FleXdUDSClient(socPath, poller) {}
+    virtual ~myUDSClient() {}
+
+private:
+    virtual void onConnect() override
+    {
+        std::cout << "Connected to server" << std::endl;
+    }
+    virtual void onDisconnect() override
+    {
+        std::cout << "Disconnected from server" << std::endl;
+    }
+};
 
 int main(int argc, char** argv)
 {
     flexd::icl::epoll::FleXdEpoll poller(10);
-    flexd::icl::epoll::FleXdUDSClient client("/tmp/test", poller);
+    myUDSClient client("/tmp/test", poller);
 
     std::vector<uint8_t> payload {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
                                     ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76
@@ -68,20 +86,22 @@ int main(int argc, char** argv)
     madtHdr->setValue_4(3);
     madtHdr->setValue_5(4);
 
-    std::cout << "FleXdUDSClient.init() " << std::endl;
-    client.init();
+    if (client.init())
+    {
+        std::cout << "FleXdUDSClient.init() successful" << std::endl;
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sendMsg(msg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sendMsg(mmsg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sendMsg(mmsg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sendMsg(msg_ptr);
 
-    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-    client.sendMsg(msg_ptr);
-    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-    client.sendMsg(mmsg_ptr);
-    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-    client.sendMsg(mmsg_ptr);
-    std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-    client.sendMsg(msg_ptr);
-
-    poller.loop();
-    while(true){}
+        poller.loop();
+    } else {
+        std::cout << "FleXdUDSClient.init() failed" << std::endl;
+    }
 
     return 0;
 }

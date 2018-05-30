@@ -406,6 +406,12 @@ namespace flexd {
                 return m_payload;
             }
 
+            std::vector<uint8_t>&& FleXdIPCMsg::releasePayload()
+            {
+                m_valid = false;
+                return std::move(m_payload);
+            }
+
             const bool FleXdIPCMsg::isValid() const
             {
                 return m_valid;
