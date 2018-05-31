@@ -23,67 +23,54 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 /* 
- * File:   IPCConnector.cpp
+ * File:   FleXdIPCConnector.h
  * Author: Adrian Peniak
- * 
+ *
  * Created on November 27, 2017, 2:26 PM
  */
 
-#include "IPCConnector.h"
+#ifndef FLEXDIPCCONNECTOR_H
+#define FLEXDIPCCONNECTOR_H
+
+#include <cstdlib>
+#include <cstdint>
+#include <list>
+#include <memory>
+#include <FleXdEpoll.h>
+#include <FleXdIPCMsg.h>
+
 namespace flexd {
     namespace icl {
         namespace ipc {
+            class FleXdUDS;
+            class IPCConnector {
+            public:
+                IPCConnector(uint32_t myID, FleXdEpoll& poller);
+                virtual ~IPCConnector();
 
-//            IPCConnector::IPCConnector(uuid_t yourUuid, uint32_t magicNumber)
-//            : m_yourUuid(yourUuid),
-//            m_peerUuids(),
-//            m_magicNumber(magicNumber) {
-//            }
-//
-//            IPCConnector::~IPCConnector() {
-//            }
-//
-//            bool IPCConnector::start() {
-//                return false;
-//            }
-//
-//            bool IPCConnector::stop(/*TODO*/) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::addPeer(uuid_t peerUuid, uint32_t magicNumber) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::addPeer(PeerUuid peerUuid) {
-//                return false;
-//            }
-//            
-//            bool IPCConnector::addPeer(std::list<PeerUuid> peerUuids) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::removePeer(uuid_t peerUuid) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::removePeer(std::list<PeerUuid> peerUuids) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::mutePeer(uuid_t peerUuid, uint32_t muteTime) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::unMutePeer(uuid_t peerUuid) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::sendMsg(IPCMessage_t msg, bool blocking) {
-//                return false;
-//            }
+                bool addPeer(uint32_t peerID);
+                bool removePeer(uint32_t peerID);
+                bool mutePeer(uint32_t peerID);
+                bool unMutePeer(uint32_t peerID);
+                
+                IPCConnector(const IPCConnector&) = delete;
+                IPCConnector& operator=(const IPCConnector&) = delete;
+                
+            protected:
+                bool sendMsg(pSharedFleXdIPCMsg msg, bool blocking = false);
+                virtual pSharedFleXdIPCMsg receiveMsg() = 0;               
+                
+            private:
+                bool addClient(uint32_t clientID);
+                
+            private:
+                const uint32_t m_myID;
+                FleXdEpoll& m_poller;
+                std::string m_ipcDirPath;
+                std::map<uint32_t, std::unique_ptr<FleXdUDS> > m_map;  
+            };
         } // namespace ipc
     } // namespace icl
 } // namespace flexd
+#endif /* FLEXDIPCCONNECTOR_H */

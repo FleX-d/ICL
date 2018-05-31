@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdIPCconnector VERSION "0.0.1")
+project(fleXdIPCConnector VERSION "0.0.1")
 set(PROJECT_DESCRIPTION "FleX-d Inter Process Comunication connector library")
 
 include(GNUInstallDirs)
 
 set(sources_cpp
-    src/IPCConnector.cpp
+    src/FleXdIPCConnector.cpp
 )
 
 set(public_headers
-    inc/public/IPCConnector.h
+    inc/public/FleXdIPCConnector.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${sources_cpp})
@@ -20,8 +20,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 target_include_directories(${PROJECT_NAME} PUBLIC inc/public/)
-target_include_directories(${PROJECT_NAME} PRIVATE inc/)
+target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${fleXdEpollPublicInc} ${fleXdIPCBufferPublicInc} $(fleXdUDSPublicInc))
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
+
+target_link_libraries(${PROJECT_NAME}
+    ${fleXdEpollLib}
+    ${fleXdUDSLib}
+)
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -29,3 +34,5 @@ install(TARGETS ${PROJECT_NAME}
 
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCConnector/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+
+add_dependencies(${PROJECT_NAME} fleXdUDS)

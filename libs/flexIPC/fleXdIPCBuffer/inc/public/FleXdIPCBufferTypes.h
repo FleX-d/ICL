@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             typedef std::array<uint8_t, 8192> byteArray8192;
             typedef std::shared_ptr<std::array<uint8_t, 8192> > pSharedArray8192;

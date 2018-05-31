@@ -39,8 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char** argv)
 {
-    flexd::icl::epoll::FleXdEpoll poller(10);
-    flexd::icl::epoll::FleXdUDSServer server("/tmp/test", poller);
+    flexd::icl::ipc::FleXdEpoll poller(10);
+    flexd::icl::ipc::FleXdUDSServer server("/tmp/test", poller);
     std::cout << "FleXdUDSServer.init() " << std::endl;
     server.init();
     poller.loop();

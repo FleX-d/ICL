@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
 
             FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller)

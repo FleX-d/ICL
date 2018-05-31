@@ -36,13 +36,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCMsg.h"
 #include <iostream>
 
-typedef flexd::icl::epoll::FleXdIPCAdtHdr  fleXdAdtHdr;
-typedef flexd::icl::epoll::FleXdIPCMsg  fleXdMsg;
+typedef flexd::icl::ipc::FleXdIPCAdtHdr  fleXdAdtHdr;
+typedef flexd::icl::ipc::FleXdIPCMsg  fleXdMsg;
 
 int main(int argc, char** argv)
 {
-    flexd::icl::epoll::FleXdEpoll poller(10);
-    flexd::icl::epoll::FleXdUDSClient client("/tmp/test", poller);
+    flexd::icl::ipc::FleXdEpoll poller(10);
+    flexd::icl::ipc::FleXdUDSClient client("/tmp/test", poller);
 
     std::vector<uint8_t> payload {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
                                     ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76

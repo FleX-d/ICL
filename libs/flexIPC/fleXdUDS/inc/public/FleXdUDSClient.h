@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             class FleXdUDSClient : public FleXdUDS {
             public:

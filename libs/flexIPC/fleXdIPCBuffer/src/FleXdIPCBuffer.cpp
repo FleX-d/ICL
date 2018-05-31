@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // TODO define as static var for IPCMSG
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             FleXdIPCBuffer::FleXdIPCBuffer(size_t maxBufferSize)
             : m_maxBufferSize(maxBufferSize),
