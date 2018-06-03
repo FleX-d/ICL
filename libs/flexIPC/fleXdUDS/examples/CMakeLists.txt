@@ -14,8 +14,8 @@ message(STATUS "UDSServer: " ${UDSServer})
 
 message(STATUS "fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
 message(STATUS "fleXdEpollLib: " ${fleXdEpollLib})
-message(STATUS "fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
-message(STATUS "fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
+message(STATUS "fleXdIPCCommonPublicInc: " ${fleXdIPCCommonPublicInc})
+message(STATUS "fleXdIPCCommonLib: " ${fleXdIPCCommonLib})
 message(STATUS "fleXdUDSPublicInc: " ${fleXdUDSPublicInc})
 message(STATUS "fleXdUDSLib: " ${fleXdUDSLib})
 
@@ -29,21 +29,21 @@ SET(privateSources
 )
 
 add_executable(${UDSClient} Client.cpp)
-target_include_directories(${UDSClient} PRIVATE ${fleXdEpollPublicInc} ${fleXdIPCBufferPublicInc} ${fleXdUDSPublicInc})
+target_include_directories(${UDSClient} PRIVATE ${fleXdEpollPublicInc} ${fleXdIPCCommonPublicInc} ${fleXdUDSPublicInc})
 target_compile_options(${UDSClient} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 target_link_libraries(${UDSClient}
     ${fleXdEpollLib}
-    ${fleXdIPCBufferLib}
+    ${fleXdIPCCommonLib}
     ${fleXdUDSLib}
 )
-add_dependencies(${UDSClient} fleXdEpoll fleXdIPCBuffer fleXdUDS)
+add_dependencies(${UDSClient} fleXdEpoll fleXdIPCCommon fleXdUDS)
 
 add_executable(${UDSServer} Server.cpp)
-target_include_directories(${UDSServer} PRIVATE ${fleXdEpollPublicInc} ${fleXdIPCBufferPublicInc} ${fleXdUDSPublicInc})
+target_include_directories(${UDSServer} PRIVATE ${fleXdEpollPublicInc} ${fleXdIPCCommonPublicInc} ${fleXdUDSPublicInc})
 target_compile_options(${UDSServer} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 target_link_libraries(${UDSServer}
     ${fleXdEpollLib}
-    ${fleXdIPCBufferLib}
+    ${fleXdIPCCommonLib}
     ${fleXdUDSLib}
 )
-add_dependencies(${UDSServer} fleXdEpoll fleXdIPCBuffer fleXdUDS)    
+add_dependencies(${UDSServer} fleXdEpoll fleXdIPCCommon fleXdUDS)    

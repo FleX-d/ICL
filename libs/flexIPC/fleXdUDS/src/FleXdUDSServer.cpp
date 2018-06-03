@@ -33,109 +33,101 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdUDSServer.h"
 #include "FleXdUDS.h"
 #include "FleXdIPCMsg.h"
-#include <iostream>
-#include <stdio.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <stdlib.h>
-#include <thread>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
 #include <map>
 
 namespace flexd {
     namespace icl {
         namespace ipc {
 
-            FleXdUDSServer::FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller)
-            : FleXdUDS(socPath, poller)
-            {
+            FleXdUDSServer::FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy)
+            : FleXdUDS(socPath, poller, proxy) {
             }
 
-            FleXdUDSServer::~FleXdUDSServer()
-            {
+            FleXdUDSServer::~FleXdUDSServer() {
             }
 
-            bool FleXdUDSServer::initialization()
-            {
-                if(listenUDS())
-                {
-                    m_poller.addEvent(getFd(), [this](FleXdEpoll::Event evn)
-                    {
-                        onAccept(evn);
+            bool FleXdUDSServer::initUDS() {
+                if (listenUDS()) {
+                    m_poller.addEvent(getFd(), [this](FleXdEpoll::Event evn) {
+                        m_proxy->rcvEvent(evn);
                     });
                     return true;
                 }
                 return false;
             }
 
-            void FleXdUDSServer::onAccept(FleXdEpoll::Event e)
-            {
-                if (e.type == EpollEvent::EpollOut || e.type == EpollEvent::EpollIn)
-                {
-                    int clientFd;
-                    clientFd = accept(getFd(), NULL, NULL);
-                    auto it = m_list.find(clientFd);
-                    if(it == m_list.end())
-                    {
-                        FleXdIPCBuffer buffer([this](pSharedFleXdIPCMsg msg){onMsg(msg);});
-                        m_list[clientFd] = std::move(buffer);
-                        m_poller.addEvent(clientFd, [this](FleXdEpoll::Event evn){onEvent(evn);});
-                        onNewClient(clientFd);
+            void FleXdUDSServer::rcvEvent(FleXdEpoll::Event e) {
+                if (e.type == EpollEvent::EpollIn) {
+                    // self fd is listen fd for incoming connections -> accept will perform 
+                    if(e.fd == getFd()) {
+                        int clientFd = accept(getFd(), NULL, NULL);
+                        auto it = m_map.find(clientFd);
+                        if (it == m_map.end()) {
+                            m_proxy->connectClient(clientFd);
+                        }
+                    // other fd's are client fd's -> read will perform 
+                    } else {
+                        int rc = 1;
+                        byteArray8192 array;
+                        while ((rc = read(e.fd, &array[0], sizeof (array))) > 0) {
+                            readMsg(e, std::move(array), rc);
+                        }
+                    }
+                } else if (e.type == EpollEvent::EpollError) {
+                    if(e.fd != getFd()) {
+                        reconnect(e.fd);
                     }
                 }
             }
+            
+            void FleXdUDSServer::connectClient(int fd) {
+                fcntl(fd, F_SETFL, O_NONBLOCK);
+                FleXdIPCBuffer buffer(fd, [this](pSharedFleXdIPCMsg msg, int fd) {
+                    m_proxy->rcvMsg(msg, fd);
+                });
+                m_map.insert(std::make_pair(fd, std::move(buffer)));
+                m_poller.addEvent(fd, [this](FleXdEpoll::Event evn) {
+                    m_proxy->rcvEvent(evn);
+                });
+            }
 
-            void FleXdUDSServer::readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
-            {
+            void FleXdUDSServer::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) {
                 std::shared_ptr<std::array<uint8_t, 8192> > array_ptr = std::make_shared<std::array<uint8_t, 8192> >(array);
-                auto search = m_list.find(e.fd);
-                if(search != m_list.end())
-                {
+                auto search = m_map.find(e.fd);
+                if (search != m_map.end()) {
                     search->second.rcvMsg(array_ptr, size);
                 }
             }
 
-            void FleXdUDSServer::sendMsg(pSharedFleXdIPCMsg msg, int fd)
-            {
-                if(msg)
-                {
-                    auto it = m_list.find(fd);
-                    if (it != m_list.end()) {
+            void FleXdUDSServer::sndMsg(pSharedFleXdIPCMsg msg, int fd) {
+                if (msg) {
+                    auto it = m_map.find(fd);
+                    if (it != m_map.end()) {
                         std::vector<uint8_t> data = msg->releaseMsg();
                         unsigned sendData = 0;
-                        while(data.size() > sendData)
-                        {
+                        while (data.size() > sendData) {
                             sendData += write(it->first, &data[sendData], data.size());
                         }
                     }
                 }
             }
 
-            void FleXdUDSServer::onMsg(pSharedFleXdIPCMsg msg)
-            {
-                  // TODO This fcn will be overwritten
-//                if(msg)
-//                {
-//                    std::vector<uint8_t> payload;
-//                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(true, 0, 32, 1, 1, 1, 1, 1, 1, std::move(payload));
-//                    sendMsg(std::move(msg_ptr));
-//                } else {
-//                    std::vector<uint8_t> payload;
-//                    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(false, 0, 32, 0, 0, 0, 0, 0, 0, std::move(payload));
-//                    sendMsg(std::move(msg_ptr));
-//                }
-            }
-
-            bool FleXdUDSServer::onReConnect(int fd)
-            {
+            bool FleXdUDSServer::reconnect(int fd) {
                 return removeFdFromList(fd);
             }
 
-            bool FleXdUDSServer::removeFdFromList(int fd)
-            {
-                auto it = m_list.find(fd);
-                if (it != m_list.end()) {
-                    std::ignore = m_list.erase(it);
+            bool FleXdUDSServer::removeFdFromList(int fd) {
+                auto it = m_map.find(fd);
+                if (it != m_map.end()) {
+                    std::ignore = m_map.erase(it);
+                    m_proxy->onDisconnect(fd);
                     return true;
                 }
                 return false;

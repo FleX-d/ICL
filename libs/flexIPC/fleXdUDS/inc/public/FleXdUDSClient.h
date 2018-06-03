@@ -45,20 +45,21 @@ namespace flexd {
 
             class FleXdUDSClient : public FleXdUDS {
             public:
-                FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller);
-                virtual ~FleXdUDSClient();
-
-                virtual bool initialization() override;
-                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
-                virtual void onMsg(pSharedFleXdIPCMsg msg) override;
-
+                FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
                 FleXdUDSClient(const FleXdUDSClient&) = delete;
                 FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
+                virtual ~FleXdUDSClient();
+
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}                
+
+            protected:
+                virtual bool initUDS() override;
 
             private:
-                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
-                virtual bool onReConnect(int fd) override;
-
+                virtual void rcvEvent(FleXdEpoll::Event e) override;
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
+                virtual bool reconnect(int fd) override;
 
             private:
                 pSharedArray8192 m_array;

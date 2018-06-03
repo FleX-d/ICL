@@ -33,43 +33,62 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDIPCCONNECTOR_H
 #define FLEXDIPCCONNECTOR_H
 
-#include <cstdlib>
-#include <cstdint>
-#include <list>
-#include <memory>
 #include <FleXdEpoll.h>
 #include <FleXdIPCMsg.h>
+#include <FleXdIPCProxy.h>
+#include <cstdlib>
+#include <cstdint>
+#include <map>
+#include <memory>
+
+
 
 namespace flexd {
     namespace icl {
         namespace ipc {
-            class FleXdUDS;
             class IPCConnector {
             public:
-                IPCConnector(uint32_t myID, FleXdEpoll& poller);
+                explicit IPCConnector(uint32_t myID, FleXdEpoll& poller, bool garantedDelivery = false);
+                IPCConnector(const IPCConnector&) = delete;
+                IPCConnector& operator=(const IPCConnector&) = delete;
                 virtual ~IPCConnector();
 
+                uint32_t getMyID() const;
+                bool sendMsg(pSharedFleXdIPCMsg msg);
                 bool addPeer(uint32_t peerID);
                 bool removePeer(uint32_t peerID);
                 bool mutePeer(uint32_t peerID);
                 bool unMutePeer(uint32_t peerID);
-                
-                IPCConnector(const IPCConnector&) = delete;
-                IPCConnector& operator=(const IPCConnector&) = delete;
+                bool PeerStatus(uint32_t peerID) const;
                 
             protected:
-                bool sendMsg(pSharedFleXdIPCMsg msg, bool blocking = false);
-                virtual pSharedFleXdIPCMsg receiveMsg() = 0;               
+                virtual void receiveMsg(pSharedFleXdIPCMsg msg) = 0;  
+                virtual void onConnectPeer(uint32_t peerID) = 0;
                 
             private:
-                bool addClient(uint32_t clientID);
-                
+                bool addClient(uint32_t clientID, const std::string& socPath);
+                void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
+                void onConnectClient(int fd);
+                void onDisconnectClient(int fd);
+                void handshake(int fd);
+                void handshakeAck(uint32_t peerID, int fd);
+                void handshakeFin(uint32_t peerID, int fd);
+                                
             private:
+                struct Client {
+                    Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr)
+                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)) {}
+                    bool m_active;
+                    int m_fd;
+                    pSharedFleXdIPCProxy m_ptr;
+                };
                 const uint32_t m_myID;
                 FleXdEpoll& m_poller;
-                std::string m_ipcDirPath;
-                std::map<uint32_t, std::unique_ptr<FleXdUDS> > m_map;  
+                const bool m_garantedDelivery;
+                pSharedFleXdIPCProxy m_server;
+                std::map<uint32_t, Client> m_clients;  
             };
+            
         } // namespace ipc
     } // namespace icl
 } // namespace flexd

@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * File:   FleXdIPCMsg.h
  * Author: Adrian Peniak
  * Author: Matus Bodorik
+ * Author: Martin Strenger
  *
  * Created on January 31, 2018, 8:36 PM
  */
@@ -91,14 +92,14 @@ namespace flexd {
 
             /*
              * GENERAL MESSAGE FORMAT
-             *              ...msg start....header start.....................................................header end................................
-             * BITCOUNT     |      3      |      2      |      1      |           8            |    16     |      2     |      0 - 136      |    n    |
-             * VALUE        |     0x0     |     0x1     | header type |     header parameter   |  msgSize  |     0x2    | additional header | payload |
+             *              ...msg start....header start...........................................................header end................................
+             * BITCOUNT     |      3      |      2      |         1         |           8            |    16     |      2     |      0 - 136      |    n    |
+             * VALUE        |     0x0     |     0x1     | header param type |     header parameter   |  msgSize  |     0x2    | additional header | payload |
              *
              * POSSIBLE MESSAGE TYPES
-             *              |     0x0     |     0x1     |      0      |      message type      |  msgSize  |     0x2    |        ---        | payload |
-             *              |     0x0     |     0x1     |      1      | additional header mask |  msgSize  |     0x2    | additional header | payload |
-             *              |     0x0     |     0x1     |      1      |         0xFF           |  msgSize  |     0x2    |        ---        | payload |
+             *              |     0x0     |     0x1     |         0         |      message type      |  msgSize  |     0x2    |        ---        | payload |
+             *              |     0x0     |     0x1     |         1         | additional header mask |  msgSize  |     0x2    | additional header | payload |
+             *              |     0x0     |     0x1     |         1         |         0xFF           |  msgSize  |     0x2    |        ---        | payload |
              *
              * msgSize = msg start + header + additional header + payload;
              */
@@ -157,6 +158,11 @@ namespace flexd {
                  * @return data uint8_t vector
                  */
                 const std::vector<uint8_t>& getPayload() const;
+                /*
+                 * Function moves payload data
+                 * @return data uint8_t vector
+                 */
+                std::vector<uint8_t>&& releasePayload();
                 /*
                  * Function returns validity of the message
                  * @return message validity

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdIPCBuffer VERSION "0.0.1")
-set(PROJECT_DESCRIPTION "IPC buffer library")
+project(fleXdIPCCommon VERSION "0.0.2")
+set(PROJECT_DESCRIPTION "IPC Common types")
 
 message(STATUS "***" )
 message(STATUS "* " ${PROJECT_NAME})
@@ -43,10 +43,15 @@ ExternalProject_Get_Property(bitstream source_dir)
 set(BITSTREAM_INCLUDE_DIR ${source_dir}/lib CACHE INTERNAL "Path to include folder for bitstream")
 message(STATUS "BITSTREAM_INCLUDE_DIR:" ${BITSTREAM_INCLUDE_DIR})
 
+message(STATUS "fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
+message(STATUS "fleXdEpollLib: " ${fleXdEpollLib})
 
 include(GNUInstallDirs)
 
 SET(publicHeaders
+    inc/public/FleXdIPC.h
+    inc/public/FleXdIPCProxy.h
+    inc/public/FleXdIPCProxyBuilder.h
     inc/public/FleXdIPCBuffer.h
     inc/public/FleXdIPCMsg.h
     inc/public/FleXdIPCBufferTypes.h
@@ -55,6 +60,7 @@ SET(publicHeaders
 SET(privateHeaders
 )
 SET(privateSources
+    src/FleXdIPCProxy.cpp
     src/FleXdIPCBuffer.cpp
     src/FleXdIPCMsg.cpp
 )
@@ -66,25 +72,25 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 target_include_directories(${PROJECT_NAME} PUBLIC inc/public ${BITSTREAM_INCLUDE_DIR} )
-target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${CRCPP_INCLUDE_DIR} )
+target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${CRCPP_INCLUDE_DIR} ${fleXdEpollPublicInc})
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 
 target_link_libraries(${PROJECT_NAME}
-
+    ${fleXdEpollLib}
 )
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCBuffer/${PROJECT_NAME}.pc
+install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCCommon/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
-SET(fleXdIPCBufferPublicInc "${fleXdIPCBuffer_SOURCE_DIR}/inc/public" CACHE STRING "")
-SET(fleXdIPCBufferLib "${PROJECT_NAME}" CACHE STRING "")
-message(STATUS "*Export fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
-message(STATUS "*Export fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
+SET(fleXdIPCCommonPublicInc "${fleXdIPCCommon_SOURCE_DIR}/inc/public" CACHE STRING "")
+SET(fleXdIPCCommonLib "${PROJECT_NAME}" CACHE STRING "")
+message(STATUS "*Export fleXdIPCCommonPublicInc: " ${fleXdIPCCommonPublicInc})
+message(STATUS "*Export fleXdIPCCommonLib: " ${fleXdIPCCommonLib})
 
-add_dependencies(${PROJECT_NAME} crcpp bitstream)
+add_dependencies(${PROJECT_NAME} crcpp bitstream fleXdEpoll)
 
 if(${ENABLE_TESTS})
     add_subdirectory(gtest)

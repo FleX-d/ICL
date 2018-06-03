@@ -50,11 +50,16 @@ namespace flexd {
 
             class FleXdIPCBuffer {
             public:
-                explicit FleXdIPCBuffer(size_t maxBufferSize = MAXBUFFERSIZE);
-                explicit FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize = MAXBUFFERSIZE);
+                explicit FleXdIPCBuffer(int fd, size_t maxBufferSize = MAXBUFFERSIZE);
+                explicit FleXdIPCBuffer(int fd, std::function<void(pSharedFleXdIPCMsg, int)> onMsg, size_t maxBufferSize = MAXBUFFERSIZE);
+                FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;
+                FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
                 virtual ~FleXdIPCBuffer();
                 FleXdIPCBuffer(FleXdIPCBuffer&&);
                 FleXdIPCBuffer& operator=(FleXdIPCBuffer&&);
+                
+                int getFd() const;
+                void setFd(int fd);
                 /**
                  * Function receive data, push them to end of cache and call function rcvMsg()
                  * @param data - shared pointer to Array of data which will be parsed
@@ -76,8 +81,7 @@ namespace flexd {
                  * @return shared pointer to FleXdIPCMsg from front of queue
                  */
                 pSharedFleXdIPCMsg pop();
-                FleXdIPCBuffer(const FleXdIPCBuffer&) = delete;
-                FleXdIPCBuffer& operator=(const FleXdIPCBuffer&) = delete;
+                
 
             private:
                 /**
@@ -97,11 +101,12 @@ namespace flexd {
                 void findNonCoruptedMessage(uint16_t coruptedMsgSize);
 
             private:
+                int m_fd;
                 size_t m_maxBufferSize;
                 size_t m_bufferSize;
                 BitStream m_cache;
                 std::queue<pSharedFleXdIPCMsg> m_queue;
-                std::function<void(pSharedFleXdIPCMsg)> m_onMsg;
+                std::function<void(pSharedFleXdIPCMsg, int)> m_onMsg;
             };
 
         } // namespace epoll

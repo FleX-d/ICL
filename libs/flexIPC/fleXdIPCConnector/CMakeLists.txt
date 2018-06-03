@@ -20,7 +20,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 target_include_directories(${PROJECT_NAME} PUBLIC inc/public/)
-target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${fleXdEpollPublicInc} ${fleXdIPCBufferPublicInc} $(fleXdUDSPublicInc))
+target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${fleXdEpollPublicInc} ${fleXdIPCCommonPublicInc} $(fleXdUDSPublicInc))
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 
 target_link_libraries(${PROJECT_NAME}
@@ -34,5 +34,13 @@ install(TARGETS ${PROJECT_NAME}
 
 install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdIPCConnector/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+
+SET(fleXdIPCConnectorPublicInc "${fleXdIPCConnector_SOURCE_DIR}/inc/public" CACHE STRING "")
+SET(fleXdIPCConnectorLib "${PROJECT_NAME}" CACHE STRING "")
+message(STATUS "*Export fleXdIPCConnectorPublicInc: " ${fleXdUDSPublicInc})
+message(STATUS "*Export fleXdIPCConnectorLib: " ${fleXdUDSLib})
+
+# #TODO avoid buid examples by default
+add_subdirectory(examples)
 
 add_dependencies(${PROJECT_NAME} fleXdUDS)

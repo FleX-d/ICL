@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * File:   FleXdIPCMsg.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
+ * Author: Martin Strenger
  *
  * Created on January 31, 2018, 8:36 PM
  */
@@ -302,7 +303,7 @@ namespace flexd {
               m_additionalHeader(calcCRC ? new FleXdIPCAdtHdr() : nullptr),
               m_valid(true)
             {
-                if (calcCRC) m_additionalHeader->setValue_3(calcCRC16(&m_payload[0] , m_payload.size()));
+                if (calcCRC) m_additionalHeader->setValue_2(calcCRC16(&m_payload[0] , m_payload.size()));
             }
 
             FleXdIPCMsg::~FleXdIPCMsg()
@@ -404,6 +405,12 @@ namespace flexd {
             const std::vector<uint8_t>& FleXdIPCMsg::getPayload() const
             {
                 return m_payload;
+            }
+
+            std::vector<uint8_t>&& FleXdIPCMsg::releasePayload()
+            {
+                m_valid = false;
+                return std::move(m_payload);
             }
 
             const bool FleXdIPCMsg::isValid() const

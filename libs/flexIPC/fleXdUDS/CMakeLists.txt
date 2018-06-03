@@ -8,8 +8,8 @@ message(STATUS "***")
 
 message(STATUS "fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
 message(STATUS "fleXdEpollLib: " ${fleXdEpollLib})
-message(STATUS "fleXdIPCBufferPublicInc: " ${fleXdIPCBufferPublicInc})
-message(STATUS "fleXdIPCBufferLib: " ${fleXdIPCBufferLib})
+message(STATUS "fleXdIPCCommonPublicInc: " ${fleXdIPCCommonPublicInc})
+message(STATUS "fleXdIPCCommonLib: " ${fleXdIPCCommonLib})
 
 include(GNUInstallDirs)
 
@@ -34,12 +34,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 target_include_directories(${PROJECT_NAME} PUBLIC inc/public)
-target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${fleXdEpollPublicInc} ${fleXdIPCBufferPublicInc})
+target_include_directories(${PROJECT_NAME} PRIVATE inc/ ${fleXdEpollPublicInc} ${fleXdIPCCommonPublicInc})
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
 
 target_link_libraries(${PROJECT_NAME}
     ${fleXdEpollLib}
-    ${fleXdIPCBufferLib}
+    ${fleXdIPCCommonLib}
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -50,10 +50,8 @@ install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdUDS/${PROJECT_NAME}.pc
 
 SET(fleXdUDSPublicInc "${fleXdUDS_SOURCE_DIR}/inc/public" CACHE STRING "")
 SET(fleXdUDSLib "${PROJECT_NAME}" CACHE STRING "")
-message(STATUS "*Export fleXdUDSPublicInc: " ${fleXdUDSPublicInc})
-message(STATUS "*Export fleXdUDSLib: " ${fleXdUDSLib})
 
 # #TODO avoid buid examples by default
 add_subdirectory(examples)
 
-add_dependencies(${PROJECT_NAME} fleXdEpoll fleXdIPCBuffer)
+add_dependencies(${PROJECT_NAME} fleXdEpoll fleXdIPCCommon)

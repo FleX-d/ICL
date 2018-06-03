@@ -22,59 +22,54 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/*
- * File:   FleXdUDSServer.h
+/* 
+ * File:   FleXdIPC.h
  * Author: Adrian Peniak
- * Author: Matus Bodorik
  *
- * Created on February 1, 2018, 2:45 PM
+ * Created on May 31, 2018, 7:49 PM
  */
 
-#ifndef FLEXDUDSSERVER_H
-#define FLEXDUDSSERVER_H
+#ifndef FLEXDIPC_H
+#define FLEXDIPC_H
 
+#include "FleXdIPCMsg.h"
 #include "FleXdEpoll.h"
-#include "FleXdIPCBuffer.h"
-#include "FleXdUDS.h"
 #include <memory>
-#include <string>
-#include <atomic>
-#include <list>
-#include <map>
 
 namespace flexd {
     namespace icl {
         namespace ipc {
 
-            class FleXdUDSServer : public FleXdUDS {
+            class FleXdIPC {
             public:
-                explicit FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
-                FleXdUDSServer(const FleXdUDSServer&) = delete;
-                FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;
-                virtual ~FleXdUDSServer();
-
-                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) override;
-                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
+                FleXdIPC() = default;
+                FleXdIPC(const FleXdIPC&) = delete;
+                FleXdIPC& operator=(const FleXdIPC&) = delete;
+                virtual ~FleXdIPC() {}
                 
-            protected:
-                virtual bool initUDS() override;
-
-            private:
-                virtual void rcvEvent(FleXdEpoll::Event e) override;
-                virtual void connectClient(int fd) override;
-                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
-                virtual bool reconnect(int fd) override;
-                
-                bool removeFdFromList(int fd);
-
-            private:
-                std::map<int, FleXdIPCBuffer> m_map;
+                virtual int getFd() const = 0;
+                virtual bool init() = 0;
+                virtual bool connectIPC() { return false; }
+                virtual bool disconnectIPC() { return false; }
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1) = 0;
+                virtual void connectClient(int fd) {}
+                virtual void disconnectClient(int fd) {}
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
+                virtual void rcvEvent(FleXdEpoll::Event e) = 0;
+            
+                virtual void onInit(bool ret) {}
+                virtual void onConnectClient(int fd) {}
+                virtual void onDisconnectClient(int fd) {}
+                virtual void onConnect(bool ret) {}
+                virtual void onDisconnect(bool ret) {}
+                virtual void onSndMsg(pSharedFleXdIPCMsg msg, int fd = -1) {}
+                virtual void onRcvMsg(pSharedFleXdIPCMsg msg, int fd) {}
+                virtual void onRcvEvent(FleXdEpoll::Event e) {}
             };
+            typedef std::shared_ptr<FleXdIPC> pSharedFleXdIPC;
 
         } // namespace epoll
     } // namespace icl
 } // namespace flexd
-
-#endif /* FLEXDUDSSERVER_H */
+#endif /* FLEXDIPC_H */
 

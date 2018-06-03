@@ -72,10 +72,11 @@ namespace flexd {
             namespace FleXdIPCMsgTypes {
                 enum Enum {
                     Handshake = 0x00,
+                    HandshakeAck,
+                    HandshakeSuccess,
+                    HandshakeFail,
                     IPCMsg,
-                    IPCMsgAck = 0xFC,
-                    HandshakeSuccess = 0xFD,
-                    HandshakeFail = 0xFE,
+                    IPCMsgAck,
                     Undefined = 0xFF
                 };
             } // namespace FleXdIPCMsgTypes

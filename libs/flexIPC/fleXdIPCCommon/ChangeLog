@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.1] - 2018-02-21
 ### Added
 - Implementation of calkCRC16() function at FleXdIPCMsg - static function for calculating CRC16 from data [Matus Bodorik]
-- Implementation of releaseMsg() function at FleXdIPCMsg - Function create vector of bytes 
+- Implementation of releaseMsg() function at FleXdIPCMsg - Function create vector of bytes
   from atributes FleXdIPCMsg which is ready to send [Matus Bodorik]
 
 ### Changed
@@ -78,6 +78,26 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - None
+
+### Removed
+- None
+
+## [0.0.1] - 2018-05-29
+### Added
+- Unit tests for FleXdIPCBuffer
+
+### Changed
+- Rebuild FleXdIPCMsg and FleXdIPCBuffer from scratch [Martin Strenger]
+
+### Removed
+- None
+
+## [0.0.1] - 2018-05-30
+### Added
+- New function releasePayload() for FleXdIPCMsg [Martin Strenger]
+
+### Changed
+- none
 
 ### Removed
 - None

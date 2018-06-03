@@ -34,12 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdUDSClient.h"
 #include "FleXdIPCBuffer.h"
 #include "FleXdUDS.h"
-#include <cstring>
-#include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 namespace flexd {
@@ -47,9 +46,9 @@ namespace flexd {
         namespace ipc {
 
 
-            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller)
-            : FleXdUDS(socPath, poller),
-              m_buffer([this](pSharedFleXdIPCMsg msg){onMessage(msg);})
+            FleXdUDSClient::FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy)
+            : FleXdUDS(socPath, poller, proxy),
+              m_buffer(getFd(), [this](pSharedFleXdIPCMsg msg, int fd){ m_proxy->rcvMsg(msg, fd);})
             {
             }
 
@@ -57,26 +56,38 @@ namespace flexd {
             {
             }
 
-            bool FleXdUDSClient::initialization()
+            bool FleXdUDSClient::initUDS()
             {
                 if(connectUDS())
                 {
                     m_poller.addEvent(getFd(), [this](FleXdEpoll::Event e)
                     {
-                        onEvent(e);
+                        m_proxy->rcvEvent(e);
                     });
+                    m_buffer.setFd(getFd());
+                    m_proxy->onConnect(getFd());
                     return true;
                 }
                 return false;
             }
 
-            void FleXdUDSClient::readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
+            void FleXdUDSClient::rcvEvent(FleXdEpoll::Event e) {
+                if (e.type == EpollEvent::EpollIn) {
+                    int rc = 1;
+                    byteArray8192 array;
+                    while ((rc = read(e.fd, &array[0], sizeof (array))) > 0) {
+                        readMsg(e, std::move(array), rc);
+                    }
+                }
+            }
+            
+            void FleXdUDSClient::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size)
             {
                 m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
                 m_buffer.rcvMsg(m_array, size);
             }
 
-            void FleXdUDSClient::sendMsg(pSharedFleXdIPCMsg msg, int)
+            void FleXdUDSClient::sndMsg(pSharedFleXdIPCMsg msg, int)
             {
                 std::vector<uint8_t> data = msg->releaseMsg();
                 size_t sendData = 0;
@@ -86,13 +97,9 @@ namespace flexd {
                 }
             }
 
-            void FleXdUDSClient::onMsg(pSharedFleXdIPCMsg msg)
+            bool FleXdUDSClient::reconnect(int fd)
             {
-                // TODO This fcn will be overwritten
-            }
-
-            bool FleXdUDSClient::onReConnect(int fd)
-            {
+                m_proxy->onDisconnect(getFd());
                 return connectUDS();
             }
 
