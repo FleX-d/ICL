@@ -331,11 +331,16 @@ namespace flexd
         {
             m_obj->m_ctx = other->m_ctx;
         }
-        
+
         std::string JsonObj::getJson()
         {
             std::string str = m_obj->m_ctx.dump();
             return std::move(str);
+        }
+
+        void JsonObj::storeJson(JsonParser* other)
+        {
+            m_obj->m_ctx = other->m_ctx;
         }
 
 

@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
@@ -85,8 +84,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             
             assert(o1.get<flexd::icl::JsonObj>("/a/b", tempJO) == false);
             assert(o1.get<flexd::icl::JsonObj>("/a", tempJO) == true);
-            
-            
+
             //Add test
             assert(o1.add<bool>("/booleean/" , false) == false); // /booleean/ not exist
             assert(o1.add<bool>("booleean/" , false) == false); //not exist
