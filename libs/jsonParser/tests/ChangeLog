@@ -12,3 +12,15 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - None
+
+
+## [0.0.1] - 2018-01-18
+### Added
+- Example test of JsonObj [Matus Bodorik]
+- Example test of Base64 [Matus Bodorik]
+
+### Changed
+- None
+
+### Removed
+- None

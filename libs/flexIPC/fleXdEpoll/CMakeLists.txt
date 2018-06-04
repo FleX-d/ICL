@@ -36,7 +36,7 @@ target_link_libraries(${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdEpoll/${PROJECT_NAME}.pc
+    install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdEpoll/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
     
 SET(fleXdEpollPublicInc "${fleXdEpoll_SOURCE_DIR}/inc/public" CACHE STRING "")

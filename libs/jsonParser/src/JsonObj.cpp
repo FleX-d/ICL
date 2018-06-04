@@ -39,32 +39,58 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-namespace flexd 
+namespace flexd
 {
     namespace icl
     {
 
-        class JsonObj::JsonParser {
+        class JsonObj::JsonParser
+        {
         public:
-            JsonParser() : m_ctx(nlohmann::json()) {
+
+            JsonParser() : m_ctx(nlohmann::json())
+            {
             }
-            JsonParser(const nlohmann::json& ctx) : m_ctx(ctx) {
+
+            JsonParser(const nlohmann::json& ctx) : m_ctx(ctx)
+            {
             }
-            nlohmann::json m_ctx;
-        };
-        
-        JsonObj::JsonObj() 
-        : m_obj(new JsonParser()) {
             
+            ~JsonParser() = default;
+            nlohmann::json m_ctx;
+            };
+
+        JsonObj::JsonObj(JsonObj&& other) : m_obj(nullptr)
+        {
+            m_obj = std::move(other.m_obj);
+            other.m_obj = nullptr;
         }
         
-        JsonObj::JsonObj(const std::string jString)
-        : m_obj(new JsonParser(nlohmann::json::parse(jString))) {
-
+        JsonObj& JsonObj::operator=(JsonObj&& other)
+        {
+            if(this != &other)
+            {
+                delete m_obj;
+                
+                m_obj = std::move(other.m_obj);   
+                other.m_obj = nullptr;
+            }
+            return *this;
+        }
+            
+        JsonObj::JsonObj()
+        : m_obj(new JsonParser())
+        {
         }
 
-        JsonObj::~JsonObj() {
-            delete m_obj;
+        JsonObj::JsonObj(const std::string& jString)
+        : m_obj(new JsonParser(nlohmann::json::parse(jString)))
+        {
+        }
+
+        JsonObj::~JsonObj()
+        {
+            delete m_obj; //TODO not removed
         }
 
         JsonObj JsonObj::operator+(const JsonObj& other)
@@ -87,12 +113,12 @@ namespace flexd
 
         ReturnType JsonObj::addInt(const std::string& path, const int& val)
         {
-             if(pathIsValid(path) && !pathExist(path))
-                {
-                    m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
-                    return Success;
-                }
-                return Error;
+            if (pathIsValid(path) && !pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
         }
 
         ReturnType JsonObj::addDouble(const std::string& path, const double& val)
@@ -131,7 +157,7 @@ namespace flexd
             if (pathIsValid(path) && !pathExist(path))
             {
                 m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val.m_obj->m_ctx;
-                   
+
                 return Success;
             }
             return Error;
@@ -253,7 +279,7 @@ namespace flexd
             if (pathIsValid(path) && pathExist(path))
             {
                 m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val.m_obj->m_ctx;
-                
+
                 return Success;
             }
             return Error;
@@ -299,46 +325,52 @@ namespace flexd
             {
                 std::cout << m_obj->m_ctx.flatten().dump(d) << std::endl;
             }
-
-
         }
-        
-        void JsonObj::storeJson(JsonParser* other) {
+
+        void JsonObj::storeJson(JsonParser* other)
+        {
             m_obj->m_ctx = other->m_ctx;
         }
+        
+        std::string JsonObj::getJson()
+        {
+            std::string str = m_obj->m_ctx.dump();
+            return std::move(str);
+        }
+
 
         ReturnType JsonObj::merge(const JsonObj& other)
         {
-            std::string s = other.m_obj->m_ctx.dump();
-            nlohmann::json j = nlohmann::json::parse(s);
-            for (nlohmann::json::iterator it = j.begin(); it != j.end(); ++it)
+            if(!other.m_obj->m_ctx.empty())
             {
-                m_obj->m_ctx[it.key()] = it.value();
+                for (nlohmann::json::const_iterator it = other.m_obj->m_ctx.begin(); it != other.m_obj->m_ctx.end(); ++it)
+                {
+                    m_obj->m_ctx[it.key()] = it.value();
+                }
                 return Success;
             }
-
             return Error;
         }
 
         ReturnType JsonObj::pathIsValid(const std::string& path) const
         {
-            if (path.size() < 1 && (path.find("/") != 0) && (path.find("/") == 1) && (path.find("//") != std::string::npos)) 
+            if (path.size() >= 1 && (path.at(0) == '/') && (path.at(1) != '/') && (path.at(path.length() - 1) != '/'))
             {
-                return Error;
+                return Success;
             }
-            return Success;
+            return Error;
         }
 
         std::vector<std::string> JsonObj::parsePath(const std::string& path) const
         {
             std::vector<std::string> token;
-            
+
             if (pathIsValid(path))
             {
                 std::string s = path;
                 std::string delimiter = "/";
                 size_t pos = 0;
-                
+
 
                 s.erase(0, pos + delimiter.length());
                 while ((pos = s.find(delimiter)) != std::string::npos)
@@ -348,7 +380,7 @@ namespace flexd
                 }
                 token.push_back(s);
                 return token;
-                
+
             } else
             {
                 token.clear();
@@ -381,14 +413,14 @@ namespace flexd
                                 size--;
                                 continue;
                             }
-                        } catch (std::out_of_range& e)
+                        } catch (nlohmann::detail::out_of_range& e)
                         {
                             //std::cout << e.what() << '\n';
                             return Error;
                         }
                     }
                     return Success;
-                } 
+                }
             }
             return Error;
         }

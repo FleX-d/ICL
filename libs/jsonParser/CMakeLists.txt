@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 3.0)
 project(jsonParser VERSION "0.0.1")
 set(PROJECT_DESCRIPTION "fasade for json parser")
 
+if(${ENABLE_TESTS})
+    add_subdirectory(tests)
+    add_subdirectory(Gtest)
+endif(${ENABLE_TESTS})
+
 include(GNUInstallDirs)
+
 
 SET(publicHeaders
     inc/public/ParserTypes.h

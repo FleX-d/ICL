@@ -52,7 +52,9 @@ namespace flexd {
             
         public:
             JsonObj();
-            JsonObj(std::string jString);            
+            JsonObj(const std::string& jString);   
+            JsonObj(JsonObj&& other);
+            JsonObj& operator=(JsonObj&& other);
             ~JsonObj();
 
             /**
@@ -152,10 +154,15 @@ namespace flexd {
              */
             void dump(int d = 2, int flat = 0) const; // print content of json
             /**
-             * 
-             * @param other
+             * Function store instance of other object JsonParser 
+             * @param other - object JsonParse to store
              */
             void storeJson(JsonParser* other);
+            /**
+             * Function return reference to string with json
+             * @param other - reference to string with json
+             */
+            std::string getJson();
 
         private:
             ReturnType pathIsValid(const std::string& path) const;
