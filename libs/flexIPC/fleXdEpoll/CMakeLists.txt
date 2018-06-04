@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdEpoll VERSION "0.0.1")
+project(fleXdEpoll VERSION "0.1.0")
 set(PROJECT_DESCRIPTION "Epoll library")
 
 message(STATUS "***" )

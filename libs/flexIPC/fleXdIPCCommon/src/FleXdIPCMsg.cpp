@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * File:   FleXdIPCMsg.cpp
  * Author: Adrian Peniak
  * Author: Matus Bodorik
+ * Author: Martin Strenger
  *
  * Created on January 31, 2018, 8:36 PM
  */
@@ -39,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             FleXdIPCAdtHdr::FleXdIPCAdtHdr()
             : m_headerMask(0),

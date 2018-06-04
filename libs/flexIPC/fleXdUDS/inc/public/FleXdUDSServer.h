@@ -45,32 +45,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             class FleXdUDSServer : public FleXdUDS {
             public:
-                explicit FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller);
-                virtual ~FleXdUDSServer();
-
-                virtual bool initialization() override;
-                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd) override;
-                virtual void onMsg(pSharedFleXdIPCMsg msg) override;
-
+                explicit FleXdUDSServer(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
                 FleXdUDSServer(const FleXdUDSServer&) = delete;
                 FleXdUDSServer& operator=(const FleXdUDSServer&) = delete;
+                virtual ~FleXdUDSServer();
 
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) override;
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
+                
             protected:
-                virtual void onClientConnect(int fd) {};
-                virtual void onClientDisconnect(int fd) {};
+                virtual bool initUDS() override;
 
             private:
-                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
-                virtual bool onReConnect(int fd) override;
-                void onAccept(FleXdEpoll::Event e);
+                virtual void rcvEvent(FleXdEpoll::Event e) override;
+                virtual void connectClient(int fd) override;
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
+                virtual bool reconnect(int fd) override;
                 bool removeFdFromList(int fd);
 
             private:
-                std::map<int, FleXdIPCBuffer> m_list;
+                std::map<int, FleXdIPCBuffer> m_map;
             };
 
         } // namespace epoll

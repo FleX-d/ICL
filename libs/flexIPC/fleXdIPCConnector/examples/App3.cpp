@@ -25,59 +25,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * File:   Server.cpp
+/* 
+ * File:   App3.cpp
+ * Author: Adrian Peniak
  *
- * Author: Matus Bodorik
- *
- * Created on March 15, 2018, 14:32 PM
+ * Created on May 31, 2018, 8:04 AM
  */
 
+#include "App.h"
 
-#include "FleXdUDSServer.h"
-#include "FleXdIPCMsg.h"
-#include <iostream>
-
-//class myUDSServer : public flexd::icl::ipc::FleXdUDSServer
-//{
-//    using fleXdAdtHdr = flexd::icl::ipc::FleXdIPCAdtHdr;
-//    using fleXdMsg = flexd::icl::ipc::FleXdIPCMsg;
-//
-//public:
-//    explicit myUDSServer(const std::string& socPath, flexd::icl::ipc::FleXdEpoll& poller)
-//    : FleXdUDSServer(socPath, poller) {}
-//    virtual ~myUDSServer() {}
-//
-//private:
-//    virtual void onConnect(int fd) override
-//    {
-//        std::vector<uint8_t> payload {69};
-//        std::shared_ptr<fleXdMsg> msg_ptr = std::make_shared<fleXdMsg>(std::move(payload));
-//        fleXdAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
-//        adtHdr->setValue_0(99);
-//
-//        std::cout << "Client connected " << fd << std::endl;
-//        sndMsg(msg_ptr, fd);
-//    }
-//    virtual void onDisconnect(int fd) override
-//    {
-//        std::cout << "Client disconnected " << fd << std::endl;
-//    }
-//    virtual void rcvMsg(flexd::icl::ipc::pSharedFleXdIPCMsg msg) {}
-//};
-
-int main(int argc, char** argv)
-{
-//    flexd::icl::ipc::FleXdEpoll poller(10);
-//    myUDSServer server("/tmp/test", poller);
-//    if (server.init())
-//    {
-//        std::cout << "FleXdUDSServer.init() successful" << std::endl;
-//        poller.loop();
-//    } else {
-//        std::cout << "FleXdUDSServer.init() failed" << std::endl;
-//    }
-//    server.init();
-
+int main(int argc, char** argv) {
+    flexd::icl::ipc::FleXdEpoll poller(10);
+    std::cout << "***Start app 102, poller" << "\n";
+    App a(102, poller);
+    std::cout << "***addPeer 100 " << a.addPeer(100)  << "\n";
+    std::cout << "***addPeer 101 " << a.addPeer(101) << "\n";
+    poller.loop();
     return 0;
 }
+

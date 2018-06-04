@@ -22,68 +22,35 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
 /* 
- * File:   IPCConnector.cpp
+ * File:   FleXdIPCProxyBuilder.h
  * Author: Adrian Peniak
- * 
- * Created on November 27, 2017, 2:26 PM
+ *
+ * Created on May 31, 2018, 7:49 PM
  */
 
-#include "IPCConnector.h"
+#ifndef FLEXDIPCPROXYBUILDER_H
+#define FLEXDIPCPROXYBUILDER_H
+
+#include "FleXdIPCProxy.h"
+
 namespace flexd {
     namespace icl {
         namespace ipc {
+            
+            template<typename T>
+            class FleXdIPCProxyBuilder : public FleXdIPCProxy {
+            public:
+                template<typename... Args>
+                FleXdIPCProxyBuilder(Args&&... args)
+                : FleXdIPCProxy(std::make_shared<T>(std::forward<Args>(args)..., this)) {}
+                FleXdIPCProxyBuilder(const FleXdIPCProxyBuilder&) = delete;
+                FleXdIPCProxyBuilder& operator=(const FleXdIPCProxyBuilder&) = delete;
+                virtual ~FleXdIPCProxyBuilder() {}
+            };
 
-//            IPCConnector::IPCConnector(uuid_t yourUuid, uint32_t magicNumber)
-//            : m_yourUuid(yourUuid),
-//            m_peerUuids(),
-//            m_magicNumber(magicNumber) {
-//            }
-//
-//            IPCConnector::~IPCConnector() {
-//            }
-//
-//            bool IPCConnector::start() {
-//                return false;
-//            }
-//
-//            bool IPCConnector::stop(/*TODO*/) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::addPeer(uuid_t peerUuid, uint32_t magicNumber) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::addPeer(PeerUuid peerUuid) {
-//                return false;
-//            }
-//            
-//            bool IPCConnector::addPeer(std::list<PeerUuid> peerUuids) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::removePeer(uuid_t peerUuid) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::removePeer(std::list<PeerUuid> peerUuids) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::mutePeer(uuid_t peerUuid, uint32_t muteTime) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::unMutePeer(uuid_t peerUuid) {
-//                return false;
-//            }
-//
-//            bool IPCConnector::sendMsg(IPCMessage_t msg, bool blocking) {
-//                return false;
-//            }
-        } // namespace ipc
+        } // namespace epoll
     } // namespace icl
 } // namespace flexd
+#endif /* FLEXDIPCPROXYBUILDER_H */
+

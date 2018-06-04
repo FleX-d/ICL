@@ -33,55 +33,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FLEXDUDS_H
 #define FLEXDUDS_H
 
+#include "FleXdIPC.h"
 #include "FleXdEpoll.h"
 #include "FleXdIPCMsg.h"
 
+#define FLEXDIPCUDSPATH "/tmp/FleXd/shared/ipc/uds/"
+
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
-            class FleXdUDS {
+            class FleXdUDS : public FleXdIPC {
             public:
-                FleXdUDS(const std::string& socPath, FleXdEpoll& poller);
+                explicit FleXdUDS(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
+                FleXdUDS(const FleXdUDS&) = delete;
+                FleXdUDS& operator=(const FleXdUDS&) = delete;
                 virtual ~FleXdUDS();
+                
                 /**
                  * Function initialize Unix domain sockets for Client.
                  * @return true if initialization is done, false otherwise.
                  */
-                virtual bool init();
+                virtual bool init() override;
                 /**
                  * Function send message to Server.
                  * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
                  */
-                virtual void sendMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
-                /**
-                 * Function is pure virtual, and its called after valid message is received and parsed.
-                 * @param msg  - shared pointer to FleXdIPCMsg
-                 */
-                virtual void onMsg(pSharedFleXdIPCMsg msg) = 0;
-
-                FleXdUDS(const FleXdUDS&) = delete;
-                FleXdUDS& operator=(const FleXdUDS&) = delete;
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
+                
 
             protected:
-                virtual bool initialization() = 0;
-                virtual void readMessage(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
-                virtual bool onReConnect(int fd) = 0;
-                void onEvent(FleXdEpoll::Event e);
-                void onMessage(pSharedFleXdIPCMsg msg);
+                virtual bool initUDS() = 0;
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
+                virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
+                virtual bool reconnect(int fd) = 0;
+                virtual int getFd() const override;
                 bool connectUDS();
                 bool listenUDS();
-                int getFd() const;
-
+                
             protected:
                 FleXdEpoll& m_poller;
+                FleXdIPC* m_proxy;
 
             private:
                 struct Ctx;
                 const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };
-            typedef std::shared_ptr<FleXdUDS> pSharedFleXdUDS;
+            
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

@@ -32,115 +32,71 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDS.h"
 #include "FleXdIPCBufferTypes.h"
-#include <cstring>
-#include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
-#include <thread>
-
+#include <cstring>
 
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
             struct FleXdUDS::Ctx {
                 struct sockaddr_un addr;
                 int fd;
             };
 
-            FleXdUDS::FleXdUDS(const std::string& socPath, FleXdEpoll& poller)
-            : m_poller(poller),
+            FleXdUDS::FleXdUDS(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy /*nullptr*/)
+            : m_poller(poller), 
+              m_proxy(proxy ? proxy : this),
               m_socPath(socPath),
-              m_ctx(std::make_unique<Ctx>())
-            {
+              m_ctx(std::make_unique<Ctx>()) {
             }
 
-            FleXdUDS::~FleXdUDS()
-            {
+            FleXdUDS::~FleXdUDS() {
             }
 
-            bool FleXdUDS::init()
-            {
-                if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-                {
+            bool FleXdUDS::init() {
+                if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
                     return false;
                 }
 
                 std::memset(&(m_ctx->addr), 0, sizeof (m_ctx->addr));
                 m_ctx->addr.sun_family = AF_UNIX;
-                if (m_socPath[0] == '\0')
-                {
+                if (m_socPath[0] == '\0') {
                     *(m_ctx->addr.sun_path) = '\0';
                     std::strncpy(m_ctx->addr.sun_path + 1, m_socPath.c_str() + 1, sizeof (m_ctx->addr.sun_path) - 2);
-                } else
-                {
+                } else {
                     std::strncpy(m_ctx->addr.sun_path, m_socPath.c_str(), sizeof (m_ctx->addr.sun_path) - 1);
                 }
-                return initialization();
+                return initUDS();
             }
 
-            void FleXdUDS::onEvent(FleXdEpoll::Event e)
-            {
-                if (e.type == EpollEvent::EpollIn)
-                {
-                    int rc;
-                    byteArray8192 array;
-                    while ((rc = read(e.fd, &array[0], sizeof (array))) > 0)
-                    {
-                        readMessage(e, std::move(array), rc);
-                    }
-                } else if (e.type == EpollEvent::EpollError){
-                    onReConnect(e.fd);
-                }
-            }
-
-            void FleXdUDS::onMessage(pSharedFleXdIPCMsg msg)
-            {
-                if (msg)
-                {
-                    std::vector<uint8_t> data = msg->releaseMsg();
-                    // TMP print
-                    for (auto it : data)
-                    {
-                        std::cout << (int) it << " ";
-                    }
-                    std::cout << std::endl;
-
-                    onMsg(msg);
-                }
-            }
-
-            int FleXdUDS::getFd() const
-            {
+            int FleXdUDS::getFd() const {
                 return m_ctx->fd;
             }
 
-            bool FleXdUDS::connectUDS()
-            {
-
-                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1)
-                {
-                   return false;
+            bool FleXdUDS::connectUDS() {
+                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
+                    return false;
                 }
+                fcntl(m_ctx->fd, F_SETFL, O_NONBLOCK);
                 return true;
             }
 
-            bool FleXdUDS::listenUDS()
-            {
-                if (m_socPath[0] != '\0')
-                {
+            bool FleXdUDS::listenUDS() {
+                struct stat info;
+                if ((stat(m_socPath.c_str(), &info) == 0) || (m_socPath[0] != '\0')) {
                     unlink(m_socPath.c_str());
                 }
-                if (bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1)
-                {
+                if (bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
                     return false;
                 }
 
-                if (listen(m_ctx->fd, 5) == -1)
-                {
+                if (listen(m_ctx->fd, 5) == -1) {
                     return false;
                 }
                 return true;

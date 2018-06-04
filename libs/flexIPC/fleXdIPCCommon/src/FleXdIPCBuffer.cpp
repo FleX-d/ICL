@@ -42,10 +42,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // TODO define as static var for IPCMSG
 namespace flexd {
     namespace icl {
-        namespace epoll {
+        namespace ipc {
 
-            FleXdIPCBuffer::FleXdIPCBuffer(size_t maxBufferSize)
-            : m_maxBufferSize(maxBufferSize),
+            FleXdIPCBuffer::FleXdIPCBuffer(int fd, size_t maxBufferSize)
+            : m_fd(fd),
+              m_maxBufferSize(maxBufferSize),
               m_bufferSize(0),
               m_cache(),
               m_queue(),
@@ -53,8 +54,9 @@ namespace flexd {
             {
             }
 
-            FleXdIPCBuffer::FleXdIPCBuffer(std::function<void(pSharedFleXdIPCMsg msg)> onMsg, size_t maxBufferSize)
-            : m_maxBufferSize(maxBufferSize),
+            FleXdIPCBuffer::FleXdIPCBuffer(int fd, std::function<void(pSharedFleXdIPCMsg, int)> onMsg, size_t maxBufferSize)
+            : m_fd(fd),
+              m_maxBufferSize(maxBufferSize),
               m_bufferSize(0),
               m_cache(),
               m_queue(),
@@ -68,7 +70,8 @@ namespace flexd {
 
 
             FleXdIPCBuffer::FleXdIPCBuffer(FleXdIPCBuffer&& other)
-            : m_maxBufferSize(other.m_maxBufferSize),
+            : m_fd(other.m_fd),
+              m_maxBufferSize(other.m_maxBufferSize),
               m_bufferSize(other.m_bufferSize),
               m_cache(std::move(other.m_cache)),
               m_queue(std::move(other.m_queue)),
@@ -78,6 +81,7 @@ namespace flexd {
 
             FleXdIPCBuffer& FleXdIPCBuffer::operator=(FleXdIPCBuffer&& other)
             {
+                m_fd = other.m_fd;
                 m_maxBufferSize = other.m_maxBufferSize;
                 m_bufferSize = other.m_bufferSize;
                 m_cache = std::move(other.m_cache);
@@ -86,6 +90,14 @@ namespace flexd {
                 return *this;
             }
 
+            int FleXdIPCBuffer::getFd() const {
+                return m_fd;
+            }
+            
+            void FleXdIPCBuffer::setFd(int fd) {
+                m_fd = fd;
+            }
+            
             void FleXdIPCBuffer::rcvMsg(pSharedArray8192& data, size_t size)
             {
                 m_cache.putToEnd(data->begin(), data->begin() + (size));
@@ -205,7 +217,7 @@ namespace flexd {
             {
                 if (msg) {
                     if (m_onMsg) {
-                        m_onMsg(std::move(msg));
+                        m_onMsg(std::move(msg), m_fd);
                     } else {
                         if(m_bufferSize < m_maxBufferSize)
                         {

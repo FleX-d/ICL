@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
@@ -11,6 +12,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -23,28 +25,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * File:   FleXdIPCBufferTypes.h
+/* 
+ * File:   App1.cpp
  * Author: Adrian Peniak
  *
- * Created on February 1, 2018, 9:19 AM
+ * Created on May 31, 2018, 8:04 AM
  */
 
-#ifndef FLEXDIPCBUFFERTYPES_H
-#define FLEXDIPCBUFFERTYPES_H
+#include "App.h"
 
-#include <memory>
-#include <array>
+int main(int argc, char** argv) {
+    flexd::icl::ipc::FleXdEpoll poller(10);
+    std::cout << "***Start app 100" << "\n";
+    App a(100, poller);
+    std::cout << "***addPeer 101 " << a.addPeer(101)  << "\n";
+    std::cout << "***addPeer 102 " << a.addPeer(102) << "\n";
+    poller.loop();
+    return 0;
+}
 
-namespace flexd {
-    namespace icl {
-        namespace epoll {
-
-            typedef std::array<uint8_t, 8192> byteArray8192;
-            typedef std::shared_ptr<std::array<uint8_t, 8192> > pSharedArray8192;
-
-        } // namespace epoll
-    } // namespace icl
-} // namespace flexd
-
-#endif /* FLEXDIPCBUFFERTYPES_H */

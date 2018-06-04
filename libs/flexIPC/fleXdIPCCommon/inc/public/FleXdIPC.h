@@ -22,57 +22,54 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /* 
- * File:   FleXdEpoll.h
+ * File:   FleXdIPC.h
  * Author: Adrian Peniak
  *
- * Created on January 31, 2018, 9:55 AM
+ * Created on May 31, 2018, 7:49 PM
  */
 
-#ifndef FLEXDEPOLL_H
-#define FLEXDEPOLL_H
+#ifndef FLEXDIPC_H
+#define FLEXDIPC_H
 
-#include "FleXdIPCTypes.h"
+#include "FleXdIPCMsg.h"
+#include "FleXdEpoll.h"
 #include <memory>
-#include <atomic>
-#include <functional>
 
 namespace flexd {
     namespace icl {
         namespace ipc {
 
-            class FleXdEpoll {
+            class FleXdIPC {
             public:
-                struct Event {
-                    Event(int _fd, int _flag, EpollEvent::Enum _type = EpollEvent::Enum::None)
-                    : fd(_fd), flag(_flag), type(_type) {}
-                    int fd;
-                    int flag;
-                    EpollEvent::Enum type;                    
-                };
+                FleXdIPC() = default;
+                FleXdIPC(const FleXdIPC&) = delete;
+                FleXdIPC& operator=(const FleXdIPC&) = delete;
+                virtual ~FleXdIPC() {}
                 
-            public:
-                explicit FleXdEpoll(size_t maxEventh);
-                virtual ~FleXdEpoll();
-
-                void loop();
-                void endLoop(bool blocking = false);
-                bool addEvent(int fd, std::function<void(Event)> onEvent);
-                bool rmEvent(int fd);
-                void dumpFd() const;
-
-                FleXdEpoll(const FleXdEpoll&) = delete;
-                FleXdEpoll& operator=(const FleXdEpoll&) = delete;
-
-            private:
-                class Epoll;
-                std::unique_ptr<Epoll> m_epoll;
-                std::atomic<bool> m_safeStop;
-            };
+                virtual int getFd() const = 0;
+                virtual bool init() = 0;
+                virtual bool connectIPC() { return false; }
+                virtual bool disconnectIPC() { return false; }
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1) = 0;
+                virtual void connectClient(int fd) {}
+                virtual void disconnectClient(int fd) {}
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
+                virtual void rcvEvent(FleXdEpoll::Event e) = 0;
             
+                virtual void onInit(bool ret) {}
+                virtual void onConnectClient(int fd) {}
+                virtual void onDisconnectClient(int fd) {}
+                virtual void onConnect(bool ret) {}
+                virtual void onDisconnect(bool ret) {}
+                virtual void onSndMsg(pSharedFleXdIPCMsg msg, int fd = -1) {}
+                virtual void onRcvMsg(pSharedFleXdIPCMsg msg, int fd) {}
+                virtual void onRcvEvent(FleXdEpoll::Event e) {}
+            };
+            typedef std::shared_ptr<FleXdIPC> pSharedFleXdIPC;
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd
+#endif /* FLEXDIPC_H */
 
-#endif /* FLEXDEPOLL_H */

@@ -1,7 +1,6 @@
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
@@ -12,7 +11,6 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,58 +24,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
- * File:   Server.cpp
+ * File:   FleXdIPCBufferTypes.h
+ * Author: Adrian Peniak
  *
- * Author: Matus Bodorik
- *
- * Created on March 15, 2018, 14:32 PM
+ * Created on February 1, 2018, 9:19 AM
  */
 
+#ifndef FLEXDIPCBUFFERTYPES_H
+#define FLEXDIPCBUFFERTYPES_H
 
-#include "FleXdUDSServer.h"
-#include "FleXdIPCMsg.h"
-#include <iostream>
+#include <memory>
+#include <array>
 
-//class myUDSServer : public flexd::icl::ipc::FleXdUDSServer
-//{
-//    using fleXdAdtHdr = flexd::icl::ipc::FleXdIPCAdtHdr;
-//    using fleXdMsg = flexd::icl::ipc::FleXdIPCMsg;
-//
-//public:
-//    explicit myUDSServer(const std::string& socPath, flexd::icl::ipc::FleXdEpoll& poller)
-//    : FleXdUDSServer(socPath, poller) {}
-//    virtual ~myUDSServer() {}
-//
-//private:
-//    virtual void onConnect(int fd) override
-//    {
-//        std::vector<uint8_t> payload {69};
-//        std::shared_ptr<fleXdMsg> msg_ptr = std::make_shared<fleXdMsg>(std::move(payload));
-//        fleXdAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
-//        adtHdr->setValue_0(99);
-//
-//        std::cout << "Client connected " << fd << std::endl;
-//        sndMsg(msg_ptr, fd);
-//    }
-//    virtual void onDisconnect(int fd) override
-//    {
-//        std::cout << "Client disconnected " << fd << std::endl;
-//    }
-//    virtual void rcvMsg(flexd::icl::ipc::pSharedFleXdIPCMsg msg) {}
-//};
+namespace flexd {
+    namespace icl {
+        namespace ipc {
 
-int main(int argc, char** argv)
-{
-//    flexd::icl::ipc::FleXdEpoll poller(10);
-//    myUDSServer server("/tmp/test", poller);
-//    if (server.init())
-//    {
-//        std::cout << "FleXdUDSServer.init() successful" << std::endl;
-//        poller.loop();
-//    } else {
-//        std::cout << "FleXdUDSServer.init() failed" << std::endl;
-//    }
-//    server.init();
+            typedef std::array<uint8_t, 8192> byteArray8192;
+            typedef std::shared_ptr<std::array<uint8_t, 8192> > pSharedArray8192;
 
-    return 0;
-}
+        } // namespace epoll
+    } // namespace icl
+} // namespace flexd
+
+#endif /* FLEXDIPCBUFFERTYPES_H */
