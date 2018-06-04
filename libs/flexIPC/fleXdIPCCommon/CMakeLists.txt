@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdIPCCommon VERSION "0.0.2")
+project(fleXdIPCCommon VERSION "0.1.0")
 set(PROJECT_DESCRIPTION "IPC Common types")
 
 message(STATUS "***" )

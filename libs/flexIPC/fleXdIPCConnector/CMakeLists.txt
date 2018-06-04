@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdIPCConnector VERSION "0.0.1")
+project(fleXdIPCConnector VERSION "0.1.0")
 set(PROJECT_DESCRIPTION "FleX-d Inter Process Comunication connector library")
 
 include(GNUInstallDirs)

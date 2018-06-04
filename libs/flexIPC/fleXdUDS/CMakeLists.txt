@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(fleXdUDS VERSION "0.0.1")
+project(fleXdUDS VERSION "0.1.0")
 set(PROJECT_DESCRIPTION "IPC unix domain socket library")
 
 message(STATUS "***" )
