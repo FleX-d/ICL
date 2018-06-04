@@ -84,6 +84,10 @@ namespace flexd {
                 
             }
             
+            uint32_t IPCConnector::getMyID() const {
+                  return m_myID;
+            }
+              
             bool IPCConnector::addPeer(uint32_t peerID)
             {
                 const std::string socPath = FLEXDIPCUDSPATH + std::to_string(peerID);
