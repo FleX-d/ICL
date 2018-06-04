@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [0.0.1] - 2018-01-02
+## [0.0.1] - 2018-02-02
 ### Added
 - Initial version [Adrian Peniak]
 
@@ -14,20 +14,9 @@ All notable changes to this project will be documented in this file.
 - None
 
 
-## [0.0.1] - 2018-01-18
+## [0.0.1] - 2018-04-12
 ### Added
-- Examples of using JsonParser and Base64 [Matus Bodorik]
-
-### Changed
-- None
-
-### Removed
-- None
-
-
-## [0.0.1] - 2018-03-21
-### Added
-- Gson unit tests [Matus Bodorik]
+- Implementation FleXdLogger [Matus Bodorik]
 
 ### Changed
 - None
