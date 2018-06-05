@@ -22,7 +22,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* 
+/*
  * File:   FleXdIPC.h
  * Author: Adrian Peniak
  *
@@ -46,17 +46,17 @@ namespace flexd {
                 FleXdIPC(const FleXdIPC&) = delete;
                 FleXdIPC& operator=(const FleXdIPC&) = delete;
                 virtual ~FleXdIPC() {}
-                
+
                 virtual int getFd() const = 0;
                 virtual bool init() = 0;
-                virtual bool connectIPC() { return false; }
-                virtual bool disconnectIPC() { return false; }
+                virtual bool connect() { return false; }
+                virtual bool disconnect() { return false; }
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1) = 0;
                 virtual void connectClient(int fd) {}
                 virtual void disconnectClient(int fd) {}
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
                 virtual void rcvEvent(FleXdEpoll::Event e) = 0;
-            
+
                 virtual void onInit(bool ret) {}
                 virtual void onConnectClient(int fd) {}
                 virtual void onDisconnectClient(int fd) {}

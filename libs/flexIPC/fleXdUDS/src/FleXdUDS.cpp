@@ -50,7 +50,7 @@ namespace flexd {
             };
 
             FleXdUDS::FleXdUDS(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy /*nullptr*/)
-            : m_poller(poller), 
+            : m_poller(poller),
               m_proxy(proxy ? proxy : this),
               m_socPath(socPath),
               m_ctx(std::make_unique<Ctx>()) {
@@ -60,7 +60,7 @@ namespace flexd {
             }
 
             bool FleXdUDS::init() {
-                if ((m_ctx->fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+                if ((m_ctx->fd = ::socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
                     return false;
                 }
 
@@ -80,23 +80,23 @@ namespace flexd {
             }
 
             bool FleXdUDS::connectUDS() {
-                if (connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
+                if (::connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
                     return false;
                 }
-                fcntl(m_ctx->fd, F_SETFL, O_NONBLOCK);
+                ::fcntl(m_ctx->fd, F_SETFL, O_NONBLOCK);
                 return true;
             }
 
             bool FleXdUDS::listenUDS() {
                 struct stat info;
                 if ((stat(m_socPath.c_str(), &info) == 0) || (m_socPath[0] != '\0')) {
-                    unlink(m_socPath.c_str());
+                    ::unlink(m_socPath.c_str());
                 }
-                if (bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
+                if (::bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
                     return false;
                 }
 
-                if (listen(m_ctx->fd, 5) == -1) {
+                if (::listen(m_ctx->fd, 5) == -1) {
                     return false;
                 }
                 return true;

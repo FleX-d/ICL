@@ -65,30 +65,30 @@ namespace flexd {
 
             void FleXdUDSServer::rcvEvent(FleXdEpoll::Event e) {
                 if (e.type == EpollEvent::EpollIn) {
-                    // self fd is listen fd for incoming connections -> accept will perform 
+                    // self fd is listen fd for incoming connections -> accept will perform
                     if(e.fd == getFd()) {
-                        int clientFd = accept(getFd(), NULL, NULL);
+                        int clientFd = ::accept(getFd(), NULL, NULL);
                         auto it = m_map.find(clientFd);
                         if (it == m_map.end()) {
                             m_proxy->connectClient(clientFd);
                         }
-                    // other fd's are client fd's -> read will perform 
+                    // other fd's are client fd's -> read will perform
                     } else {
                         int rc = 1;
                         byteArray8192 array;
-                        while ((rc = read(e.fd, &array[0], sizeof (array))) > 0) {
+                        while ((rc = ::read(e.fd, &array[0], sizeof (array))) > 0) {
                             readMsg(e, std::move(array), rc);
                         }
                     }
                 } else if (e.type == EpollEvent::EpollError) {
                     if(e.fd != getFd()) {
-                        reconnect(e.fd);
+                        m_proxy->disconnectClient(e.fd);
                     }
                 }
             }
-            
+
             void FleXdUDSServer::connectClient(int fd) {
-                fcntl(fd, F_SETFL, O_NONBLOCK);
+                ::fcntl(fd, F_SETFL, O_NONBLOCK);
                 FleXdIPCBuffer buffer(fd, [this](pSharedFleXdIPCMsg msg, int fd) {
                     m_proxy->rcvMsg(msg, fd);
                 });
@@ -96,6 +96,10 @@ namespace flexd {
                 m_poller.addEvent(fd, [this](FleXdEpoll::Event evn) {
                     m_proxy->rcvEvent(evn);
                 });
+            }
+
+            void FleXdUDSServer::disconnectClient(int fd) {
+                std::ignore = m_map.erase(fd);
             }
 
             void FleXdUDSServer::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) {
@@ -113,7 +117,7 @@ namespace flexd {
                         std::vector<uint8_t> data = msg->releaseMsg();
                         unsigned sendData = 0;
                         while (data.size() > sendData) {
-                            sendData += write(it->first, &data[sendData], data.size());
+                            sendData += ::write(it->first, &data[sendData], data.size());
                         }
                     }
                 }
@@ -126,8 +130,7 @@ namespace flexd {
             bool FleXdUDSServer::removeFdFromList(int fd) {
                 auto it = m_map.find(fd);
                 if (it != m_map.end()) {
-                    std::ignore = m_map.erase(it);
-                    m_proxy->onDisconnect(fd);
+                    m_proxy->disconnectClient(fd);
                     return true;
                 }
                 return false;

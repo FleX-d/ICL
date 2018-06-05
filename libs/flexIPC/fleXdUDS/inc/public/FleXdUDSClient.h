@@ -51,7 +51,10 @@ namespace flexd {
                 virtual ~FleXdUDSClient();
 
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
-                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}                
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
+
+                virtual bool connect() override;
+                virtual bool disconnect() override;
 
             protected:
                 virtual bool initUDS() override;

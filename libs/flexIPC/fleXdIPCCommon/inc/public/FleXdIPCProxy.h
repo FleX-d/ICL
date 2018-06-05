@@ -22,7 +22,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* 
+/*
  * File:   FleXdIPCProxy.h
  * Author: Adrian Peniak
  *
@@ -46,14 +46,14 @@ namespace flexd {
                 FleXdIPCProxy(const FleXdIPCProxy&) = delete;
                 FleXdIPCProxy& operator=(const FleXdIPCProxy&) = delete;
                 virtual ~FleXdIPCProxy();
-                
+
                 pSharedFleXdIPC getIPC();
                 int getFd() const;
                 bool init();
-                bool connectIPC();
-                bool disconnectIPC();
+                bool connect();
+                bool disconnect();
                 void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1);
-                
+
                 void setOnInit(std::function<void(bool)> fcn);
                 void setOnConnect(std::function<void(bool)> fcn);
                 void setOnDisconnect(std::function<void(bool)> fcn);
@@ -62,16 +62,16 @@ namespace flexd {
                 void setOnSndMsg(std::function<void(pSharedFleXdIPCMsg, int)> fcn);
                 void setOnRcvMsg(std::function<void(pSharedFleXdIPCMsg, int)> fcn);
                 void setOnRcvEvent(std::function<void(FleXdEpoll::Event)> fcn);
-                
+
             protected:
                 void connectClient(int fd);
                 void disconnectClient(int fd);
                 void rcvMsg(pSharedFleXdIPCMsg msg, int);
                 void rcvEvent(FleXdEpoll::Event e);
-            
+
             protected:
                 pSharedFleXdIPC m_ipc;
-            
+
             private:
                 std::function<void(bool)> m_onInit;
                 std::function<void(int)> m_onConnectClient;
