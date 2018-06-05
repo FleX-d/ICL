@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdint>
 #include <map>
 #include <memory>
-
+#include <queue>
 
 
 namespace flexd {
@@ -72,15 +72,17 @@ namespace flexd {
                 void onDisconnectClient(int fd);
                 void handshake(int fd);
                 void handshakeAck(uint32_t peerID, int fd);
-                void handshakeFin(uint32_t peerID, int fd);
+                void handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd);
+                void flushQueue(uint32_t peerID);
                                 
             private:
                 struct Client {
                     Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr)
-                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)) {}
+                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)), m_queue() {}
                     bool m_active;
                     int m_fd;
                     pSharedFleXdIPCProxy m_ptr;
+                    std::queue<pSharedFleXdIPCMsg> m_queue;
                 };
                 const uint32_t m_myID;
                 FleXdEpoll& m_poller;

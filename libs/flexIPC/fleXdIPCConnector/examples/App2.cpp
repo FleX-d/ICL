@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
     App a(101, poller);
     std::cout << "***addPeer 100 " << a.addPeer(100)  << "\n";
     std::cout << "***addPeer 102 " << a.addPeer(102) << "\n";
+    a.send(100, "Testing msg from 101 to 100");
+    a.send(102, "Testing msg from 101 to 102");
     poller.loop();
     return 0;
 }

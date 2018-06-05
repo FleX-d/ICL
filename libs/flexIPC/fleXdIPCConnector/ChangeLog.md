@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.1] - 2018-06-05
+### Added
+- None
+
+### Changed
+- Fix FleXdIPCConnector handshake and extend examples [Adrian Peniak]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-01
 ### Added
 - Draft for IPCConnector -> base functionalty [Adrian Peniak]

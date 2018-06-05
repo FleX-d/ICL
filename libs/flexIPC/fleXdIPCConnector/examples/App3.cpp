@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     App a(102, poller);
     std::cout << "***addPeer 100 " << a.addPeer(100)  << "\n";
     std::cout << "***addPeer 101 " << a.addPeer(101) << "\n";
+    a.send(100, "Some test msg from 102 to 100");
     poller.loop();
     return 0;
 }
