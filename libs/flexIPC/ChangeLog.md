@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-05
+### Added
+- None
+
+### Changed
+- Renamed proxy functions connectIPC() to connnect() and disconnectIPC() to disconnect() [Martin Strenger]
+- Consolidation of server/client proxy callbacks [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-01
 ### Added
 - Draft for IPCConnector [Adrian Peniak]

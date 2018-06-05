@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-05
+### Added
+- None
+
+### Changed
+- Consolidation of server/client proxy callbacks [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-01
 ### Added
 - Base class FleXdIPC [Adrian Peniak]

@@ -23,10 +23,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCProxy.cpp
  * Author: Adrian Peniak
- * 
+ *
  * Created on May 31, 2018, 7:49 PM
  */
 
@@ -47,14 +47,14 @@ namespace flexd {
               m_onRcvMsg(nullptr),
               m_onRcvEvent(nullptr) {
             }
-            
+
             FleXdIPCProxy::~FleXdIPCProxy() {
             }
-            
+
             int FleXdIPCProxy::getFd() const {
                 return m_ipc->getFd();
             }
-            
+
             pSharedFleXdIPC FleXdIPCProxy::getIPC() {
                 return m_ipc;
             }
@@ -69,8 +69,8 @@ namespace flexd {
                 return ret;
             }
 
-            bool FleXdIPCProxy::connectIPC() {
-                bool ret = m_ipc->connectIPC();
+            bool FleXdIPCProxy::connect() {
+                bool ret = m_ipc->connect();
                 if (m_onConnect) {
                     m_onConnect(ret);
                 } else {
@@ -79,8 +79,8 @@ namespace flexd {
                 return ret;
             }
 
-            bool FleXdIPCProxy::disconnectIPC() {
-                bool ret = m_ipc->disconnectIPC();
+            bool FleXdIPCProxy::disconnect() {
+                bool ret = m_ipc->disconnect();
                 if (m_onDisconnect) {
                     m_onDisconnect(ret);
                 } else {
@@ -106,7 +106,7 @@ namespace flexd {
                     m_ipc->onConnectClient(fd);
                 }
             }
-            
+
             void FleXdIPCProxy::disconnectClient(int fd) {
                 m_ipc->disconnectClient(fd);
                 if(m_onDisconnectClient) {
@@ -115,7 +115,7 @@ namespace flexd {
                     m_ipc->onDisconnectClient(fd);
                 }
             }
-            
+
             void FleXdIPCProxy::rcvMsg(pSharedFleXdIPCMsg msg, int fd) {
                 m_ipc->rcvMsg(msg, fd);
                 if(m_onRcvMsg) {
@@ -137,15 +137,15 @@ namespace flexd {
             void FleXdIPCProxy::setOnInit(std::function<void(bool)> fcn) {
                 m_onInit = fcn;
             }
-            
+
             void FleXdIPCProxy::setOnConnect(std::function<void(bool)> fcn) {
                 m_onConnect = fcn;
             }
-            
+
             void FleXdIPCProxy::setOnDisconnect(std::function<void(bool)> fcn) {
                 m_onDisconnect = fcn;
             }
-            
+
             void FleXdIPCProxy::setOnConnectClient(std::function<void(int)> fcn) {
                 m_onConnectClient = fcn;
             }

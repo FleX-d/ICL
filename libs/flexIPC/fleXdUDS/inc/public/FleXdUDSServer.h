@@ -56,13 +56,14 @@ namespace flexd {
 
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) override;
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
-                
+
             protected:
                 virtual bool initUDS() override;
 
             private:
                 virtual void rcvEvent(FleXdEpoll::Event e) override;
                 virtual void connectClient(int fd) override;
+                virtual void disconnectClient(int fd) override;
                 virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
                 virtual bool reconnect(int fd) override;
                 bool removeFdFromList(int fd);
