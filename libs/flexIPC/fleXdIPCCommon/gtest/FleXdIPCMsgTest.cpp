@@ -40,10 +40,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vector"
 #include "CRC.h"
 
+using namespace flexd::icl::ipc;
+
 namespace {
-    
-    using FleXdIPCAdtHdr = flexd::icl::epoll::FleXdIPCAdtHdr;
-    using FleXdIPCMsg = flexd::icl::epoll::FleXdIPCMsg;
 
     std::vector<uint8_t> payload = { 9, 8, 7, 6 };
     FleXdIPCAdtHdr* ahtemp = new FleXdIPCAdtHdr(0x3F, 1, 2, FleXdIPCMsg::calcCRC16(&payload[0], payload.size()), 3, 4, 5);

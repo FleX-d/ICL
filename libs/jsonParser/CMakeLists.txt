@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 project(jsonParser VERSION "0.0.1")
 set(PROJECT_DESCRIPTION "fasade for json parser")
 
-if(${ENABLE_TESTS})
-    add_subdirectory(tests)
-    add_subdirectory(Gtest)
-endif(${ENABLE_TESTS})
-
 include(GNUInstallDirs)
 
 
@@ -16,7 +11,7 @@ SET(publicHeaders
     inc/public/Base64.h
 )
 SET(privateHeaders
-    
+
 )
 SET(privateSources
     src/JsonObj.cpp
@@ -43,11 +38,18 @@ target_link_libraries(${PROJECT_NAME}
 #    nlohmann_json # lib not exist
 )
 
-SET(jsonParserPublicInc "${publicHeaders}" PARENT_SCOPE)
-SET(jsonParserLib "${PROJECT_NAME}" PARENT_SCOPE)
+SET(jsonParserPublicInc "${jsonParser_SOURCE_DIR}/inc/public" CACHE STRING "")
+SET(jsonParserLib "${PROJECT_NAME}" CACHE STRING "")
+message(STATUS "*Export jsonParserPublicInc: " ${jsonParserPublicInc})
+message(STATUS "*Export jsonParserLib: " ${jsonParserLib})
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_BINARY_DIR}/libs/jsonParser/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+
+if(${ENABLE_TESTS})
+    add_subdirectory(tests)
+    add_subdirectory(Gtest)
+endif(${ENABLE_TESTS})

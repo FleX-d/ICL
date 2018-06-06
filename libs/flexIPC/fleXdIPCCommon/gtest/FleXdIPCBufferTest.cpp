@@ -39,16 +39,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BitStream.h"
 #include "vector"
 
-namespace {
+using namespace flexd::icl::ipc;
 
-    using FleXdIPCBuffer = flexd::icl::epoll::FleXdIPCBuffer;
-    using FleXdIPCMsg = flexd::icl::epoll::FleXdIPCMsg;
-    using pSharedArray8192 = flexd::icl::epoll::pSharedArray8192;
-    using pSharedFleXdIPCMsg = flexd::icl::epoll::pSharedFleXdIPCMsg;
+namespace {
 
     TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg_normal)
     {
-        FleXdIPCBuffer buffer;
+        FleXdIPCBuffer buffer(0);
         pSharedArray8192 data(std::make_shared<std::array<uint8_t, 8192>>(std::array<uint8_t, 8192>{ 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 }));
 
         buffer.rcvMsg(data, 26);
@@ -63,7 +60,7 @@ namespace {
 
     TEST(FleXdIPCBuffer, Positive_Response_Funcion_rcvMsg_corrupted)
     {
-        FleXdIPCBuffer buffer;
+        FleXdIPCBuffer buffer(0);
         pSharedArray8192 data(std::make_shared<std::array<uint8_t, 8192>>(std::array<uint8_t, 8192>{ 8, 0, 12, 252, 0, 98, 1, 2, 108, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 9, 8, 7, 6 }));
 
         buffer.rcvMsg(data, 26);

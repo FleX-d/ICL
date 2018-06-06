@@ -2,8 +2,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.0.1] - 2018-06-06
+### Added
+- None
 
-## [0.0.1] - 2018-01-02
+### Changed
+- Corrected CMakeList for tests [Martin Strenger]
+- Updated examples to actual state [Martin Strenger]
+- Renamed ChangeLog for tests [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.0.1] - 2018-01-18
 
 ### Added

@@ -2,6 +2,22 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.0.1] - 2018-06-06
+### Added
+- None
+
+### Changed
+- corrected CMakeLists [Martin Strenger]
+- Corrected CMakeList for tests [Martin Strenger]
+- Updated examples to actual state [Martin Strenger]
+- Renamed ChangeLog for tests [Martin Strenger]
+- Corrected CMakeList for unit tests [Martin Strenger]
+- Corrected unit tests [Martin Strenger]
+- Renamed ChangeLog for unit tests [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.0.1] - 2018-03-21
 ### Added
 - Gson unit tests [Matus Bodorik]

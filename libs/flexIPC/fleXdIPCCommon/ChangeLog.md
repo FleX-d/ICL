@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-06
+### Added
+- None
+
+### Changed
+- Updated CMakeLists.txt for unit tests to reflect name and code changes [Martin Strenger]
+- Updated unit tests [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-05
 ### Added
 - None
