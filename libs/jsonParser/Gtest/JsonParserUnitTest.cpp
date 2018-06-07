@@ -40,6 +40,7 @@ namespace {
     flexd::icl::JsonObj o("{\"happy\": true, \"pi\": 3.14, \"a\":{\"b\":5}, \"test\": \"/lalal/aafd\"}");
     flexd::icl::JsonObj o2("{\"Name\": \"John\" , \"age\": 30, \"car\": false }");
     flexd::icl::JsonObj o3("{\"AppName\": \"Name\" , \"AppID\": 3545, \"Download\": false }");
+    flexd::icl::JsonObj o4("{\"uint8\": 5 , \"uint32\": 3545, \"uint64\": 7855488 }");
     int tempINT = 0;
     double tempDouble = 0.0;
     std::string tempStr = "";
@@ -66,7 +67,20 @@ namespace {
         EXPECT_TRUE(o.get<int>("/a/b", tempINT));
         EXPECT_EQ(5, tempINT);
     }
-
+    
+    TEST(JsonParser, Positive_Response_Funcion_Get_Uint)
+    {
+        uint8_t tempUint8 = 0;
+        uint32_t tempUint32 = 0;
+        uint64_t tempUint64 = 0;
+        EXPECT_TRUE(o4.get<uint8_t>("/uint8", tempUint8));
+        EXPECT_TRUE(o4.get<uint32_t>("/uint32", tempUint32));
+        EXPECT_TRUE(o4.get<uint64_t>("/uint64", tempUint64));
+        EXPECT_EQ(5, tempUint8);
+        EXPECT_EQ(3545, tempUint32);
+        EXPECT_EQ(7855488, tempUint64);
+    }
+    
     TEST(JsonParser, Negative_Response_Funcion_Get_Integer)
     {
         EXPECT_FALSE(o.get<int>("/a/b/", tempINT));
@@ -139,6 +153,19 @@ namespace {
         EXPECT_TRUE(o.add<int>("/integer", 1));
         o.get<int>("/integer", tempINT);
         EXPECT_EQ(1, tempINT);
+    }
+    
+    TEST(JsonParser, Positive_Response_Funcion_Add_Uint)
+    {
+        uint8_t temp = 0;
+        EXPECT_TRUE(o.add<uint8_t>("/uint8", 1));
+        o.get<uint8_t>("/uint8", temp);
+        EXPECT_EQ(1, temp);
+        
+        uint64_t temp1 = 0;
+        EXPECT_TRUE(o.add<uint64_t>("/uint64", 155555555));
+        o.get<uint64_t>("/uint64", temp1);
+        EXPECT_EQ(155555555, temp1);
     }
 
     TEST(JsonParser, Negative_Response_Funcion_Add_Integer)
@@ -222,6 +249,19 @@ namespace {
         EXPECT_TRUE(o.set<int>("/integer", 999));
         o.get<int>("/integer", tempINT);
         EXPECT_EQ(999, tempINT);
+    }
+    
+    TEST(JsonParser, Positive_Response_Funcion_Set_Uint)
+    {
+        uint8_t temp = 0;
+        EXPECT_TRUE(o.set<uint8_t>("/uint8", 9));
+        o.get<uint8_t>("/uint8", temp);
+        EXPECT_EQ(9, temp);
+        
+        uint64_t temp1 = 0;
+        EXPECT_TRUE(o.set<uint64_t>("/uint64", 99999999));
+        o.get<uint64_t>("/uint64", temp1);
+        EXPECT_EQ(99999999, temp1);
     }
 
     TEST(JsonParser, Negative_Response_Funcion_Set_Integer)

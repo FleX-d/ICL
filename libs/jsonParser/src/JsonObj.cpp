@@ -120,6 +120,47 @@ namespace flexd
             }
             return Error;
         }
+        
+        ReturnType JsonObj::addUint8(const std::string& path, const uint8_t& val)
+        {
+            if (pathIsValid(path) && !pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::addUint16(const std::string& path, const uint16_t& val)
+        {
+            if (pathIsValid(path) && !pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::addUint32(const std::string& path, const uint32_t& val)
+        {
+            if (pathIsValid(path) && !pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::addUint64(const std::string& path, const uint64_t& val)
+        {
+            if (pathIsValid(path) && !pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+
 
         ReturnType JsonObj::addDouble(const std::string& path, const double& val)
         {
@@ -162,7 +203,7 @@ namespace flexd
             }
             return Error;
         }
-
+        
         ReturnType JsonObj::getInt(const std::string& path, int& val) const
         {
 
@@ -170,6 +211,62 @@ namespace flexd
             {
                 nlohmann::json::json_pointer ptr(path);
                 if (m_obj->m_ctx.at(ptr).is_number_integer())
+                {
+                    val = m_obj->m_ctx.at(ptr);
+                    return Success;
+                }
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::getUint8(const std::string& path, uint8_t& val) const
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                nlohmann::json::json_pointer ptr(path);
+                if (m_obj->m_ctx.at(ptr).is_number_unsigned())
+                {
+                    val = m_obj->m_ctx.at(ptr);
+                    return Success;
+                }
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::getUint16(const std::string& path, uint16_t& val) const
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                nlohmann::json::json_pointer ptr(path);
+                if (m_obj->m_ctx.at(ptr).is_number_unsigned())
+                {
+                    val = m_obj->m_ctx.at(ptr);
+                    return Success;
+                }
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::getUint32(const std::string& path, uint32_t& val) const
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                nlohmann::json::json_pointer ptr(path);
+                if (m_obj->m_ctx.at(ptr).is_number_unsigned())
+                {
+                    val = m_obj->m_ctx.at(ptr);
+                    return Success;
+                }
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::getUint64(const std::string& path, uint64_t& val) const
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                nlohmann::json::json_pointer ptr(path);
+                if (m_obj->m_ctx.at(ptr).is_number_unsigned())
                 {
                     val = m_obj->m_ctx.at(ptr);
                     return Success;
@@ -235,6 +332,46 @@ namespace flexd
         }
 
         ReturnType JsonObj::setInt(const std::string& path, const int& val)
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::setUint8(const std::string& path, const uint8_t& val)
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::setUint16(const std::string& path, const uint16_t& val)
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+        
+        ReturnType JsonObj::setUint32(const std::string& path, const uint32_t& val)
+        {
+            if (pathIsValid(path) && pathExist(path))
+            {
+                m_obj->m_ctx[nlohmann::json::json_pointer(path)] = val;
+                return Success;
+            }
+            return Error;
+        }
+
+        ReturnType JsonObj::setUint64(const std::string& path, const uint64_t& val)
         {
             if (pathIsValid(path) && pathExist(path))
             {

@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.0.1] - 2018-03-21
+### Added
+- Functionality to JsonParser: add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
+- Unit Test for add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
+
+### Changed
+- None
+
+### Removed
+- None
+
 ## [0.0.1] - 2018-06-06
 ### Added
 - None
@@ -57,3 +68,4 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 - None
+
