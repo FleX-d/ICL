@@ -118,7 +118,7 @@ namespace flexd {
 
             bool IPCConnector::addClient(uint32_t clientID, const std::string& socPath) {
 
-                if (m_clients.count(clientID)) {
+                if (!m_clients.count(clientID)) {
                     auto client = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSClient> >(socPath, m_poller);
                     client->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
                     client->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
