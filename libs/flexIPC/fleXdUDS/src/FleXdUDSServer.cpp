@@ -68,8 +68,7 @@ namespace flexd {
                     // self fd is listen fd for incoming connections -> accept will perform
                     if(e.fd == getFd()) {
                         int clientFd = ::accept(getFd(), NULL, NULL);
-
-                        if (m_map.count(clientFd)) {
+                        if (!m_map.count(clientFd)) {
                             m_proxy->connectClient(clientFd);
                         }
                     // other fd's are client fd's -> read will perform
@@ -123,14 +122,16 @@ namespace flexd {
                 }
             }
 
+            //TODO currently not used
             bool FleXdUDSServer::reconnect(int fd) {
                 return removeFdFromList(fd);
             }
 
+            //TODO currently not used
             bool FleXdUDSServer::removeFdFromList(int fd) {
                 const size_t size = m_map.size();
                     m_proxy->disconnectClient(fd);
-                return size != m_map.size();
+                return size == m_map.size() + 1;
             }
 
         } // namespace ipc

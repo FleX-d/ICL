@@ -48,17 +48,41 @@ public:
     : FleXdIPCProxyBuilder<FleXdUDSClient>(socPath, poller) {
         this->setOnConnect([this](bool ret){ this->onConnect(ret); });
         this->setOnDisconnect([this](bool ret){ this->onDisconnect(ret); });
+        this->setOnSndMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onSndMsg(msg, fd); });
+        this->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
     }
     virtual ~myUDSClient() = default;
 
 private:
     void onConnect(bool ret)
     {
-        std::cout << "Connected to server (" << ret << ")" << std::endl;
+        if (ret)
+        {
+            std::cout << "Connected to server" << std::endl;
+        } else {
+            std::cout << "Cannot connect to server" << std::endl;
+        }
     }
+
     void onDisconnect(bool ret)
     {
-        std::cout << "Disconnected from server (" << ret << ")" << std::endl;
+        std::cout << "Disconnected from the server" << std::endl;
+    }
+
+    void onSndMsg(pSharedFleXdIPCMsg msg, int fd)
+    {
+        std::cout << "Sending:";
+        for (auto it = msg->getPayload().begin() ; it != msg->getPayload().end(); ++it)
+            std::cout << ' ' << (int) *it;
+        std::cout << std::endl;
+    }
+
+    void onRcvMsg(pSharedFleXdIPCMsg msg, int fd)
+    {
+        std::cout << "Message received:";
+        for (auto it = msg->getPayload().begin() ; it != msg->getPayload().end(); ++it)
+            std::cout << ' ' << (int) *it;
+        std::cout << std::endl;
     }
 };
 
@@ -91,19 +115,12 @@ int main(int argc, char** argv)
 
     if (client.init())
     {
-        std::cout << "FleXdUDSClient.init() successful" << std::endl;
-        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
         client.sndMsg(msg_ptr);
-        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
         client.sndMsg(mmsg_ptr);
-        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
         client.sndMsg(mmsg_ptr);
-        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
         client.sndMsg(msg_ptr);
 
         poller.loop();
-    } else {
-        std::cout << "FleXdUDSClient.init() failed" << std::endl;
     }
     return 0;
 }

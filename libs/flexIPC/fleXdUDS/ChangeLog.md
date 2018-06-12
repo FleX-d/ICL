@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Implemented findings from review [Martin Strenger]
+- Updated server and client examples [Martin Strenger]
 
 ### Removed
 - Moved common functions into fleXdIPCCommon library (FleXdIPCCommon.h/.cpp) [Martin Strenger]

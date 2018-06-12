@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Implemented findings from review [Martin Strenger]
 - Moved common functions into fleXdIPCCommon library (FleXdIPCCommon.h/.cpp) [Martin Strenger]
+- Updated UDS server/client examples [Martin Strenger]
 
 ### Removed
 - None

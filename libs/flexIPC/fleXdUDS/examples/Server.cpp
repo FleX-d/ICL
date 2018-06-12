@@ -48,6 +48,8 @@ public:
     : FleXdIPCProxyBuilder<FleXdUDSServer>(socPath, poller) {
         this->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
         this->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
+        this->setOnSndMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onSndMsg(msg, fd); });
+        this->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
     }
     virtual ~myUDSServer() = default;
 
@@ -59,12 +61,41 @@ private:
         FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
         adtHdr->setValue_0(99);
 
-        std::cout << "Client connected " << fd << std::endl;
+        std::cout << "Client " << fd << " connected" << std::endl;
         sndMsg(msg_ptr, fd);
     }
+
     void onDisconnectClient(int fd)
     {
-        std::cout << "Client disconnected " << fd << std::endl;
+        std::cout << "Client " << fd << " disconnected" << std::endl;
+    }
+
+    void onSndMsg(pSharedFleXdIPCMsg msg, int fd)
+    {
+        std::cout << "Sending to client " << fd << ":";
+        for (auto it = msg->getPayload().begin() ; it != msg->getPayload().end(); ++it)
+            std::cout << ' ' << (int) *it;
+        std::cout << std::endl;
+    }
+
+    void onRcvMsg(pSharedFleXdIPCMsg msg, int fd)
+    {
+        std::vector<uint8_t> payload {11,22,33,44,55,66,77,88,99};
+        std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
+        FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
+        adtHdr->setValue_0(1);
+        adtHdr->setValue_1(55);
+        //adtHdr->setValue_2(); CRC already set through constructor
+        adtHdr->setValue_3(444);
+        adtHdr->setValue_4(9999);
+        adtHdr->setValue_5(1111);
+
+        std::cout << "Message from client " << fd << " received:";
+        for (auto it = msg->getPayload().begin() ; it != msg->getPayload().end(); ++it)
+            std::cout << ' ' << (int) *it;
+        std::cout << std::endl;
+
+        sndMsg(msg_ptr, fd);
     }
 };
 
@@ -72,12 +103,13 @@ int main(int argc, char** argv)
 {
     flexd::icl::ipc::FleXdEpoll poller(10);
     myUDSServer server("/tmp/test", poller);
+
     if (server.init())
     {
-        std::cout << "FleXdUDSServer.init() successful" << std::endl;
+        std::cout << "Server is running" << std::endl;
         poller.loop();
     } else {
-        std::cout << "FleXdUDSServer.init() failed" << std::endl;
+        std::cout << "Initialization failed" << std::endl;
     }
     return 0;
 }
