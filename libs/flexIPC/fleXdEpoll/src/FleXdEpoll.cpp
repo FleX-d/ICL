@@ -97,8 +97,7 @@ namespace flexd {
             bool FleXdEpoll::addEvent(int fd, std::function<void(Event)> onEvent) {
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer == m_epoll->buffer.end()) {
-                    EpollClient epollClient;
-                    auto ret = m_epoll->buffer.insert(std::make_pair(fd, epollClient));
+                    auto ret = m_epoll->buffer.insert(std::make_pair(fd, EpollClient()));
                     if (!ret.second) return false;
 
                     ret.first->second.onEvent = onEvent;
@@ -142,8 +141,10 @@ namespace flexd {
 
                     for (int i = 0; i < nfds; i++) {
 
-                        fd = m_epoll->ev.at(i).data.fd;
-                        flags = m_epoll->ev.at(i).events;
+						const epoll_event& evItem = m_epoll->ev.at(i);
+
+                        fd = evItem.data.fd;
+                        flags = evItem.events;
                         auto itBuffer = m_epoll->buffer.find(fd);
                         if (itBuffer == m_epoll->buffer.end()) {
                             rmEvQueue.push(fd);
@@ -180,6 +181,6 @@ namespace flexd {
                 }
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

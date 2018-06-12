@@ -50,19 +50,21 @@ include(GNUInstallDirs)
 
 SET(publicHeaders
     inc/public/FleXdIPC.h
+    inc/public/FleXdIPCBuffer.h
+    inc/public/FleXdIPCBufferTypes.h
+    inc/public/FleXdIPCCommon.h
+    inc/public/FleXdIPCMsg.h
+    inc/public/FleXdIPCMsgTypes.h
     inc/public/FleXdIPCProxy.h
     inc/public/FleXdIPCProxyBuilder.h
-    inc/public/FleXdIPCBuffer.h
-    inc/public/FleXdIPCMsg.h
-    inc/public/FleXdIPCBufferTypes.h
-    inc/public/FleXdIPCMsgTypes.h
 )
 SET(privateHeaders
 )
 SET(privateSources
-    src/FleXdIPCProxy.cpp
     src/FleXdIPCBuffer.cpp
+    src/FleXdIPCCommon.cpp
     src/FleXdIPCMsg.cpp
+    src/FleXdIPCProxy.cpp
 )
 add_library(${PROJECT_NAME} SHARED ${privateSources})
 set_target_properties(${PROJECT_NAME} PROPERTIES

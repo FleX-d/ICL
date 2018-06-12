@@ -37,15 +37,7 @@ namespace flexd {
         namespace ipc {
 
             FleXdIPCProxy::FleXdIPCProxy(pSharedFleXdIPC ipc)
-            : m_ipc(ipc),
-              m_onInit(nullptr),
-              m_onConnectClient(nullptr),
-              m_onDisconnectClient(nullptr),
-              m_onConnect(nullptr),
-              m_onDisconnect(nullptr),
-              m_onSndMsg(nullptr),
-              m_onRcvMsg(nullptr),
-              m_onRcvEvent(nullptr) {
+            : m_ipc(ipc){
             }
 
             FleXdIPCProxy::~FleXdIPCProxy() {
@@ -60,7 +52,7 @@ namespace flexd {
             }
 
             bool FleXdIPCProxy::init() {
-                bool ret = m_ipc->init();
+                const bool ret = m_ipc->init();
                 if (m_onInit) {
                     m_onInit(ret);
                 } else {
@@ -70,7 +62,7 @@ namespace flexd {
             }
 
             bool FleXdIPCProxy::connect() {
-                bool ret = m_ipc->connect();
+                const bool ret = m_ipc->connect();
                 if (m_onConnect) {
                     m_onConnect(ret);
                 } else {
@@ -80,7 +72,7 @@ namespace flexd {
             }
 
             bool FleXdIPCProxy::disconnect() {
-                bool ret = m_ipc->disconnect();
+                const bool ret = m_ipc->disconnect();
                 if (m_onDisconnect) {
                     m_onDisconnect(ret);
                 } else {
@@ -166,7 +158,7 @@ namespace flexd {
                 m_onRcvEvent = fcn;
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd
 

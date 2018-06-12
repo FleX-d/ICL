@@ -40,8 +40,8 @@ namespace flexd {
     namespace icl {
         namespace ipc {
 
-            typedef std::array<uint8_t, 8192> byteArray8192;
-            typedef std::shared_ptr<std::array<uint8_t, 8192> > pSharedArray8192;
+            typedef std::array<uint8_t, 8192u> byteArray8192;
+            typedef std::shared_ptr<byteArray8192> pSharedArray8192;
 
         } // namespace epoll
     } // namespace icl

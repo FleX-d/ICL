@@ -51,7 +51,8 @@ install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdUDS/${PROJECT_NAME}.pc
 SET(fleXdUDSPublicInc "${fleXdUDS_SOURCE_DIR}/inc/public" CACHE STRING "")
 SET(fleXdUDSLib "${PROJECT_NAME}" CACHE STRING "")
 
-# #TODO avoid buid examples by default
-add_subdirectory(examples)
+if(${ENABLE_EXAMPLES})
+    add_subdirectory(examples)
+endif(${ENABLE_EXAMPLES})
 
 add_dependencies(${PROJECT_NAME} fleXdEpoll fleXdIPCCommon)

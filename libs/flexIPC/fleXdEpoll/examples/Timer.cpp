@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Globallogic s.r.o.
+Copyright (c) 2018, Globallogic s.r.o.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,58 +26,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
- * File:   Server.cpp
+ * File:   Timer.cpp
  *
- * Author: Matus Bodorik
+ * Author: Martin Strenger
  *
- * Created on March 15, 2018, 14:32 PM
+ * Created on June 07, 2018, 15:19 PM
  */
 
-#include <iostream>
 #include "FleXdEpoll.h"
-#include "FleXdIPCProxyBuilder.h"
-#include "FleXdUDSServer.h"
-#include "FleXdIPCMsg.h"
+#include "FleXdTimer.h"
+#include <iostream>
 
 using namespace flexd::icl::ipc;
 
-class myUDSServer : public FleXdIPCProxyBuilder<FleXdUDSServer>
+void onTimer()
 {
-public:
-    explicit myUDSServer(const std::string& socPath, flexd::icl::ipc::FleXdEpoll& poller)
-    : FleXdIPCProxyBuilder<FleXdUDSServer>(socPath, poller) {
-        this->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
-        this->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
-    }
-    virtual ~myUDSServer() = default;
-
-private:
-    void onConnectClient(int fd)
-    {
-        std::vector<uint8_t> payload {69};
-        std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
-        FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
-        adtHdr->setValue_0(99);
-
-        std::cout << "Client connected " << fd << std::endl;
-        sndMsg(msg_ptr, fd);
-    }
-    void onDisconnectClient(int fd)
-    {
-        std::cout << "Client disconnected " << fd << std::endl;
-    }
-};
+    std::cout << "Timer expired" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
-    flexd::icl::ipc::FleXdEpoll poller(10);
-    myUDSServer server("/tmp/test", poller);
-    if (server.init())
+    FleXdEpoll poller(10);
+    FleXdTimer timer(poller, 1, 0, true, onTimer);
+    if (timer.start())
     {
-        std::cout << "FleXdUDSServer.init() successful" << std::endl;
+        std::cout << "FleXdTimer.start() successful" << std::endl;
         poller.loop();
     } else {
-        std::cout << "FleXdUDSServer.init() failed" << std::endl;
+        std::cout << "FleXdTimer.start() failed" << std::endl;
     }
     return 0;
 }

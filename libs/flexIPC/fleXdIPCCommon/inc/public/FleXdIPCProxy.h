@@ -73,14 +73,14 @@ namespace flexd {
                 pSharedFleXdIPC m_ipc;
 
             private:
-                std::function<void(bool)> m_onInit;
-                std::function<void(int)> m_onConnectClient;
-                std::function<void(int)> m_onDisconnectClient;
-                std::function<void(bool)> m_onConnect;
-                std::function<void(bool)> m_onDisconnect;
-                std::function<void(pSharedFleXdIPCMsg, int)> m_onSndMsg;
-                std::function<void(pSharedFleXdIPCMsg, int)> m_onRcvMsg;
-                std::function<void(FleXdEpoll::Event)> m_onRcvEvent;
+                std::function<void(bool)> m_onInit = nullptr;
+                std::function<void(int)> m_onConnectClient = nullptr;
+                std::function<void(int)> m_onDisconnectClient = nullptr;
+                std::function<void(bool)> m_onConnect = nullptr;
+                std::function<void(bool)> m_onDisconnect = nullptr;
+                std::function<void(pSharedFleXdIPCMsg, int)> m_onSndMsg = nullptr;
+                std::function<void(pSharedFleXdIPCMsg, int)> m_onRcvMsg = nullptr;
+                std::function<void(FleXdEpoll::Event)> m_onRcvEvent = nullptr;
             };
             typedef std::shared_ptr<FleXdIPCProxy> pSharedFleXdIPCProxy;
 

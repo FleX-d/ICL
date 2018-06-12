@@ -49,7 +49,7 @@ namespace flexd {
                 FleXdUDS(const FleXdUDS&) = delete;
                 FleXdUDS& operator=(const FleXdUDS&) = delete;
                 virtual ~FleXdUDS();
-                
+
                 /**
                  * Function initialize Unix domain sockets for Client.
                  * @return true if initialization is done, false otherwise.
@@ -60,7 +60,7 @@ namespace flexd {
                  * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
                  */
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
-                
+
 
             protected:
                 virtual bool initUDS() = 0;
@@ -70,7 +70,7 @@ namespace flexd {
                 virtual int getFd() const override;
                 bool connectUDS();
                 bool listenUDS();
-                
+
             protected:
                 FleXdEpoll& m_poller;
                 FleXdIPC* m_proxy;
@@ -80,8 +80,8 @@ namespace flexd {
                 const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };
-            
-        } // namespace epoll
+
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd
 

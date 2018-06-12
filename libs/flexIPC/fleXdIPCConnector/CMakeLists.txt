@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 project(fleXdIPCConnector VERSION "0.1.1")
 set(PROJECT_DESCRIPTION "FleX-d Inter Process Comunication connector library")
 
+message(STATUS "***" )
+message(STATUS "* " ${PROJECT_NAME})
+message(STATUS "***")
+
 include(GNUInstallDirs)
 
 set(sources_cpp
@@ -40,7 +44,8 @@ SET(fleXdIPCConnectorLib "${PROJECT_NAME}" CACHE STRING "")
 message(STATUS "*Export fleXdIPCConnectorPublicInc: " ${fleXdUDSPublicInc})
 message(STATUS "*Export fleXdIPCConnectorLib: " ${fleXdUDSLib})
 
-# #TODO avoid buid examples by default
-add_subdirectory(examples)
+if(${ENABLE_EXAMPLES})
+    add_subdirectory(examples)
+endif(${ENABLE_EXAMPLES})
 
 add_dependencies(${PROJECT_NAME} fleXdUDS)

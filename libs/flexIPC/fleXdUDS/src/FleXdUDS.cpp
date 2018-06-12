@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdUDS.h"
 #include "FleXdIPCBufferTypes.h"
+#include "FleXdIPCCommon.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -57,6 +58,7 @@ namespace flexd {
             }
 
             FleXdUDS::~FleXdUDS() {
+                ::unlink(m_socPath.c_str());
             }
 
             bool FleXdUDS::init() {
@@ -72,7 +74,10 @@ namespace flexd {
                 } else {
                     std::strncpy(m_ctx->addr.sun_path, m_socPath.c_str(), sizeof (m_ctx->addr.sun_path) - 1);
                 }
-                return initUDS();
+                if (makeParentDir(m_socPath.c_str())) {
+                    return initUDS();
+                }
+                return false;
             }
 
             int FleXdUDS::getFd() const {
@@ -102,6 +107,6 @@ namespace flexd {
                 return true;
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

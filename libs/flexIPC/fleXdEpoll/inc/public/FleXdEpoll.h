@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdEpoll.h
  * Author: Adrian Peniak
  *
@@ -49,9 +49,9 @@ namespace flexd {
                     : fd(_fd), flag(_flag), type(_type) {}
                     int fd;
                     int flag;
-                    EpollEvent::Enum type;                    
+                    EpollEvent::Enum type;
                 };
-                
+
             public:
                 explicit FleXdEpoll(size_t maxEventh);
                 virtual ~FleXdEpoll();
@@ -70,7 +70,7 @@ namespace flexd {
                 std::unique_ptr<Epoll> m_epoll;
                 std::atomic<bool> m_safeStop;
             };
-            
+
         } // namespace epoll
     } // namespace icl
 } // namespace flexd

@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-12
+### Added
+- None
+
+### Changed
+- Implemented findings from review [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.1] - 2018-06-05
 ### Added
 - None

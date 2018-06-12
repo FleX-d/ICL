@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-12
+### Added
+- Added FleXdIPCCommon.h/.cpp [Martin Strenger]
+
+### Changed
+- Implemented findings from review [Martin Strenger]
+- Moved common functions into fleXdIPCCommon library (FleXdIPCCommon.h/.cpp) [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-06
 ### Added
 - None

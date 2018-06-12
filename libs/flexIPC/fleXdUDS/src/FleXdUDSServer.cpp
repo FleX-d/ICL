@@ -68,8 +68,8 @@ namespace flexd {
                     // self fd is listen fd for incoming connections -> accept will perform
                     if(e.fd == getFd()) {
                         int clientFd = ::accept(getFd(), NULL, NULL);
-                        auto it = m_map.find(clientFd);
-                        if (it == m_map.end()) {
+
+                        if (m_map.count(clientFd)) {
                             m_proxy->connectClient(clientFd);
                         }
                     // other fd's are client fd's -> read will perform
@@ -102,8 +102,8 @@ namespace flexd {
                 std::ignore = m_map.erase(fd);
             }
 
-            void FleXdUDSServer::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) {
-                std::shared_ptr<std::array<uint8_t, 8192> > array_ptr = std::make_shared<std::array<uint8_t, 8192> >(array);
+            void FleXdUDSServer::readMsg(FleXdEpoll::Event e, byteArray8192&& array, int size) {
+                std::shared_ptr<byteArray8192> array_ptr = std::make_shared<byteArray8192>(array);
                 auto search = m_map.find(e.fd);
                 if (search != m_map.end()) {
                     search->second.rcvMsg(array_ptr, size);
@@ -128,14 +128,11 @@ namespace flexd {
             }
 
             bool FleXdUDSServer::removeFdFromList(int fd) {
-                auto it = m_map.find(fd);
-                if (it != m_map.end()) {
+                const size_t size = m_map.size();
                     m_proxy->disconnectClient(fd);
-                    return true;
-                }
-                return false;
+                return size != m_map.size();
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

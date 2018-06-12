@@ -10,12 +10,16 @@ include(GNUInstallDirs)
 
 SET(publicHeaders
     inc/public/FleXdEpoll.h
+    inc/public/FleXdEvent.h
     inc/public/FleXdIPCTypes.h
+    inc/public/FleXdTimer.h
 )
 SET(privateHeaders
 )
 SET(privateSources
     src/FleXdEpoll.cpp
+    src/FleXdEvent.cpp
+    src/FleXdTimer.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${privateSources})
@@ -38,8 +42,12 @@ install(TARGETS ${PROJECT_NAME}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(FILES ${CMAKE_BINARY_DIR}/libs/flexIPC/fleXdEpoll/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
-    
+
 SET(fleXdEpollPublicInc "${fleXdEpoll_SOURCE_DIR}/inc/public" CACHE STRING "")
 SET(fleXdEpollLib "${PROJECT_NAME}" CACHE STRING "")
 message(STATUS "*Export fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
 message(STATUS "*Export fleXdEpollLib: " ${fleXdEpollLib})
+
+if(${ENABLE_EXAMPLES})
+    add_subdirectory(examples)
+endif(${ENABLE_EXAMPLES})

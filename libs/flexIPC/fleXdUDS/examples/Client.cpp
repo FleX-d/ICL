@@ -52,59 +52,58 @@ public:
     virtual ~myUDSClient() = default;
 
 private:
-   void onConnect(bool ret)
-   {
-       std::cout << "Connected to server (" << ret << ")" << std::endl;
-   }
-   void onDisconnect(bool ret)
-   {
-       std::cout << "Disconnected from server (" << ret << ")" << std::endl;
-   }
+    void onConnect(bool ret)
+    {
+        std::cout << "Connected to server (" << ret << ")" << std::endl;
+    }
+    void onDisconnect(bool ret)
+    {
+        std::cout << "Disconnected from server (" << ret << ")" << std::endl;
+    }
 };
 
 int main(int argc, char** argv)
 {
-   flexd::icl::ipc::FleXdEpoll poller(10);
-   myUDSClient client("/tmp/test", poller);
+    flexd::icl::ipc::FleXdEpoll poller(10);
+    myUDSClient client("/tmp/test", poller);
 
-   std::vector<uint8_t> payload {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
-                                   ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76
-                                   ,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,105};
-   std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
-   FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
-   adtHdr->setValue_0(1);
-   adtHdr->setValue_1(55);
-   //adtHdr->setValue_2(); CRC already set through constructor
-   adtHdr->setValue_3(444);
-   adtHdr->setValue_4(9999);
-   adtHdr->setValue_5(1111);
+    std::vector<uint8_t> payload {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40
+                                    ,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76
+                                    ,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,105};
+    std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
+    FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
+    adtHdr->setValue_0(1);
+    adtHdr->setValue_1(55);
+    //adtHdr->setValue_2(); CRC already set through constructor
+    adtHdr->setValue_3(444);
+    adtHdr->setValue_4(9999);
+    adtHdr->setValue_5(1111);
 
-   std::vector<uint8_t> mpayload {7};
-   std::shared_ptr<FleXdIPCMsg> mmsg_ptr = std::make_shared<FleXdIPCMsg>(std::move(mpayload));
-   FleXdIPCAdtHdr* madtHdr= mmsg_ptr->getAdditionalHeader();
-   madtHdr->setValue_0(1);
-   madtHdr->setValue_1(2);
-   //madtHdr->setValue_2(); CRC already set through constructor
-   madtHdr->setValue_3(5);
-   madtHdr->setValue_4(3);
-   madtHdr->setValue_5(4);
+    std::vector<uint8_t> mpayload {7};
+    std::shared_ptr<FleXdIPCMsg> mmsg_ptr = std::make_shared<FleXdIPCMsg>(std::move(mpayload));
+    FleXdIPCAdtHdr* madtHdr= mmsg_ptr->getAdditionalHeader();
+    madtHdr->setValue_0(1);
+    madtHdr->setValue_1(2);
+    //madtHdr->setValue_2(); CRC already set through constructor
+    madtHdr->setValue_3(5);
+    madtHdr->setValue_4(3);
+    madtHdr->setValue_5(4);
 
-   if (client.init())
-   {
-       std::cout << "FleXdUDSClient.init() successful" << std::endl;
-       std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-       client.sndMsg(msg_ptr);
-       std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-       client.sndMsg(mmsg_ptr);
-       std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-       client.sndMsg(mmsg_ptr);
-       std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
-       client.sndMsg(msg_ptr);
+    if (client.init())
+    {
+        std::cout << "FleXdUDSClient.init() successful" << std::endl;
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sndMsg(msg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sndMsg(mmsg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sndMsg(mmsg_ptr);
+        std::cout << "FleXdUDSClient.sendMsg() " << std::endl;
+        client.sndMsg(msg_ptr);
 
-       poller.loop();
-   } else {
-       std::cout << "FleXdUDSClient.init() failed" << std::endl;
-   }
-
+        poller.loop();
+    } else {
+        std::cout << "FleXdUDSClient.init() failed" << std::endl;
+    }
     return 0;
 }

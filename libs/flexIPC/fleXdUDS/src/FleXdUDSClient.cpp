@@ -87,8 +87,8 @@ namespace flexd {
                 }
             }
 
-            void FleXdUDSClient::readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) {
-                m_array = std::make_shared<std::array<uint8_t, 8192> >(array);
+            void FleXdUDSClient::readMsg(FleXdEpoll::Event e, byteArray8192&& array, int size) {
+                m_array = std::make_shared<byteArray8192>(array);
                 m_buffer.rcvMsg(m_array, size);
             }
 
@@ -105,6 +105,6 @@ namespace flexd {
                 return m_proxy->connect();
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

@@ -115,21 +115,18 @@ namespace flexd {
                 return *this;
             }
 
-            const uint8_t FleXdIPCAdtHdr::getMask() const
+            uint8_t FleXdIPCAdtHdr::getMask() const
             {
                 return m_headerMask;
             }
             void FleXdIPCAdtHdr::reset()
             {
                 m_headerMask = m_value0 = m_value1 = m_value2 = m_value3 = m_value4 = m_value5 = 0;
-                if (m_next != nullptr)
-                {
-                    delete m_next;
-                    m_next = nullptr;
-                }
+				delete m_next;
+				m_next = nullptr;
             }
 
-            const uint8_t FleXdIPCAdtHdr::getValue_0() const
+            uint8_t FleXdIPCAdtHdr::getValue_0() const
             {
                 return m_value0;
             }
@@ -144,7 +141,7 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_0_FLAG;
             }
 
-            const uint8_t FleXdIPCAdtHdr::getValue_1() const
+            uint8_t FleXdIPCAdtHdr::getValue_1() const
             {
                 return m_value1;
             }
@@ -159,7 +156,7 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_1_FLAG;
             }
 
-            const uint16_t FleXdIPCAdtHdr::getValue_2() const
+            uint16_t FleXdIPCAdtHdr::getValue_2() const
             {
                 return m_value2;
             }
@@ -174,7 +171,7 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_2_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_2_FLAG;
             }
 
-            const uint32_t FleXdIPCAdtHdr::getValue_3() const
+            uint32_t FleXdIPCAdtHdr::getValue_3() const
             {
                 return m_value3;
             }
@@ -189,7 +186,7 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_3_FLAG;
             }
 
-            const uint32_t FleXdIPCAdtHdr::getValue_4() const
+            uint32_t FleXdIPCAdtHdr::getValue_4() const
             {
                 return m_value4;
             }
@@ -204,7 +201,7 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_4_FLAG;
             }
 
-            const uint32_t FleXdIPCAdtHdr::getValue_5() const
+            uint32_t FleXdIPCAdtHdr::getValue_5() const
             {
                 return m_value5;
             }
@@ -219,12 +216,12 @@ namespace flexd {
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_5_FLAG;
             }
 
-            const uint8_t FleXdIPCAdtHdr::getNextHeaderMask() const
+            uint8_t FleXdIPCAdtHdr::getNextHeaderMask() const
             {
                 return m_next != nullptr ? m_next->getMask() : 0;
             }
 
-            const uint16_t FleXdIPCAdtHdr::getSize() const
+            uint16_t FleXdIPCAdtHdr::getSize() const
             {
                 return (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG ? sizeof(m_value0) : 0) +
                     (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG ? sizeof(m_value1) : 0) +
@@ -247,11 +244,8 @@ namespace flexd {
 
             void FleXdIPCAdtHdr::deleteNext()
             {
-                if (m_next != nullptr)
-                {
-                    delete m_next;
-                    m_next = nullptr;
-                }
+				delete m_next;
+				m_next = nullptr;
                 if (m_headerMask & IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG) m_headerMask ^= IPC_MSG_ADDITIONAL_HEADER_NEXT_HEADER_MASK_FLAG;
             }
 
@@ -298,7 +292,7 @@ namespace flexd {
 
             FleXdIPCMsg::FleXdIPCMsg(std::vector<uint8_t>&& payload, bool calcCRC /*= true*/)
             : m_payload(payload),
-              m_headerParamType(1),
+              m_headerParamType(IPC_MSG_HEADER_PARAM_TYPE_ADDITIONAL_HEADER),
               m_headerParam(0),
               m_additionalHeader(calcCRC ? new FleXdIPCAdtHdr() : nullptr),
               m_valid(true)
@@ -308,10 +302,8 @@ namespace flexd {
 
             FleXdIPCMsg::~FleXdIPCMsg()
             {
-                if (m_additionalHeader != nullptr)
-                {
-                    delete m_additionalHeader;
-                }
+                delete m_additionalHeader;
+				m_additionalHeader = nullptr;
             }
 
             FleXdIPCMsg::FleXdIPCMsg(FleXdIPCMsg&& other)
@@ -332,7 +324,7 @@ namespace flexd {
                 if (this != &other)
                 {
                     m_payload.clear();
-                    if (m_additionalHeader != nullptr) delete m_additionalHeader;
+                    delete m_additionalHeader;
 
                     m_payload = std::move(other.m_payload);
                     m_headerParamType = other.m_headerParamType;
@@ -346,12 +338,12 @@ namespace flexd {
                 return *this;
             }
 
-            const bool FleXdIPCMsg::getHeaderParamType() const
+            bool FleXdIPCMsg::getHeaderParamType() const
             {
                 return m_headerParamType;
             }
 
-            const uint8_t FleXdIPCMsg::getHeaderParam() const
+            uint8_t FleXdIPCMsg::getHeaderParam() const
             {
                 if (m_headerParamType && m_additionalHeader != nullptr) return m_additionalHeader->getMask();
                 return m_headerParam;
@@ -368,7 +360,7 @@ namespace flexd {
                 if (m_headerParamType) deleteAdditionalHeader();
             }
 
-            const uint16_t FleXdIPCMsg::getMsgSize() const
+            uint16_t FleXdIPCMsg::getMsgSize() const
             {
                 return IPC_MSG_HEADER_SIZE + m_payload.size() + (m_additionalHeader == nullptr ? 0 : m_additionalHeader->getSize());
             }
@@ -384,11 +376,8 @@ namespace flexd {
 
             void FleXdIPCMsg::deleteAdditionalHeader()
             {
-                if (m_additionalHeader != nullptr)
-                {
-                    delete m_additionalHeader;
-                    m_additionalHeader = nullptr;
-                }
+                delete m_additionalHeader;
+                m_additionalHeader = nullptr;
                 if (m_headerParamType && m_headerParam != IPC_MSG_HEADER_IN_PAYLOAD_FLAG) m_headerParam = 0;
             }
 
@@ -413,7 +402,7 @@ namespace flexd {
                 return std::move(m_payload);
             }
 
-            const bool FleXdIPCMsg::isValid() const
+            bool FleXdIPCMsg::isValid() const
             {
                 return m_valid;
             }
@@ -423,7 +412,7 @@ namespace flexd {
                 BitStream bs;
                 bs.put((uint8_t) IPC_MSG_START_MSG_FLAG, IPC_MSG_START_MSG_FLAG_BIT_COUNT);
                 bs.put((uint8_t) IPC_MSG_START_HEADER_FLAG, IPC_MSG_HEADER_START_FLAG_BIT_COUNT);
-                bs.put(m_headerParamType, IPC_MSG_HEADER_PARAMETER_TYPE_BIT_COUNT);
+                bs.put((uint8_t) (m_headerParamType ? IPC_MSG_HEADER_PARAM_TYPE_ADDITIONAL_HEADER : IPC_MSG_HEADER_PARAM_TYPE_MSG_TYPE), IPC_MSG_HEADER_PARAMETER_TYPE_BIT_COUNT);
                 if (m_headerParamType && m_additionalHeader != nullptr) m_headerParam = m_additionalHeader->getMask();
                 bs.put(m_headerParam, IPC_MSG_HEADER_PARAMETER_BIT_COUNT);
                 bs.put(getMsgSize(), IPC_MSG_MSG_SIZE_BIT_COUNT);
@@ -461,6 +450,6 @@ namespace flexd {
                 return CRC::Calculate(data , size, CRC::CRC_16_ARC());
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

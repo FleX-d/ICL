@@ -24,51 +24,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-/* 
+/*
  * File:   IPCConnector.cpp
  * Author: Adrian Peniak
- * 
+ *
  * Created on November 27, 2017, 2:26 PM
  */
 
 #include "FleXdIPCConnector.h"
+#include "FleXdIPCCommon.h"
 #include "FleXdUDSServer.h"
 #include "FleXdUDSClient.h"
 #include "FleXdIPCProxyBuilder.h"
 #include "FleXdIPCMsgTypes.h"
 #include "BitStream.h"
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <vector>
 #include <cstdint>
 
-namespace {
-    bool checkIfFileExist(const std::string& filePath) {
-        struct stat info;
-        return (stat(filePath.c_str(), &info) == 0);
-    }
-    
-    bool makeDir(const std::string& dirPath) {
-        if (dirPath.empty()) return false;
-        return (mkdir(dirPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_IXOTH) == 0);
-    }
-    
-    std::string cutLastPathElement(const std::string& dirPath) {
-        return dirPath.substr(0, dirPath.find_last_of("\\/"));
-    }
-    
-    bool makeParentDir(const std::string& filePath) {
-        std::string dir = cutLastPathElement(filePath);
-        if(checkIfFileExist(dir)) return true;
-        if(!checkIfFileExist(cutLastPathElement(dir))) makeParentDir(dir);
-        return makeDir(dir);
-    }
-}
-
-
 namespace flexd {
     namespace icl {
-        namespace ipc {          
+        namespace ipc {
             IPCConnector::IPCConnector(uint32_t myID, FleXdEpoll& poller, bool garantedDelivery /*false*/)
             : m_myID(myID),
               m_poller(poller),
@@ -78,16 +54,16 @@ namespace flexd {
             {
                 makeParentDir(FLEXDIPCUDSPATH + std::to_string(m_myID));
             }
-            
+
             IPCConnector::~IPCConnector()
             {
-                
+
             }
-            
+
             uint32_t IPCConnector::getMyID() const {
                   return m_myID;
             }
-              
+
             bool IPCConnector::addPeer(uint32_t peerID)
             {
                 const std::string socPath = FLEXDIPCUDSPATH + std::to_string(peerID);
@@ -109,15 +85,11 @@ namespace flexd {
                 }
                 return false;
             }
-            
+
             bool IPCConnector::removePeer(uint32_t peerID)
             {
                 if(m_myID != peerID) {
-                    auto it = m_clients.find(peerID);
-                    if (it != m_clients.end()) {
-                        m_clients.erase(it);
-                        return true;
-                    }
+                    return m_clients.erase(peerID) != 0;
                 }
                 return false;
             }
@@ -125,12 +97,12 @@ namespace flexd {
             {
                 return false;
             }
-            
+
             bool IPCConnector::unMutePeer(uint32_t peerID)
             {
                 return false;
             }
-            
+
             bool IPCConnector::sendMsg(pSharedFleXdIPCMsg msg) {
                 auto it = m_clients.find(msg->getAdditionalHeader()->getValue_5());
                 if (it != m_clients.end()) {
@@ -143,10 +115,10 @@ namespace flexd {
                 }
                 return false;
             }
-            
+
             bool IPCConnector::addClient(uint32_t clientID, const std::string& socPath) {
-                auto it = m_clients.find(clientID);
-                if (it == m_clients.end()) {
+
+                if (m_clients.count(clientID)) {
                     auto client = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSClient> >(socPath, m_poller);
                     client->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
                     client->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
@@ -154,12 +126,12 @@ namespace flexd {
                     if(!client->init()) {
                         return false;
                     }
-                    auto ret = m_clients.insert(std::make_pair(clientID, Client(true, client->getFd(), client)));
+                    const auto& ret = m_clients.insert(std::make_pair(clientID, Client(true, client->getFd(), client)));
                     return ret.second;
                     }
                 return false;
             }
-            
+
             void IPCConnector::onRcvMsg(pSharedFleXdIPCMsg msg, int fd) {
                 if(msg->getHeaderParamType() == true) {
                     receiveMsg(msg);
@@ -172,34 +144,34 @@ namespace flexd {
                         }
                         case FleXdIPCMsgTypes::Enum::HandshakeAck: {
                             BitStream hello(msg->releasePayload());
-                            uint32_t peer1 = hello.get<uint32_t>();
-                            uint32_t peer2 = hello.get<uint32_t>();
+                            const uint32_t peer1 = hello.get<uint32_t>();
+                            const uint32_t peer2 = hello.get<uint32_t>();
                             handshakeFin(peer1, peer2, fd);
-                            break;  
+                            break;
                         }
                         case FleXdIPCMsgTypes::Enum::HandshakeSuccess: {
                             BitStream hello(msg->releasePayload());
-                            uint32_t peer = hello.get<uint32_t>();
+                            const uint32_t peer = hello.get<uint32_t>();
                             onConnectPeer(peer);
                             flushQueue(peer);
-                            break;  
+                            break;
                         }
                         case FleXdIPCMsgTypes::Enum::IPCMsg: {
                             receiveMsg(msg);
-                            break;   
+                            break;
                         }
                         default:
                             break;
                     }
                 }
             }
-            
+
             void IPCConnector::onConnectClient(int fd) {
                 if(m_server) {
                     handshake(fd);
                 }
             }
-            
+
             void IPCConnector::onDisconnectClient(int fd) {
                 for(auto& ref : m_clients) {
                     if(ref.second.m_fd == fd) {
@@ -207,14 +179,14 @@ namespace flexd {
                     }
                 }
             }
-            
+
             void IPCConnector::handshake(int fd) {
                 BitStream hello;
                 hello.put<uint32_t>(m_myID);
                 auto msg = std::make_shared<FleXdIPCMsg>(false, FleXdIPCMsgTypes::Enum::Handshake, hello.releaseData());
                 m_server->sndMsg(msg,fd);
             }
-            
+
             void IPCConnector::handshakeAck(uint32_t peerID, int fd) {
                 auto it = m_clients.find(peerID);
                 if (it != m_clients.end()) {
@@ -227,11 +199,11 @@ namespace flexd {
                     // TODO
                 }
             }
-            
+
             void IPCConnector::handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd) {
                 BitStream hello;
                 hello.put<uint32_t>(peerID1);
-                uint32_t peerID = (peerID1 == m_myID) ? peerID2 : peerID1;
+                const uint32_t peerID = (peerID1 == m_myID) ? peerID2 : peerID1;
                 auto it = m_clients.find(peerID);
                 if (it != m_clients.end()) {
                     it->second.m_active = true;
@@ -243,18 +215,18 @@ namespace flexd {
                     // TODO
                 }
             }
-            
+
             void IPCConnector::flushQueue(uint32_t peerID) {
                 auto it = m_clients.find(peerID);
                 if (it != m_clients.end()) {
                     while(!it->second.m_queue.empty()) {
-                        bool ret = sendMsg(it->second.m_queue.front());
+                        const bool ret = sendMsg(it->second.m_queue.front());
                         it->second.m_queue.pop();
                         if(!ret) break;
                     }
                 }
             }
-            
+
         } // namespace ipc
     } // namespace icl
 } // namespace flexd

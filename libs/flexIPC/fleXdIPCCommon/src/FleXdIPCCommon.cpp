@@ -23,54 +23,42 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 /*
- * File:   FleXdUDSClient.h
- * Author: Adrian Peniak
- * Author: Matus Bodorik
+ * File:   FleXdIPCCommon.cpp
+ * Author: Martin Strenger
  *
- * Created on February 1, 2018, 2:45 PM
+ * Created on June 08, 2018, 12:44 PM
  */
 
-#ifndef FLEXDUDSCLIENT_H
-#define FLEXDUDSCLIENT_H
-
-#include "FleXdIPCMsg.h"
-#include "FleXdIPCBuffer.h"
-#include "FleXdUDS.h"
-
+#include "FleXdIPCCommon.h"
+#include <sys/stat.h>
 
 namespace flexd {
     namespace icl {
         namespace ipc {
 
-            class FleXdUDSClient : public FleXdUDS {
-            public:
-                FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
-                FleXdUDSClient(const FleXdUDSClient&) = delete;
-                FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
-                virtual ~FleXdUDSClient();
+            bool checkIfFileExist(const std::string& filePath) {
+                struct stat info;
+                return (stat(filePath.c_str(), &info) == 0);
+            }
 
-                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
-                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
+            bool makeDir(const std::string& dirPath) {
+                if (dirPath.empty()) return false;
+                return (::mkdir(dirPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_IXOTH) == 0);
+            }
 
-                virtual bool connect() override;
-                virtual bool disconnect() override;
+            std::string cutLastPathElement(const std::string& dirPath) {
+                return dirPath.substr(0, dirPath.find_last_of("\\/"));
+            }
 
-            protected:
-                virtual bool initUDS() override;
+            bool makeParentDir(const std::string& filePath) {
+                std::string dir = cutLastPathElement(filePath);
+                if(checkIfFileExist(dir)) return true;
+                if(!checkIfFileExist(cutLastPathElement(dir))) makeParentDir(dir);
+                return makeDir(dir);
+            }
 
-            private:
-                virtual void rcvEvent(FleXdEpoll::Event e) override;
-                virtual void readMsg(FleXdEpoll::Event e, byteArray8192&& array, int size) override;
-                virtual bool reconnect(int fd) override;
-
-            private:
-                pSharedArray8192 m_array;
-                FleXdIPCBuffer m_buffer;
-            };
-
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd
-
-#endif /* FLEXDUDSCLIENT_H */

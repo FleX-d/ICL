@@ -93,11 +93,11 @@ namespace flexd {
             int FleXdIPCBuffer::getFd() const {
                 return m_fd;
             }
-            
+
             void FleXdIPCBuffer::setFd(int fd) {
                 m_fd = fd;
             }
-            
+
             void FleXdIPCBuffer::rcvMsg(pSharedArray8192& data, size_t size)
             {
                 m_cache.putToEnd(data->begin(), data->begin() + (size));
@@ -113,9 +113,9 @@ namespace flexd {
                     {
                         if (m_cache.get<uint8_t>(IPC_MSG_HEADER_START_FLAG_BIT_COUNT) == IPC_MSG_START_HEADER_FLAG)
                         {
-                            bool headerParamType = m_cache.get<uint8_t>(IPC_MSG_HEADER_PARAMETER_TYPE_BIT_COUNT);
-                            uint8_t headerParam = m_cache.get<uint8_t>(IPC_MSG_HEADER_PARAMETER_BIT_COUNT);
-                            uint16_t msgSize = m_cache.get<uint16_t>(IPC_MSG_MSG_SIZE_BIT_COUNT);
+                            const bool headerParamType = m_cache.get<uint8_t>(IPC_MSG_HEADER_PARAMETER_TYPE_BIT_COUNT);
+                            const uint8_t headerParam = m_cache.get<uint8_t>(IPC_MSG_HEADER_PARAMETER_BIT_COUNT);
+                            const uint16_t msgSize = m_cache.get<uint16_t>(IPC_MSG_MSG_SIZE_BIT_COUNT);
                             if (m_cache.get<uint8_t>(IPC_MSG_HEADER_END_FLAG_BIT_COUNT) == IPC_MSG_END_HEADER_FLAG)
                             {
                                 if (m_cache.getData().size() >= msgSize)
@@ -154,7 +154,7 @@ namespace flexd {
                                         }
                                         addHdrSize = msgAdditionalHeader->getSize();
                                     }
-                                    size_t payloadSize = msgSize - addHdrSize - IPC_MSG_HEADER_SIZE;
+                                    const size_t payloadSize = msgSize - addHdrSize - IPC_MSG_HEADER_SIZE;
                                     std::vector<uint8_t> tmp(m_cache.getRest());
                                     std::vector<uint8_t> payload(tmp.begin(), tmp.begin() + payloadSize);
                                     BitStream newData(std::vector<uint8_t>(tmp.begin() + payloadSize, tmp.end()));
@@ -170,17 +170,17 @@ namespace flexd {
                                             }
                                             if(msgAdditionalHeader->getValue_2() == calculateCRC)
                                             {
-                                                releaseMsg(std::make_shared<FleXdIPCMsg>(msgAdditionalHeader, std::move(payload)));
+                                                releaseMsg(std::move(std::make_shared<FleXdIPCMsg>(msgAdditionalHeader, std::move(payload))));
                                             } else {
                                                 //TODO - Acknowledge message is corrupted
                                                 delete msgAdditionalHeader;
                                                 rcvMsg();
                                             }
                                         } else {
-                                            releaseMsg(std::make_shared<FleXdIPCMsg>(msgAdditionalHeader, std::move(payload)));
+                                            releaseMsg(std::move(std::make_shared<FleXdIPCMsg>(msgAdditionalHeader, std::move(payload))));
                                         }
                                     } else {
-                                        releaseMsg(std::make_shared<FleXdIPCMsg>(headerParamType, headerParam, std::move(payload)));
+                                        releaseMsg(std::move(std::make_shared<FleXdIPCMsg>(headerParamType, headerParam, std::move(payload))));
                                     }
                                 } else {
                                 }
@@ -208,12 +208,12 @@ namespace flexd {
             }
 
             pSharedFleXdIPCMsg FleXdIPCBuffer::pop() {
-                auto ret = m_queue.front();
+                pSharedFleXdIPCMsg ret = std::move(m_queue.front());
                 m_queue.pop();
                 return std::move(ret);
             }
 
-            void FleXdIPCBuffer::releaseMsg(pSharedFleXdIPCMsg msg)
+            void FleXdIPCBuffer::releaseMsg(pSharedFleXdIPCMsg&& msg)
             {
                 if (msg) {
                     if (m_onMsg) {
@@ -231,10 +231,10 @@ namespace flexd {
 
             void FleXdIPCBuffer::findNonCoruptedMessage(uint16_t coruptedMsgSize)
             {
-                unsigned counter = coruptedMsgSize * 8;
+                unsigned counter = coruptedMsgSize * 8u;
                 if (coruptedMsgSize < IPC_MSG_HEADER_SIZE)
                 {
-                    while (counter <= m_cache.getData().size() * 8)
+                    while (counter <= m_cache.getData().size() * 8u)
                     {
                         if (m_cache.getWithOffset<uint8_t>(counter, IPC_MSG_START_MSG_FLAG_BIT_COUNT) == IPC_MSG_START_MSG_FLAG)
                         {
@@ -246,7 +246,7 @@ namespace flexd {
                                 {
                                     if(m_cache.get<uint8_t>(IPC_MSG_HEADER_END_FLAG_BIT_COUNT) == IPC_MSG_END_HEADER_FLAG)
                                     {
-                                        m_cache.getWithOffset<uint8_t>(counter - 8); // last byte from previous message
+                                        m_cache.getWithOffset<uint8_t>(counter - 8u); // last byte from previous message
                                         BitStream newData(m_cache.getRest());
                                         std::swap(m_cache, newData);
                                         rcvMsg();
@@ -255,11 +255,11 @@ namespace flexd {
                                 }
                             }
                         }
-                        counter += 8;
+                        counter += 8u;
                     }
                 }
             }
 
-        } // namespace epoll
+        } // namespace ipc
     } // namespace icl
 } // namespace flexd

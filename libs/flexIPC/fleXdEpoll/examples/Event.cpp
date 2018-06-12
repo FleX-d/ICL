@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Globallogic s.r.o.
+Copyright (c) 2018, Globallogic s.r.o.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,58 +26,67 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
- * File:   Server.cpp
+ * File:   Event.cpp
  *
- * Author: Matus Bodorik
+ * Author: Martin Strenger
  *
- * Created on March 15, 2018, 14:32 PM
+ * Created on June 08, 2018, 10:22 AM
  */
 
-#include <iostream>
 #include "FleXdEpoll.h"
-#include "FleXdIPCProxyBuilder.h"
-#include "FleXdUDSServer.h"
-#include "FleXdIPCMsg.h"
+#include "FleXdEvent.h"
+#include <iostream>
+#include <unistd.h>
+#include <signal.h>
 
 using namespace flexd::icl::ipc;
 
-class myUDSServer : public FleXdIPCProxyBuilder<FleXdUDSServer>
+void onEvent()
 {
-public:
-    explicit myUDSServer(const std::string& socPath, flexd::icl::ipc::FleXdEpoll& poller)
-    : FleXdIPCProxyBuilder<FleXdUDSServer>(socPath, poller) {
-        this->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
-        this->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
-    }
-    virtual ~myUDSServer() = default;
+    std::cout << "[pid " << ::getpid() << "] Event triggered" << std::endl;
+}
 
-private:
-    void onConnectClient(int fd)
-    {
-        std::vector<uint8_t> payload {69};
-        std::shared_ptr<FleXdIPCMsg> msg_ptr = std::make_shared<FleXdIPCMsg>(std::move(payload));
-        FleXdIPCAdtHdr* adtHdr= msg_ptr->getAdditionalHeader();
-        adtHdr->setValue_0(99);
-
-        std::cout << "Client connected " << fd << std::endl;
-        sndMsg(msg_ptr, fd);
-    }
-    void onDisconnectClient(int fd)
-    {
-        std::cout << "Client disconnected " << fd << std::endl;
-    }
-};
+// void onSignal()
+// {
+//     std::cout << "Signal triggered" << std::endl;
+//     exit(1);
+// }
 
 int main(int argc, char** argv)
 {
-    flexd::icl::ipc::FleXdEpoll poller(10);
-    myUDSServer server("/tmp/test", poller);
-    if (server.init())
-    {
-        std::cout << "FleXdUDSServer.init() successful" << std::endl;
-        poller.loop();
+    FleXdEpoll poller(10);
+    FleXdEvent event(poller, onEvent);
+    FleXdTermEvent termEvent(poller);
+
+    if (termEvent.init()) {
+        std::cout << "FleXdSigEvent.init() successful" << std::endl;
     } else {
-        std::cout << "FleXdUDSServer.init() failed" << std::endl;
+        std::cout << "FleXdSigEvent.init() failed" << std::endl;
+    }
+
+    if (event.init())
+    {
+        std::cout << "FleXdEvent.init() successful" << std::endl;
+        switch (::fork()) {
+            case -1:
+                std::cout << "fork() failed" << std::endl;
+                break;
+            case 0:
+                std::cout << "[pid " << ::getpid() << "] sleep(2)" << std::endl;
+                ::sleep(2);
+                if (event.trigger()) {
+                    std::cout << "[pid " << ::getpid() << "] Trigger event" << std::endl;
+                } else {
+                    std::cout << "[pid " << ::getpid() << "] Failed to trigger event" << std::endl;
+                }
+                ::exit(EXIT_SUCCESS);
+            default:
+                std::cout << "[pid " << ::getpid() << "] poller.loop()" << std::endl;
+                poller.loop();
+                break;
+        }
+    } else {
+        std::cout << "FleXdEvent.init() failed" << std::endl;
     }
     return 0;
 }

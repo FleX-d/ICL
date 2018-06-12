@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 project(jsonParser VERSION "0.0.1")
 set(PROJECT_DESCRIPTION "fasade for json parser")
 
+message(STATUS "***" )
+message(STATUS "* " ${PROJECT_NAME})
+message(STATUS "***")
+
 include(GNUInstallDirs)
 
 

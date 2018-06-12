@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCConnector.h
  * Author: Adrian Peniak
  *
@@ -60,11 +60,11 @@ namespace flexd {
                 bool mutePeer(uint32_t peerID);
                 bool unMutePeer(uint32_t peerID);
                 bool PeerStatus(uint32_t peerID) const;
-                
+
             protected:
-                virtual void receiveMsg(pSharedFleXdIPCMsg msg) = 0;  
+                virtual void receiveMsg(pSharedFleXdIPCMsg msg) = 0;
                 virtual void onConnectPeer(uint32_t peerID) = 0;
-                
+
             private:
                 bool addClient(uint32_t clientID, const std::string& socPath);
                 void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
@@ -74,7 +74,7 @@ namespace flexd {
                 void handshakeAck(uint32_t peerID, int fd);
                 void handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd);
                 void flushQueue(uint32_t peerID);
-                                
+
             private:
                 struct Client {
                     Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr)
@@ -88,9 +88,9 @@ namespace flexd {
                 FleXdEpoll& m_poller;
                 const bool m_garantedDelivery;
                 pSharedFleXdIPCProxy m_server;
-                std::map<uint32_t, Client> m_clients;  
+                std::map<uint32_t, Client> m_clients;
             };
-            
+
         } // namespace ipc
     } // namespace icl
 } // namespace flexd

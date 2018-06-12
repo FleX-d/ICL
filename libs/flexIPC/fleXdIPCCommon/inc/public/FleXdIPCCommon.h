@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Globallogic s.r.o.
+Copyright (c) 2018, Globallogic s.r.o.
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -22,55 +22,29 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*
- * File:   FleXdUDSClient.h
- * Author: Adrian Peniak
- * Author: Matus Bodorik
+ * File:   FleXdIPCCommon.h
+ * Author: Martin Strenger
  *
- * Created on February 1, 2018, 2:45 PM
+ * Created on June 08, 2018, 12:41 PM
  */
 
-#ifndef FLEXDUDSCLIENT_H
-#define FLEXDUDSCLIENT_H
+#ifndef FLEXDIPCCOMMON_H
+#define FLEXDIPCCOMMON_H
 
-#include "FleXdIPCMsg.h"
-#include "FleXdIPCBuffer.h"
-#include "FleXdUDS.h"
-
+#include <string>
 
 namespace flexd {
     namespace icl {
         namespace ipc {
 
-            class FleXdUDSClient : public FleXdUDS {
-            public:
-                FleXdUDSClient(const std::string& socPath, FleXdEpoll& poller, FleXdIPC* proxy = nullptr);
-                FleXdUDSClient(const FleXdUDSClient&) = delete;
-                FleXdUDSClient& operator=(const FleXdUDSClient&) = delete;
-                virtual ~FleXdUDSClient();
-
-                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
-                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
-
-                virtual bool connect() override;
-                virtual bool disconnect() override;
-
-            protected:
-                virtual bool initUDS() override;
-
-            private:
-                virtual void rcvEvent(FleXdEpoll::Event e) override;
-                virtual void readMsg(FleXdEpoll::Event e, byteArray8192&& array, int size) override;
-                virtual bool reconnect(int fd) override;
-
-            private:
-                pSharedArray8192 m_array;
-                FleXdIPCBuffer m_buffer;
-            };
+            bool checkIfFileExist(const std::string& filePath);
+            bool makeDir(const std::string& dirPath);
+            std::string cutLastPathElement(const std::string& dirPath);
+            bool makeParentDir(const std::string& filePath);
 
         } // namespace epoll
     } // namespace icl
 } // namespace flexd
+#endif /* FLEXDIPCCOMMON_H */
 
-#endif /* FLEXDUDSCLIENT_H */

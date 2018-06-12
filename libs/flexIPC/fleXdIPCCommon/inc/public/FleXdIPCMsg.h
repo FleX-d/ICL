@@ -52,28 +52,28 @@ namespace flexd {
                 FleXdIPCAdtHdr& operator=(const FleXdIPCAdtHdr&) = delete;
                 FleXdIPCAdtHdr(FleXdIPCAdtHdr&&);
                 FleXdIPCAdtHdr& operator=(FleXdIPCAdtHdr&&);
-                const uint8_t getMask() const;
+                uint8_t getMask() const;
                 void reset();
-                const uint8_t getValue_0() const;
+                uint8_t getValue_0() const;
                 void setValue_0(uint8_t value);
                 void resetValue_0();
-                const uint8_t getValue_1() const;
+                uint8_t getValue_1() const;
                 void setValue_1(uint8_t value);
                 void resetValue_1();
-                const uint16_t getValue_2() const;
+                uint16_t getValue_2() const;
                 void setValue_2(uint16_t value);
                 void resetValue_2();
-                const uint32_t getValue_3() const;
+                uint32_t getValue_3() const;
                 void setValue_3(uint32_t value);
                 void resetValue_3();
-                const uint32_t getValue_4() const;
+                uint32_t getValue_4() const;
                 void setValue_4(uint32_t value);
                 void resetValue_4();
-                const uint32_t getValue_5() const;
+                uint32_t getValue_5() const;
                 void setValue_5(uint32_t value);
                 void resetValue_5();
-                const uint8_t getNextHeaderMask() const;
-                const uint16_t getSize() const;
+                uint8_t getNextHeaderMask() const;
+                uint16_t getSize() const;
                 FleXdIPCAdtHdr* createNext();
                 void deleteNext();
                 const FleXdIPCAdtHdr* getNext() const;
@@ -118,12 +118,12 @@ namespace flexd {
                  * Function returns header parameter type
                  * @return header parameter type - 0 = message type, 1 = additional header mask
                  */
-                const bool getHeaderParamType() const;
+                bool getHeaderParamType() const;
                 /*
                  * Function returns header parameter
                  * @return header parameter - message type or additional header mask
                  */
-                const uint8_t getHeaderParam() const;
+                uint8_t getHeaderParam() const;
                 /*
                  * Function sets header parameter, works only when header parameter type = 0
                  */
@@ -137,7 +137,7 @@ namespace flexd {
                  * Function returns size of the message
                  * @return size of the message
                  */
-                const uint16_t getMsgSize() const;
+                uint16_t getMsgSize() const;
                 /*
                  * Function creates and returns pointer to additional header, works only when header parameter type = 1
                  * @return pointer to additional header object or nullptr
@@ -167,7 +167,7 @@ namespace flexd {
                  * Function returns validity of the message
                  * @return message validity
                  */
-                const bool isValid() const;
+                bool isValid() const;
                 /*
                  * Function creates a vector of bytes from attributes of a FleXdIPCMsg, which is ready to send.
                  * @return std::vector<uint8_t> of bytes
@@ -184,7 +184,7 @@ namespace flexd {
 
             private:
                 std::vector<uint8_t> m_payload;
-                uint8_t m_headerParamType;
+                bool m_headerParamType;
                 uint8_t m_headerParam;
                 FleXdIPCAdtHdr* m_additionalHeader;
                 bool m_valid;

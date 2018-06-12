@@ -57,7 +57,7 @@ namespace flexd {
                 virtual ~FleXdIPCBuffer();
                 FleXdIPCBuffer(FleXdIPCBuffer&&);
                 FleXdIPCBuffer& operator=(FleXdIPCBuffer&&);
-                
+
                 int getFd() const;
                 void setFd(int fd);
                 /**
@@ -81,7 +81,7 @@ namespace flexd {
                  * @return shared pointer to FleXdIPCMsg from front of queue
                  */
                 pSharedFleXdIPCMsg pop();
-                
+
 
             private:
                 /**
@@ -93,7 +93,7 @@ namespace flexd {
                  * Function call lambda method with complete message if exist, otherwise push complete message to buffer
                  * @param msg - shared pointer to FleXdIPCMsg
                  */
-                void releaseMsg(pSharedFleXdIPCMsg msg);
+                void releaseMsg(pSharedFleXdIPCMsg&& msg);
                 /**
                  * Function try to find next non-corrupted message at cache and remove corrupted message
                  * @param coruptedMsgSize - Size of corrupted message, otherwise 0

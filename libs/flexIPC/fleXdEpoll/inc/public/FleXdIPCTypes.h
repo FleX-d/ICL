@@ -23,7 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   FleXdIPCTypes.h
  * Author: Adrian Peniak
  *
@@ -42,7 +42,7 @@ namespace flexd {
         namespace ipc {
 
             namespace EpollEvent {
-               
+
                 enum Enum {
                     None = 0x00,
                     EpollOut = 0x01,
@@ -52,13 +52,13 @@ namespace flexd {
                     InvalidFd = 0x05,
                     UndefinedError = 0xFF
                 };
-                
+
             } // namespace EpollEvent
-            
+
             namespace IPCMsgType{
                 enum Enum {
-                    SyncMsg, 
-                    DefMsg, 
+                    SyncMsg,
+                    DefMsg,
                     ContMsg,
                     AckMsg,
                 };
