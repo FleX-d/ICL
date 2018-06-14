@@ -2,13 +2,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-## [0.0.1] - 2018-03-21
+## [0.0.1] - 2018-06-14
 ### Added
-- Functionality to JsonParser: add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
-- Unit Test for add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
+- None
 
 ### Changed
-- None
+- Updated CMakeLists and sources to download and use single include nlohmann/json.hpp [Martin Strenger]
 
 ### Removed
 - None
@@ -18,13 +17,24 @@ All notable changes to this project will be documented in this file.
 - None
 
 ### Changed
-- corrected CMakeLists [Martin Strenger]
+- Corrected CMakeLists [Martin Strenger]
 - Corrected CMakeList for tests [Martin Strenger]
 - Updated examples to actual state [Martin Strenger]
 - Renamed ChangeLog for tests [Martin Strenger]
 - Corrected CMakeList for unit tests [Martin Strenger]
 - Corrected unit tests [Martin Strenger]
 - Renamed ChangeLog for unit tests [Martin Strenger]
+
+### Removed
+- None
+
+## [0.0.1] - 2018-03-21
+### Added
+- Functionality to JsonParser: add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
+- Unit Test for add,get and set uint8_t, uint16_t, uint32_t, uint64_t [Matus Bodorik]
+
+### Changed
+- None
 
 ### Removed
 - None
