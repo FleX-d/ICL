@@ -108,10 +108,16 @@ namespace flexd {
     
 namespace flexd {
   namespace gen {
-
+  
 	IPCInterface::IPCInterface (flexd::icl::ipc::FleXdEpoll&amp; poller)
-	:IPCConnector(<xsl:for-each select="/colection/file"><xsl:for-each select="document(@name)/package/element"><xsl:for-each select="parameter[@name='from']"> 
-	  <xsl:value-of select="@value"/></xsl:for-each></xsl:for-each></xsl:for-each>, poller),
+	:IPCConnector(<xsl:for-each select="/colection/file">
+		<xsl:choose>
+	        <xsl:when test="position() = last()">
+                  <xsl:call-template name="document"> 
+                  <xsl:with-param name="doc" select="document(@name)"/>
+		  </xsl:call-template>
+                </xsl:when>
+               </xsl:choose></xsl:for-each>, poller),
 	 m_counter(0)
 	{     
         <xsl:for-each select="/colection/file"><xsl:for-each select="document(@name)/package/element"><xsl:for-each select="parameter[@name='to']"> 
@@ -179,34 +185,46 @@ namespace flexd {
        <xsl:text>        </xsl:text>
        <xsl:value-of select="concat('void ','IPCInterface::','receive','Msg' ,'(flexd::icl::ipc::pSharedFleXdIPCMsg msg)')"/>
         {
-	    std::string str(msg->getPayload().begin(),msg->getPayload().end());
-	    flexd::icl::JsonObj json(str);
-	    int id; 
-	    json.get&lt;int&gt;(&quot;/id&quot;, id);
-	    switch(id)
-	    {<xsl:for-each select="/colection/file">
-	    <xsl:for-each select="document(@name)/package/function[@direction='in']">
-	       case <xsl:value-of select="parameter[@name='id']/@value"/>: {
-	          <xsl:for-each select="parameter[@direction='out']">
-	          <xsl:value-of select="concat(@type,' ',@name,';')"/>
-	          <xsl:text>&#x0A;<!-- new line --></xsl:text>
-	          <xsl:text>                  </xsl:text>
-	          </xsl:for-each>
-	          <xsl:for-each select="parameter[@direction='out']">
-	          json.get<xsl:value-of select="concat('&lt;',@type,'&gt;(&quot;/payload/',@name,'&quot;, ',@name,');')"/>
-	          </xsl:for-each>
-	          <xsl:text>&#x0A;<!-- new line --></xsl:text>
-	          <xsl:text>                  </xsl:text>
-	          <xsl:value-of select="concat('receive',@name)"/>
-	          <xsl:text>(</xsl:text>
-	          <xsl:call-template name="parseParametersWithoutType">
-	          <xsl:with-param name="element" select="parameter[@direction='out']"/>
-	          </xsl:call-template>
-	          <xsl:text>);</xsl:text>
-                  break; }
+            try{
+		std::string str(msg->getPayload().begin(),msg->getPayload().end());
+		flexd::icl::JsonObj json(str);
+		if(json.exist(&quot;/id&quot;))
+		{
+		    int id; 
+		    json.get&lt;int&gt;(&quot;/id&quot;, id);
+		    switch(id)
+		    {<xsl:for-each select="/colection/file">
+		     <xsl:for-each select="document(@name)/package/function[@direction='in']">
+			case <xsl:value-of select="parameter[@name='id']/@value"/>: {
+			    <xsl:for-each select="parameter[@direction='out']">
+			    <xsl:value-of select="concat(@type,' ',@name,';')"/>
+			    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+			    <xsl:text>                            </xsl:text>
+			    </xsl:for-each>
+			    bool tmp = true;
+			    <xsl:for-each select="parameter[@direction='out']">
+			    if(json.exist(<xsl:value-of select="concat('&quot;/payload/',@name,'&quot;))')"/>{
+				json.get<xsl:value-of select="concat('&lt;',@type,'&gt;(&quot;/payload/',@name,'&quot;, ',@name,');')"/> 
+			    } else {
+				tmp = false;}
+			    </xsl:for-each>
+			    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+			    <xsl:text>                            </xsl:text>
+			    if(tmp){
+			    <xsl:value-of select="concat('   receive',@name)"/>
+			    <xsl:text>(</xsl:text>
+			    <xsl:call-template name="parseParametersWithoutType">
+			    <xsl:with-param name="element" select="parameter[@direction='out']"/>
+			    </xsl:call-template>
+			    <xsl:text>);</xsl:text>}
+			    break; }
 	    </xsl:for-each>
 	    </xsl:for-each>
-	    }
+	           }
+	        }
+	   }catch(...){
+		return;
+	   }
         }
         
        
@@ -230,6 +248,19 @@ namespace flexd {
 }
 </xsl:template>
 
+<xsl:template name="el">
+	    <xsl:param name="element"/>
+	      <xsl:for-each select="$element[@name='from']">
+		  <xsl:value-of select="@value"/>
+	      </xsl:for-each>
+</xsl:template>
+	
+<xsl:template name="document">
+	 <xsl:param name="doc"/>
+	<xsl:call-template name="el"> 
+	    <xsl:with-param name="element" select="$doc/package/element/parameter"/>
+	</xsl:call-template>
+</xsl:template>
 
 <xsl:template name="parseParameters">
     <xsl:param name="element"/>

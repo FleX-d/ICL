@@ -7,13 +7,13 @@
 	<parameter name="msgCounter" type="uint8_t" value="m_counter"/>
 	<parameter name="crc" type="uint16_t" value="NAN"/>
 	<parameter name="timeStamp" type="uint32_t" value="getTimestamp()"/>
-	<parameter name="from" type="uint32_t" value="12345"/>
-	<parameter name="to" type="uint32_t" value="00000"/>
+	<parameter name="from" type="uint32_t" value="00000"/>
+	<parameter name="to" type="uint32_t" value="12345"/>
 	<parameter name="nextHeader" type="uint8_t" value="NAN"/>
 	<parameter name="reserved" type="uint8_t" value="NAN"/>
     </element>
     
-    <function name="CreateClientMsg" direction="out">
+    <function name="CreateClientMsg" direction="in">
 	<parameter name="id" type="int" value="1" direction="in"/>
 	<parameter name="ID" type="std::string" direction="out"/>
 	<parameter name="ExternID" type="std::string" direction="out"/>
@@ -27,14 +27,14 @@
 	<parameter name="KeepAlive" type="int" direction="out"/>
     </function>
     
-    <function name="OperationMsg" direction="out">
+    <function name="OperationMsg" direction="in">
 	<parameter name="id" type="int" value="2" direction="in"/>
 	<parameter name="ID" type="std::string" direction="out"/>
 	<parameter name="Requester" type="std::string" direction="out"/>
 	<parameter name="Operation" type="uint8_t" direction="out"/>
     </function>
     
-    <function name="PublishMsg" direction="out">
+    <function name="PublishMsg" direction="in">
 	<parameter name="id" type="int" value="3" direction="in"/>
 	<parameter name="ID" type="std::string" direction="out"/>
 	<parameter name="Topic" type="std::string" direction="out"/>
@@ -42,16 +42,24 @@
 	<parameter name="PayloadMsg" type="std::string" direction="out"/>
     </function>
     
-    <function name="RequestAckMsg" direction="in">
+    <function name="RequestAckMsg" direction="out">
 	<parameter name="id" type="int" value="4" direction="in"/>
 	<parameter name="ID" type="std::string" direction="out"/>
 	<parameter name="RequestAck" type="uint8_t" direction="out"/>
     </function>
     
-    <function name="BackMsg" direction="in">
+    <function name="BackMsg" direction="out">
 	<parameter name="id" type="int" value="5" direction="in"/>
 	<parameter name="PayloadMsg" type="std::string" direction="out"/>
     </function>
+    
+    <function name="BackMsgSegmented" direction="out">
+	<parameter name="id" type="int" value="6" direction="in"/>
+	<parameter name="Segment" type="uint8_t" direction="out"/>
+	<parameter name="Count" type="uint8_t" direction="out"/>
+	<parameter name="PayloadMsg" type="std::string" direction="out"/>
+    </function>
+    
 </package>
  
 

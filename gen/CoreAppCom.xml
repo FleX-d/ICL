@@ -17,14 +17,21 @@
 	<parameter name="id" type="int" value="1" direction="in"/>
 	<parameter name="Operation" type="uint8_t" direction="out"/>
 	<parameter name="Message" type="std::string" direction="out"/>
-	<parameter name="AppID" type="uint16_t" direction="out"/>
+	<parameter name="AppID" type="std::string" direction="out"/>
     </function>
     
     <function name="RequestCoreAckMsg" direction="out">
 	<parameter name="id" type="int" value="2" direction="in"/>
 	<parameter name="OperationAck" type="bool" direction="out"/>
 	<parameter name="Message" type="std::string" direction="out"/>
-	<parameter name="AppID" type="uint16_t" direction="out"/>
+	<parameter name="AppID" type="std::string" direction="out"/>
+    </function>
+    
+     <function name="RequestCoreSegmented" direction="in">
+	<parameter name="id" type="int" value="6" direction="in"/>
+	<parameter name="Segment" type="uint8_t" direction="out"/>
+	<parameter name="Count" type="uint8_t" direction="out"/>
+	<parameter name="PayloadMsg" type="std::string" direction="out"/>
     </function>
     
 </package>
