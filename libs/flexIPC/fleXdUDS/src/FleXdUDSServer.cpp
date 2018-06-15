@@ -51,6 +51,7 @@ namespace flexd {
             }
 
             FleXdUDSServer::~FleXdUDSServer() {
+                ::unlink(m_socPath.c_str());
             }
 
             bool FleXdUDSServer::initUDS() {

@@ -147,6 +147,7 @@ namespace flexd {
                             const uint32_t peer1 = hello.get<uint32_t>();
                             const uint32_t peer2 = hello.get<uint32_t>();
                             handshakeFin(peer1, peer2, fd);
+                            onConnectPeer(peer1);
                             break;
                         }
                         case FleXdIPCMsgTypes::Enum::HandshakeSuccess: {

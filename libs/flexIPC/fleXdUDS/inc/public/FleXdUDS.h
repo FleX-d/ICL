@@ -74,10 +74,10 @@ namespace flexd {
             protected:
                 FleXdEpoll& m_poller;
                 FleXdIPC* m_proxy;
+                const std::string m_socPath;
 
             private:
                 struct Ctx;
-                const std::string m_socPath;
                 std::unique_ptr<Ctx> m_ctx;
             };
 
