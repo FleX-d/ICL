@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "JsonObj.h"
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <memory>
 #include <iostream>
 
