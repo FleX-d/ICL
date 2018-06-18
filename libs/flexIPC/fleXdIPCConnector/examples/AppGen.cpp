@@ -36,13 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdEpoll poller(10);
-    std::cout << "***Start app 100" << "\n";
-    App a(100, poller);
-    std::cout << "***addPeer 101 " << a.addPeer(101)  << "\n";
-    std::cout << "***addPeer 102 " << a.addPeer(102) << "\n";
-    std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
-    a.send(101, "Test msg from 100 to 101");
-    poller.loop();
+    std::cout << "***Start app generic" << "\n";
+    App a(111, poller, true);
+    if (a.initGenericServer()) {
+        poller.loop();
+    }
     return 0;
 }
 

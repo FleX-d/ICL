@@ -9,10 +9,12 @@ message(STATUS "***")
 set(APP1 "${PROJECT_NAME}App1")
 set(APP2 "${PROJECT_NAME}App2")
 set(APP3 "${PROJECT_NAME}App3")
+set(APPGEN "${PROJECT_NAME}AppGen")
 
 message(STATUS "APP1: " ${APP1})
 message(STATUS "APP2: " ${APP2})
 message(STATUS "APP3: " ${APP3})
+message(STATUS "APPGEN: " ${APPGEN})
 
 message(STATUS "fleXdEpollPublicInc: " ${fleXdEpollPublicInc})
 message(STATUS "fleXdEpollLib: " ${fleXdEpollLib})
@@ -64,3 +66,14 @@ target_link_libraries(${APP3}
     ${fleXdIPCConnectorLib}
 )
 add_dependencies(${APP3} fleXdEpoll fleXdIPCCommon fleXdUDS fleXdIPCConnector)
+
+add_executable(${APPGEN} AppGen.cpp)
+target_include_directories(${APPGEN} PRIVATE ${fleXdEpollPublicInc} ${fleXdIPCCommonPublicInc} ${fleXdUDSPublicInc} ${fleXdIPCConnectorPublicInc})
+target_compile_options(${APPGEN} PUBLIC -std=c++14 -Wall -Wfloat-conversion)
+target_link_libraries(${APPGEN}
+    ${fleXdEpollLib}
+    ${fleXdIPCCommonLib}
+    ${fleXdUDSLib}
+    ${fleXdIPCConnectorLib}
+)
+add_dependencies(${APPGEN} fleXdEpoll fleXdIPCCommon fleXdUDS fleXdIPCConnector)

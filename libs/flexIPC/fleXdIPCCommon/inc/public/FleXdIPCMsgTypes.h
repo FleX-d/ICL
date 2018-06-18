@@ -74,6 +74,7 @@ namespace flexd {
                     Handshake = 0x00,
                     HandshakeAck,
                     HandshakeSuccess,
+                    HandshakeSuccessGeneric,
                     HandshakeFail,
                     IPCMsg,
                     IPCMsgAck,

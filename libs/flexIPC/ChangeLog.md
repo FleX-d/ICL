@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-18
+### Added
+- Generic interface for IPCConnector [Martin Strenger]
+
+### Changed
+- Various small corrections [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-12
 ### Added
 - CMakeLists option to enable examples [Martin Strenger]

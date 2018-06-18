@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* 
+/*
  * File:   App.h
  * Author: peniak
  *
@@ -21,13 +21,13 @@
 
 class App : public flexd::icl::ipc::IPCConnector {
     public:
-        App(uint32_t myID, flexd::icl::ipc::FleXdEpoll& poller)
-        : IPCConnector(myID, poller),
+        App(uint32_t myID, flexd::icl::ipc::FleXdEpoll& poller, bool genericPeersAllowed = false)
+        : IPCConnector(myID, poller, genericPeersAllowed),
           m_poller(poller),
           m_msgLimit(2000)
         {}
         virtual ~App() {}
-        
+
         void send(uint32_t peerID, const std::string& str) {
             std::vector<uint8_t> data(str.begin(), str.end());
             auto msg = std::make_shared<flexd::icl::ipc::FleXdIPCMsg>(std::move(data));
@@ -36,9 +36,9 @@ class App : public flexd::icl::ipc::IPCConnector {
             msg->getAdditionalHeader()->setValue_5(peerID);
             sendMsg(msg);
         }
-        
+
         virtual void receiveMsg(flexd::icl::ipc::pSharedFleXdIPCMsg msg) override {
-            std::cout << "App::receiveMsg() -> " 
+            std::cout << "App::receiveMsg() -> "
                       << std::string(msg->getAdditionalHeader()->getValue_1() ? "ack: " : "payload: ")
                       << std::string(msg->getPayload().begin(), msg->getPayload().end()) << "\n";
             if(msg->getAdditionalHeader()->getValue_1() == 0) {
@@ -47,11 +47,11 @@ class App : public flexd::icl::ipc::IPCConnector {
                 msg->getAdditionalHeader()->setValue_4(getMyID());
                 sendMsg(msg);
             }
-            
+
         }
-        
-        virtual void onConnectPeer(uint32_t peerID) override {
-            std::cout << "onConnectPeer() -> " << peerID << "\n";
+
+        virtual void onConnectPeer(uint32_t peerID, bool genericPeer) override {
+            std::cout << "onConnectPeer() -> " << peerID << ", generic = "<< genericPeer << "\n";
             std::string msg = "onConnectPeer test msg from " + std::to_string(getMyID()) + " to " + std::to_string(peerID);
             send(peerID, msg);
         }

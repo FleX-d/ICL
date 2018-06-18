@@ -264,7 +264,7 @@ namespace flexd {
 
             FleXdIPCMsg::FleXdIPCMsg(uint8_t msgType, std::vector<uint8_t>&& payload)
             : m_payload(payload),
-              m_headerParamType(0),
+              m_headerParamType(IPC_MSG_HEADER_PARAM_TYPE_MSG_TYPE),
               m_headerParam(msgType),
               m_additionalHeader(nullptr),
               m_valid(true)

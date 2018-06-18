@@ -69,7 +69,7 @@ namespace flexd {
                     // self fd is listen fd for incoming connections -> accept will perform
                     if(e.fd == getFd()) {
                         int clientFd = ::accept(getFd(), NULL, NULL);
-                        if (!m_map.count(clientFd)) {
+                        if (m_map.count(clientFd) == 0) {
                             m_proxy->connectClient(clientFd);
                         }
                     // other fd's are client fd's -> read will perform

@@ -48,13 +48,15 @@ namespace flexd {
         namespace ipc {
             class IPCConnector {
             public:
-                explicit IPCConnector(uint32_t myID, FleXdEpoll& poller, bool garantedDelivery = false);
+                explicit IPCConnector(uint32_t myID, FleXdEpoll& poller, bool genericPeersAllowed = false, bool garantedDelivery = false);
                 IPCConnector(const IPCConnector&) = delete;
                 IPCConnector& operator=(const IPCConnector&) = delete;
                 virtual ~IPCConnector();
 
                 uint32_t getMyID() const;
+                bool initGenericServer();
                 bool sendMsg(pSharedFleXdIPCMsg msg);
+                bool sendMsg(pSharedFleXdIPCMsg msg, uint32_t peerID);
                 bool addPeer(uint32_t peerID);
                 bool removePeer(uint32_t peerID);
                 bool mutePeer(uint32_t peerID);
@@ -63,16 +65,18 @@ namespace flexd {
 
             protected:
                 virtual void receiveMsg(pSharedFleXdIPCMsg msg) = 0;
-                virtual void onConnectPeer(uint32_t peerID) = 0;
+                virtual void onConnectPeer(uint32_t peerID, bool genericPeer) = 0;
 
             private:
                 bool addClient(uint32_t clientID, const std::string& socPath);
                 void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
                 void onConnectClient(int fd);
                 void onDisconnectClient(int fd);
+                void onConnect(bool ret);
+                void onDisconnect(bool ret);
                 void handshake(int fd);
                 void handshakeAck(uint32_t peerID, int fd);
-                void handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd);
+                bool handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd, bool& genericPeer);
                 void flushQueue(uint32_t peerID);
 
             private:
@@ -87,6 +91,7 @@ namespace flexd {
                 const uint32_t m_myID;
                 FleXdEpoll& m_poller;
                 const bool m_garantedDelivery;
+                const bool m_genericPeersAllowed;
                 pSharedFleXdIPCProxy m_server;
                 std::map<uint32_t, Client> m_clients;
             };
