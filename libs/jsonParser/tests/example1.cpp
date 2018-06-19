@@ -1,4 +1,4 @@
-  
+
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
@@ -26,9 +26,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * File:   JsonObj.h
- * 
+ *
  * Author: Matus Bodorik
  *
  * Created on Januar 8, 2018, 10:02 AM
@@ -41,47 +41,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 
 
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-   
+
    base::BinStream b("/home/dev/work/ICL/test.txt");    //Create BinStream object with path to file
    std::string str = b.getBase64();                     //Convert to base64
-   flexd::icl::JsonObj o = {};                          //Create JsonObj
+   flexd::icl::JsonObj o;                               //Create JsonObj
    o = b.getJson("test.txt");                           //Put base64 string to JsonObj
    o.dump();                                            //Output of JsonObj
-   
-   std::ifstream s("/home/dev/work/ICL/json.txt", std::ios::binary | std::ios::ate);  //Create new ifstream 
-   s.seekg(0, s.end);                                   //Check size of stream 
-   size_t size = s.tellg();         
-   s.seekg(0, s.beg);               
+
+   std::ifstream s("/home/dev/work/ICL/json.txt", std::ios::binary | std::ios::ate);  //Create new ifstream
+   s.seekg(0, s.end);                                   //Check size of stream
+   size_t size = s.tellg();
+   s.seekg(0, s.beg);
    std::stringstream fileData;                          //Put ifstream to new stringstream
    fileData << s.rdbuf();
    s.seekg(0, s.beg);
-   
+
    base::BinStream bb(fileData.str().c_str(), size);    //Create new BinStream by Stringstream and size
    flexd::icl::JsonObj oo;                              //Create new JsonObj
    oo = bb.getJson("test.txt");                         //Put base64 string to JsonObj
    oo.dump();                                           //Output of JsonObj
-   
-   base::BinStream bbb (std::move(s));                  //Create new BinStream by moving ifstream 
+
+   base::BinStream bbb (std::move(s));                  //Create new BinStream by moving ifstream
    str = bbb.getBase64();                               //Get base64 from BinStream
    flexd::icl::JsonObj ooo = {};                        //Create new JsonObj
    ooo = bbb.getJson("test2.txt");                      //Get JsonObj with encoded Base64 string
    ooo.dump();
-   
-   base::BinStream json(o);                             //Create new BinStream by JsonObj 
+
+   base::BinStream json(o);                             //Create new BinStream by JsonObj
    std::string temp = json.getBase64();                 //Get base64 from BinStream
    std::cout << temp << std::endl;                      //Output
-   
+
    b.set("/home/dev/work/ICL/json.txt");                //Set new path to file to BinStream
    str = b.getBase64();                                 //Get base64
    base::BinStream js;                                  //Create new empty BinStream
-   js.setBase64(str);                                   //Set Base64 string to empty BinStream 
+   js.setBase64(str);                                   //Set Base64 string to empty BinStream
    js.write("/home/dev/work/ICL/json1.txt");            //Decode base64 and write it to new file
 
    b.set(fileData.str().c_str(), size);                 //Set BinStrem by stringstream and size
    str = b.getBase64();                                 //Get base64
    std::cout << str << std::endl;                       //Output
-   
+
    return 0;
-} 
+}

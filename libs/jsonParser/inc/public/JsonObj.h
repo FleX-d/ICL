@@ -41,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstdint>
 #include <iostream> // will removed
 
 
@@ -154,10 +155,15 @@ namespace flexd {
              */
             void dump(int d = 2, int flat = 0) const; // print content of json
             /**
-             * 
-             * @param other
+             * Function store instance of other object JsonParser 
+             * @param other - object JsonParse to store
              */
             void storeJson(JsonParser* other);
+            /**
+             * Function return reference to string with json
+             * @param other - reference to string with json
+             */
+            std::string getJson();
 
         private:
             ReturnType pathIsValid(const std::string& path) const;
@@ -168,12 +174,24 @@ namespace flexd {
             ReturnType addString(const std::string& path, const std::string& val);
             ReturnType addBoolean(const std::string& path, const bool& val);
             ReturnType addJsonObj(const std::string& path, const JsonObj& val);
+            ReturnType addUint8(const std::string& path, const uint8_t& val);
+            ReturnType addUint16(const std::string& path, const uint16_t& val);
+            ReturnType addUint32(const std::string& path, const uint32_t& val);
+            ReturnType addUint64(const std::string& path, const uint64_t& val);
             ReturnType getInt(const std::string& path, int& val) const;
+            ReturnType getUint8(const std::string& path, uint8_t& val) const;
+            ReturnType getUint16(const std::string& path, uint16_t& val) const;
+            ReturnType getUint32(const std::string& path, uint32_t& val) const;
+            ReturnType getUint64(const std::string& path, uint64_t& val) const;
             ReturnType getDouble(const std::string& path, double& val) const;
             ReturnType getString(const std::string& path, std::string& val)const;
             ReturnType getBoolean(const std::string& path, bool& val) const;
             ReturnType getJsonObj(const std::string& path, JsonObj& val)const;
             ReturnType setInt(const std::string& path, const int& val);
+            ReturnType setUint8(const std::string& path, const uint8_t& val);
+            ReturnType setUint16(const std::string& path, const uint16_t& val);
+            ReturnType setUint32(const std::string& path, const uint32_t& val);
+            ReturnType setUint64(const std::string& path, const uint64_t& val);
             ReturnType setDouble(const std::string& path, const double& val);
             ReturnType setString(const std::string& path, const std::string& val);
             ReturnType setBoolean(const std::string& path, const bool& val);
@@ -192,6 +210,26 @@ namespace flexd {
         inline ReturnType JsonObj::add<int>(const std::string& path, const int& val) {
             return addInt(path, val);
         }
+        
+        template<>
+        inline ReturnType JsonObj::add<uint8_t>(const std::string& path, const uint8_t& val) {
+            return addUint8(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::add<uint16_t>(const std::string& path, const uint16_t& val) {
+            return addUint16(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::add<uint32_t>(const std::string& path, const uint32_t& val) {
+            return addUint32(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::add<uint64_t>(const std::string& path, const uint64_t& val) {
+            return addUint64(path, val);
+        }
 
         template<>
         inline ReturnType JsonObj::add<double>(const std::string& path, const double& val) {
@@ -209,8 +247,33 @@ namespace flexd {
         }
 
         template<>
+        inline ReturnType JsonObj::add<JsonObj>(const std::string& path, const JsonObj& val) {
+            return addJsonObj(path, val);
+        }
+        
+        template<>
         inline ReturnType JsonObj::get<int>(const std::string& path, int& val) const {
             return getInt(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::get<uint8_t>(const std::string& path, uint8_t& val) const {
+            return getUint8(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::get<uint16_t>(const std::string& path, uint16_t& val) const {
+            return getUint16(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::get<uint32_t>(const std::string& path, uint32_t& val) const {
+            return getUint32(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::get<uint64_t>(const std::string& path, uint64_t& val) const {
+            return getUint64(path, val);
         }
 
         template<>
@@ -227,12 +290,37 @@ namespace flexd {
         inline ReturnType JsonObj::get<bool>(const std::string& path, bool& val) const {
             return getBoolean(path, val);
         }
+        
+        template<>
+        inline ReturnType JsonObj::get<JsonObj>(const std::string& path, JsonObj& val) const {
+            return getJsonObj(path, val);
+        }
 
         template<>
         inline ReturnType JsonObj::set<int>(const std::string& path, const int& val) {
             return setInt(path, val);
         }
+        
+        template<>
+        inline ReturnType JsonObj::set<uint8_t>(const std::string& path, const uint8_t& val) {
+            return setUint8(path, val);
+        }
 
+        template<>
+        inline ReturnType JsonObj::set<uint16_t>(const std::string& path, const uint16_t& val) {
+            return setUint16(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::set<uint32_t>(const std::string& path, const uint32_t& val) {
+            return setUint32(path, val);
+        }
+        
+        template<>
+        inline ReturnType JsonObj::set<uint64_t>(const std::string& path, const uint64_t& val) {
+            return setUint64(path, val);
+        }
+        
         template<>
         inline ReturnType JsonObj::set<double>(const std::string& path, const double& val) {
             return setDouble(path, val);
@@ -249,20 +337,9 @@ namespace flexd {
         }
 
         template<>
-        inline ReturnType JsonObj::add<JsonObj>(const std::string& path, const JsonObj& val) {
-            return addJsonObj(path, val);
-        }
-
-        template<>
         inline ReturnType JsonObj::set<JsonObj>(const std::string& path, const JsonObj& val) {
             return setJsonObj(path, val);
         }
-
-        template<>
-        inline ReturnType JsonObj::get<JsonObj>(const std::string& path, JsonObj& val) const {
-            return getJsonObj(path, val);
-        }
-
 
     } //namespace jp
 } //namespace ini
