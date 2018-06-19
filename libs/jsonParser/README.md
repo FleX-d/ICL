@@ -1,7 +1,7 @@
  
 # JsonParser
 
-Library for working with Json data and encode/decode file to Base64
+Library for work with Json data and to encode/decode a file to Base64
 
 ## Example Usecase
 
