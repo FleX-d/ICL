@@ -1,0 +1,40 @@
+<?xml version = "1.0"?>
+<?xml-stylesheet type="text/xsl" href="transform.xsl"?>
+<package name="IPCInterface">
+  
+    <element name="CoreDocMsgParameters">
+	<parameter name="msgtype" type="uint8_t" value="1"/>
+	<parameter name="msgCounter" type="uint8_t" value="m_counter"/>
+	<parameter name="crc" type="uint16_t" value="NAN"/>
+	<parameter name="timeStamp" type="uint32_t" value="getTimestamp()"/>
+	<parameter name="from" type="uint32_t" value="11111"/>
+	<parameter name="to" type="uint32_t" value="12345"/>
+	<parameter name="nextHeader" type="uint8_t" value="NAN"/>
+	<parameter name="reserved" type="uint8_t" value="NAN"/>
+    </element>
+    
+    <function name="RequestCoreMsg" direction="in">
+	<parameter name="id" type="int" value="1" direction="in"/>
+	<parameter name="Operation" type="uint8_t" direction="out"/>
+	<parameter name="Message" type="std::string" direction="out"/>
+	<parameter name="AppID" type="std::string" direction="out"/>
+    </function>
+    
+    <function name="RequestCoreAckMsg" direction="out">
+	<parameter name="id" type="int" value="2" direction="in"/>
+	<parameter name="OperationAck" type="bool" direction="out"/>
+	<parameter name="Message" type="std::string" direction="out"/>
+	<parameter name="AppID" type="std::string" direction="out"/>
+    </function>
+    
+     <function name="RequestCoreSegmented" direction="in">
+	<parameter name="id" type="int" value="6" direction="in"/>
+	<parameter name="Segment" type="uint8_t" direction="out"/>
+	<parameter name="Count" type="uint8_t" direction="out"/>
+	<parameter name="PayloadMsg" type="std::string" direction="out"/>
+    </function>
+    
+</package>
+ 
+
+
