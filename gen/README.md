@@ -6,7 +6,7 @@ sudo apt-get install xsltproc_1.1.28-2+deb8u3_amd64.deb
 You have to generate two interfaces for each side and this interfaces will be in reverse.
 1. #RUN ./build.sh 12345 test.xml test1.xml
 2. #RUN ./build.sh 54483 test.xml test1.xml
-
+```
 <?xml version = "1.0"?>
 <?xml-stylesheet type="text/xsl" href="transform.xsl"?> ---> required name of stylesheet "transform.xsl" and type of output "text/xsl"
 <package name="Interface">                             ----> name of File
@@ -34,3 +34,4 @@ You have to generate two interfaces for each side and this interfaces will be in
   <parameter name="something" type="uint8_t" direction="out"/>
 </function>
 </package>
+```
