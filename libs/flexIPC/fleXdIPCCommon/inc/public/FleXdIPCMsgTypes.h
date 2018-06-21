@@ -78,7 +78,7 @@ namespace flexd {
                     HandshakeFail,
                     IPCMsg,
                     IPCMsgAck,
-                    Undefined = 0xFF
+                    Generic = 0xFF
                 };
             } // namespace FleXdIPCMsgTypes
 

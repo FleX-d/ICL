@@ -55,7 +55,6 @@ namespace flexd {
 
                 uint32_t getMyID() const;
                 bool initGenericServer();
-                bool sendMsg(pSharedFleXdIPCMsg msg);
                 bool sendMsg(pSharedFleXdIPCMsg msg, uint32_t peerID);
                 bool addPeer(uint32_t peerID);
                 bool removePeer(uint32_t peerID);
@@ -81,12 +80,13 @@ namespace flexd {
 
             private:
                 struct Client {
-                    Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr)
+                    Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr, bool m_generic = false)
                     : m_active(active), m_fd(fd), m_ptr(std::move(ptr)), m_queue() {}
                     bool m_active;
                     int m_fd;
                     pSharedFleXdIPCProxy m_ptr;
                     std::queue<pSharedFleXdIPCMsg> m_queue;
+                    bool m_generic;
                 };
                 const uint32_t m_myID;
                 FleXdEpoll& m_poller;

@@ -34,7 +34,7 @@ class App : public flexd::icl::ipc::IPCConnector {
             msg->getAdditionalHeader()->setValue_1(0);
             msg->getAdditionalHeader()->setValue_4(getMyID());
             msg->getAdditionalHeader()->setValue_5(peerID);
-            sendMsg(msg);
+            sendMsg(msg, peerID);
         }
 
         virtual void receiveMsg(flexd::icl::ipc::pSharedFleXdIPCMsg msg) override {
@@ -45,7 +45,7 @@ class App : public flexd::icl::ipc::IPCConnector {
                 msg->getAdditionalHeader()->setValue_1(1);
                 msg->getAdditionalHeader()->setValue_5(msg->getAdditionalHeader()->getValue_4());
                 msg->getAdditionalHeader()->setValue_4(getMyID());
-                sendMsg(msg);
+                sendMsg(msg, msg->getAdditionalHeader()->getValue_5());
             }
 
         }

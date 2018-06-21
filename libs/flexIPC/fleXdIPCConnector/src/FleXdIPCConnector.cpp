@@ -116,13 +116,6 @@ namespace flexd {
                 return false;
             }
 
-            bool IPCConnector::sendMsg(pSharedFleXdIPCMsg msg) {
-                if(msg) {
-                    return sendMsg(msg, msg->getAdditionalHeader()->getValue_5());
-                }
-                return false;
-            }
-
             bool IPCConnector::sendMsg(pSharedFleXdIPCMsg msg, uint32_t peerID) {
                 if(msg) {
                     auto it = m_clients.find(peerID);
@@ -188,7 +181,8 @@ namespace flexd {
                                 flushQueue(peer);
                                 break;
                             }
-                            case FleXdIPCMsgTypes::Enum::IPCMsg: {
+                            case FleXdIPCMsgTypes::Enum::IPCMsg:
+                            case FleXdIPCMsgTypes::Enum::Generic: {
                                 receiveMsg(msg);
                                 break;
                             }
@@ -256,12 +250,12 @@ namespace flexd {
                 if(it != m_clients.end()) {
                     it->second.m_active = true;
                     it->second.m_fd = fd;
-                    auto msg = std::make_shared<FleXdIPCMsg>(FleXdIPCMsgTypes::Enum::HandshakeSuccess, hello.releaseData());
+                    auto msg = std::make_shared<FleXdIPCMsg>(it->second.m_generic ? FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric : FleXdIPCMsgTypes::Enum::HandshakeSuccess, hello.releaseData());
                     it->second.m_ptr->sndMsg(msg, fd);
                     flushQueue(peerID);
                     return true;
                 } else if(m_genericPeersAllowed) {
-                    auto ret = m_clients.insert(std::make_pair(peerID, Client(true, fd, m_server)));
+                    auto ret = m_clients.insert(std::make_pair(peerID, Client(true, fd, m_server, true)));
                     if(ret.second) {
                         auto msg = std::make_shared<FleXdIPCMsg>(FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric, hello.releaseData());
                         ret.first->second.m_ptr->sndMsg(msg, fd);
@@ -281,7 +275,7 @@ namespace flexd {
                 auto it = m_clients.find(peerID);
                 if(it != m_clients.end()) {
                     while(!it->second.m_queue.empty()) {
-                        const bool ret = sendMsg(it->second.m_queue.front());
+                        const bool ret = sendMsg(it->second.m_queue.front(), peerID);
                         it->second.m_queue.pop();
                         if(!ret) break;
                     }
