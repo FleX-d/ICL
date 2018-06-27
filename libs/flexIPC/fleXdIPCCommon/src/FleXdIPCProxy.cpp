@@ -61,22 +61,22 @@ namespace flexd {
                 return ret;
             }
 
-            bool FleXdIPCProxy::connect() {
-                const bool ret = m_ipc->connect();
+            bool FleXdIPCProxy::connect(int fd) {
+                const bool ret = m_ipc->connect(fd);
                 if (m_onConnect) {
-                    m_onConnect(ret);
+                    m_onConnect(ret, fd);
                 } else {
-                    m_ipc->onConnect(ret);
+                    m_ipc->onConnect(ret, fd);
                 }
                 return ret;
             }
 
-            bool FleXdIPCProxy::disconnect() {
-                const bool ret = m_ipc->disconnect();
+            bool FleXdIPCProxy::disconnect(int fd) {
+                const bool ret = m_ipc->disconnect(fd);
                 if (m_onDisconnect) {
-                    m_onDisconnect(ret);
+                    m_onDisconnect(ret , fd);
                 } else {
-                    m_ipc->onDisconnect(ret);
+                    m_ipc->onDisconnect(ret, fd);
                 }
                 return ret;
             }
@@ -130,11 +130,11 @@ namespace flexd {
                 m_onInit = fcn;
             }
 
-            void FleXdIPCProxy::setOnConnect(std::function<void(bool)> fcn) {
+            void FleXdIPCProxy::setOnConnect(std::function<void(bool, int)> fcn) {
                 m_onConnect = fcn;
             }
 
-            void FleXdIPCProxy::setOnDisconnect(std::function<void(bool)> fcn) {
+            void FleXdIPCProxy::setOnDisconnect(std::function<void(bool, int)> fcn) {
                 m_onDisconnect = fcn;
             }
 

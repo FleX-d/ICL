@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.0] - 2018-06-27
+### Added
+- Google tests for IPC Connector[Jakub Pekar]
+
+### Changed
+- Changing client into server mode after server crashing [Jakub Pekar]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-18
 ### Added
 - Generic interface for IPCConnector [Martin Strenger]

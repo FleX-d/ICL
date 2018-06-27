@@ -50,13 +50,13 @@ namespace flexd {
                 pSharedFleXdIPC getIPC();
                 int getFd() const;
                 bool init();
-                bool connect();
-                bool disconnect();
+                bool connect(int fd);
+                bool disconnect(int fd);
                 void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1);
 
                 void setOnInit(std::function<void(bool)> fcn);
-                void setOnConnect(std::function<void(bool)> fcn);
-                void setOnDisconnect(std::function<void(bool)> fcn);
+                void setOnConnect(std::function<void(bool, int)> fcn);
+                void setOnDisconnect(std::function<void(bool, int)> fcn);
                 void setOnConnectClient(std::function<void(int)> fcn);
                 void setOnDisconnectClient(std::function<void(int)> fcn);
                 void setOnSndMsg(std::function<void(pSharedFleXdIPCMsg, int)> fcn);
@@ -76,8 +76,8 @@ namespace flexd {
                 std::function<void(bool)> m_onInit = nullptr;
                 std::function<void(int)> m_onConnectClient = nullptr;
                 std::function<void(int)> m_onDisconnectClient = nullptr;
-                std::function<void(bool)> m_onConnect = nullptr;
-                std::function<void(bool)> m_onDisconnect = nullptr;
+                std::function<void(bool, int)> m_onConnect = nullptr;
+                std::function<void(bool, int)> m_onDisconnect = nullptr;
                 std::function<void(pSharedFleXdIPCMsg, int)> m_onSndMsg = nullptr;
                 std::function<void(pSharedFleXdIPCMsg, int)> m_onRcvMsg = nullptr;
                 std::function<void(FleXdEpoll::Event)> m_onRcvEvent = nullptr;

@@ -46,15 +46,15 @@ class myUDSClient : public FleXdIPCProxyBuilder<FleXdUDSClient>
 public:
     explicit myUDSClient(const std::string& socPath, flexd::icl::ipc::FleXdEpoll& poller)
     : FleXdIPCProxyBuilder<FleXdUDSClient>(socPath, poller) {
-        this->setOnConnect([this](bool ret){ this->onConnect(ret); });
-        this->setOnDisconnect([this](bool ret){ this->onDisconnect(ret); });
+        this->setOnConnect([this](bool ret, int fd){ this->onConnect(ret, fd); });
+        this->setOnDisconnect([this](bool ret, int fd){ this->onDisconnect(ret, fd); });
         this->setOnSndMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onSndMsg(msg, fd); });
         this->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
     }
     virtual ~myUDSClient() = default;
 
 private:
-    void onConnect(bool ret)
+    void onConnect(bool ret, int fd)
     {
         if (ret)
         {
@@ -64,7 +64,7 @@ private:
         }
     }
 
-    void onDisconnect(bool ret)
+    void onDisconnect(bool ret, int fd)
     {
         std::cout << "Disconnected from the server" << std::endl;
     }

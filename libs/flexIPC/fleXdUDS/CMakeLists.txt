@@ -55,4 +55,8 @@ if(${ENABLE_EXAMPLES})
     add_subdirectory(examples)
 endif(${ENABLE_EXAMPLES})
 
+if(${ENABLE_TESTS})
+#    add_subdirectory(gtest)
+endif(${ENABLE_TESTS})
+
 add_dependencies(${PROJECT_NAME} fleXdEpoll fleXdIPCCommon)

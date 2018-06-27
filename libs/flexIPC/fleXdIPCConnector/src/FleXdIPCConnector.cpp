@@ -65,14 +65,18 @@ namespace flexd {
                 return m_myID;
             }
 
+            bool  IPCConnector::initAsServer(){
+                const std::string myPath = FLEXDIPCUDSPATH + std::to_string(m_myID);
+                m_server = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSServer> >(myPath, m_poller);
+                m_server->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
+                m_server->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
+                m_server->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
+                return m_server->init();
+            }
+
             bool IPCConnector::initGenericServer() {
                 if(m_genericPeersAllowed && !m_server) {
-                    const std::string myPath = FLEXDIPCUDSPATH + std::to_string(m_myID);
-                    m_server = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSServer> >(myPath, m_poller);
-                    m_server->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
-                    m_server->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
-                    m_server->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
-                    return m_server->init();
+                    return initAsServer();
                 }
                 return m_genericPeersAllowed && m_server;
             }
@@ -83,13 +87,8 @@ namespace flexd {
                 if(checkIfFileExist(socPath)) {
                     return addClient(peerID, socPath);
                 } else {
-                    if(!m_server) {
-                        const std::string myPath = FLEXDIPCUDSPATH + std::to_string(m_myID);
-                        m_server = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSServer> >(myPath, m_poller);
-                        m_server->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
-                        m_server->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
-                        m_server->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
-                        if(!m_server->init()) {
+                    if(!m_server) {                       
+                        if (!initAsServer()){
                             return false;
                         }
                     }
@@ -135,8 +134,8 @@ namespace flexd {
                 if(m_clients.count(clientID) == 0) {
                     auto client = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSClient> >(socPath, m_poller);
                     client->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
-                    client->setOnConnect([this](bool ret){ this->onConnect(ret); });
-                    client->setOnDisconnect([this](bool ret){ this->onDisconnect(ret); });
+                    client->setOnConnect([this](bool ret, int fd){ this->onConnect(ret,fd); });
+                    client->setOnDisconnect([this](bool ret, int fd){ this->onDisconnect(ret,fd); });
                     if(!client->init()) {
                         return false;
                     }
@@ -207,16 +206,29 @@ namespace flexd {
                 }
             }
 
-            void IPCConnector::onConnect(bool ret) {
+            void IPCConnector::onConnect(bool ret, int fd) {
                 // TODO
             }
 
-            void IPCConnector::onDisconnect(bool ret) {
+            void IPCConnector::onDisconnect(bool ret, int fd) {
                 if(!ret) {
+                    uint32_t peerID = 0;
+                    // remove from list
+                    for(auto& ref : m_clients) {
+                        if(ref.second.m_fd == fd) {
+                            peerID = ref.first;
+                        }
+                    }
                     if(!m_server) {
-                        // TODO switch to server mode
-                    } else {
-                        // TODO remove from list
+                        for(auto& ref : m_clients) {
+                            if(ref.second.m_fd == fd) {
+                                //set the timer for delay reconnection (e.g. 5-times)
+                                //ref.second.m_ptr.get->
+                            }
+                        }
+                        //after unsuccess reconnecting, it is set as a server
+                        removePeer(peerID);
+                        addPeer(peerID);
                     }
                 }
             }

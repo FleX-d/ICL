@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-27
+### Added
+- functionality - after crashing server, client itself change to server [Jakub Pekar]
+
+### Changed
+- None
+
+### Removed
+- None
+
+## [Unreleased]
 ## [0.1.0] - 2018-06-18
 ### Added
 - Generic interface for IPCConnector [Martin Strenger]

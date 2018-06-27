@@ -68,11 +68,12 @@ namespace flexd {
 
             private:
                 bool addClient(uint32_t clientID, const std::string& socPath);
+                bool initAsServer();
                 void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
                 void onConnectClient(int fd);
                 void onDisconnectClient(int fd);
-                void onConnect(bool ret);
-                void onDisconnect(bool ret);
+                void onConnect(bool ret, int fd);
+                void onDisconnect(bool ret, int fd);
                 void handshake(int fd);
                 void handshakeAck(uint32_t peerID, int fd);
                 bool handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd, bool& genericPeer);
