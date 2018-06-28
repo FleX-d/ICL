@@ -100,7 +100,7 @@ namespace flexd {
 
             void FleXdIPCBuffer::rcvMsg(pSharedArray8192& data, size_t size)
             {
-                m_cache.putToEnd(data->begin(), data->begin() + (size));
+                m_cache.putToEnd(data->begin(), data->begin() + size);
                 rcvMsg();
             }
 
@@ -208,8 +208,14 @@ namespace flexd {
             }
 
             pSharedFleXdIPCMsg FleXdIPCBuffer::pop() {
-                pSharedFleXdIPCMsg ret = std::move(m_queue.front());
-                m_queue.pop();
+                pSharedFleXdIPCMsg ret = nullptr;
+                if (!m_queue.empty()) {
+                    ret = std::move(m_queue.front());
+                    if (ret) {
+                        m_bufferSize -= ret->getMsgSize();
+                    }
+                    m_queue.pop();
+                }
                 return std::move(ret);
             }
 
@@ -252,6 +258,10 @@ namespace flexd {
                                         rcvMsg();
                                         break;
                                     }
+                                }
+                                else if(m_cache.get<uint8_t>(IPC_MSG_HEADER_END_FLAG_BIT_COUNT) == IPC_MSG_END_HEADER_FLAG)
+                                {
+                                    break;
                                 }
                             }
                         }

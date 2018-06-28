@@ -43,10 +43,15 @@ namespace flexd {
     namespace icl {
         namespace ipc {
 
+            /*
+             * ADDITIONAL HEADER FORMAT
+             *              |   value 0   |   value 1   |   value 2   |   value 3   |   value 4   |   value 5   |   next header mask   |
+             * BITCOUNT     |      8      |      8      |     16      |     32      |     32      |     32      |           8          |
+             */
             class FleXdIPCAdtHdr {
             public:
                 FleXdIPCAdtHdr();
-                explicit FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5);
+                explicit FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5, FleXdIPCAdtHdr* next = nullptr);
                 ~FleXdIPCAdtHdr();
                 FleXdIPCAdtHdr(const FleXdIPCAdtHdr&) = delete;
                 FleXdIPCAdtHdr& operator=(const FleXdIPCAdtHdr&) = delete;
@@ -99,7 +104,7 @@ namespace flexd {
              * POSSIBLE MESSAGE TYPES
              *              |     0x0     |     0x1     |         0         |      message type      |  msgSize  |     0x2    |        ---        | payload |
              *              |     0x0     |     0x1     |         1         | additional header mask |  msgSize  |     0x2    | additional header | payload |
-             *              |     0x0     |     0x1     |         1         |         0xFF           |  msgSize  |     0x2    |        ---        | payload |
+             *              |     0x0     |     0x1     |         1         |          0xFF          |  msgSize  |     0x2    |        ---        | payload |
              *
              * msgSize = msg start + header + additional header + payload;
              */
@@ -162,7 +167,7 @@ namespace flexd {
                  * Function moves payload data
                  * @return data uint8_t vector
                  */
-                std::vector<uint8_t>&& releasePayload();
+                std::vector<uint8_t> releasePayload();
                 /*
                  * Function returns validity of the message
                  * @return message validity

@@ -54,7 +54,7 @@ namespace flexd {
             {
             }
 
-            FleXdIPCAdtHdr::FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5)
+            FleXdIPCAdtHdr::FleXdIPCAdtHdr(uint8_t headerMask, uint8_t value0, uint8_t value1, uint16_t value2, uint32_t value3, uint32_t value4, uint32_t value5, FleXdIPCAdtHdr* next /*= nullptr*/)
             : m_headerMask(headerMask),
               m_value0(headerMask & IPC_MSG_ADDITIONAL_HEADER_0_FLAG ? value0 : 0),
               m_value1(headerMask & IPC_MSG_ADDITIONAL_HEADER_1_FLAG ? value1 : 0),
@@ -62,7 +62,7 @@ namespace flexd {
               m_value3(headerMask & IPC_MSG_ADDITIONAL_HEADER_3_FLAG ? value3 : 0),
               m_value4(headerMask & IPC_MSG_ADDITIONAL_HEADER_4_FLAG ? value4 : 0),
               m_value5(headerMask & IPC_MSG_ADDITIONAL_HEADER_5_FLAG ? value5 : 0),
-              m_next(nullptr)
+              m_next(next)
             {
             }
 
@@ -396,7 +396,7 @@ namespace flexd {
                 return m_payload;
             }
 
-            std::vector<uint8_t>&& FleXdIPCMsg::releasePayload()
+            std::vector<uint8_t> FleXdIPCMsg::releasePayload()
             {
                 m_valid = false;
                 return std::move(m_payload);
@@ -438,7 +438,7 @@ namespace flexd {
                     }
                 }
                 bs.put(m_payload.begin(), m_payload.end());
-                return std::move(bs.releaseData());
+                return bs.releaseData();
             }
 
             uint16_t FleXdIPCMsg::calcCRC16(const void * data, size_t size, uint16_t otherCrc)

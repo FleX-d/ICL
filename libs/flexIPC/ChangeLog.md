@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-06-28
+### Added
+- fleXdIPCCommon: Unit tests for messages bigger than 8192 bytes [Martin Strenger]
+
+### Changed
+- fleXdIPCCommon: Fixed finding non-corrupted message for messages bigger than 8192 bytes [Martin Strenger]
+
+### Removed
+- None
 
 ## [0.1.0] - 2018-06-27
 ### Added
