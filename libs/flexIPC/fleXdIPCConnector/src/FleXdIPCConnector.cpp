@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2017, Globallogic s.r.o.
 All rights reserved.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
@@ -11,6 +12,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
+      
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -134,8 +136,8 @@ namespace flexd {
                 if(m_clients.count(clientID) == 0) {
                     auto client = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSClient> >(socPath, m_poller);
                     client->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
-                    client->setOnConnect([this](bool ret, int fd){ this->onConnect(ret,fd); });
-                    client->setOnDisconnect([this](bool ret, int fd){ this->onDisconnect(ret,fd); });
+                    client->setOnConnect([this](bool ret){ this->onConnect(ret); });
+                    client->setOnDisconnect([this](int fd ){ this->onDisconnect(fd); });
                     if(!client->init()) {
                         return false;
                     }
@@ -202,34 +204,35 @@ namespace flexd {
                 for(auto& ref : m_clients) {
                     if(ref.second.m_fd == fd) {
                         ref.second.m_active = false;
+                        break;
                     }
                 }
             }
 
-            void IPCConnector::onConnect(bool ret, int fd) {
+            void IPCConnector::onConnect(bool ret) {
                 // TODO
             }
 
-            void IPCConnector::onDisconnect(bool ret, int fd) {
-                if(!ret) {
+            void IPCConnector::onDisconnect(int fd) {
+                if(fd > 0 ) {
                     uint32_t peerID = 0;
-                    // remove from list
                     for(auto& ref : m_clients) {
                         if(ref.second.m_fd == fd) {
                             peerID = ref.first;
+                            break;
                         }
                     }
                     if(!m_server) {
-                        for(auto& ref : m_clients) {
-                            if(ref.second.m_fd == fd) {
-                                //set the timer for delay reconnection (e.g. 5-times)
-                                //ref.second.m_ptr.get->
-                            }
-                        }
-                        //after unsuccess reconnecting, it is set as a server
-                        removePeer(peerID);
-                        addPeer(peerID);
+                        //TODO Reconection 
+                        auto ref = m_clients.find(peerID);
+                        if(ref != m_clients.end()) {
+                            //set the timer for delay reconnection (e.g. 5-times)
+                            //ref.second.m_ptr.get->
+                            ref->second.m_ptr.reset();
+                        }   
                     }
+                    removePeer(peerID);
+                    addPeer(peerID);
                 }
             }
 

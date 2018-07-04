@@ -36,10 +36,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdEpoll poller(10);
+    flexd::icl::ipc::FleXdTermEvent event(poller);
     std::cout << "***Start app generic" << "\n";
-    App a(111, poller, true);
-    if (a.initGenericServer()) {
-        poller.loop();
+    if(event.init()) {
+        App a(111, poller, true);
+        if (a.initGenericServer()) {
+            poller.loop();
+        }
     }
     return 0;
 }

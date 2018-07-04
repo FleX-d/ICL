@@ -72,8 +72,8 @@ namespace flexd {
                 void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
                 void onConnectClient(int fd);
                 void onDisconnectClient(int fd);
-                void onConnect(bool ret, int fd);
-                void onDisconnect(bool ret, int fd);
+                void onConnect(bool ret);
+                void onDisconnect(int fd);
                 void handshake(int fd);
                 void handshakeAck(uint32_t peerID, int fd);
                 bool handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd, bool& genericPeer);

@@ -1,6 +1,8 @@
 /*
 Copyright (c) 2017, Globallogic s.r.o.
+
 All rights reserved.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
@@ -11,6 +13,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
+      
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -61,22 +64,22 @@ namespace flexd {
                 return ret;
             }
 
-            bool FleXdIPCProxy::connect(int fd) {
-                const bool ret = m_ipc->connect(fd);
+            bool FleXdIPCProxy::connect() {
+                const bool ret = m_ipc->connect();
                 if (m_onConnect) {
-                    m_onConnect(ret, fd);
+                    m_onConnect(ret);
                 } else {
-                    m_ipc->onConnect(ret, fd);
+                    m_ipc->onConnect(ret);
                 }
                 return ret;
             }
 
-            bool FleXdIPCProxy::disconnect(int fd) {
-                const bool ret = m_ipc->disconnect(fd);
+            bool FleXdIPCProxy::disconnect() {
+                const bool ret = m_ipc->disconnect();;
                 if (m_onDisconnect) {
-                    m_onDisconnect(ret , fd);
+                    m_onDisconnect(m_ipc->getFd());
                 } else {
-                    m_ipc->onDisconnect(ret, fd);
+                    m_ipc->onDisconnect(m_ipc->getFd());
                 }
                 return ret;
             }
@@ -130,11 +133,11 @@ namespace flexd {
                 m_onInit = fcn;
             }
 
-            void FleXdIPCProxy::setOnConnect(std::function<void(bool, int)> fcn) {
+            void FleXdIPCProxy::setOnConnect(std::function<void(bool)> fcn) {
                 m_onConnect = fcn;
             }
 
-            void FleXdIPCProxy::setOnDisconnect(std::function<void(bool, int)> fcn) {
+            void FleXdIPCProxy::setOnDisconnect(std::function<void(int)> fcn) {
                 m_onDisconnect = fcn;
             }
 

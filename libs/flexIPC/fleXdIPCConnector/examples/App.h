@@ -16,6 +16,7 @@
 
 #include "FleXdIPCConnector.h"
 #include "FleXdEpoll.h"
+#include "FleXdEvent.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -51,7 +52,7 @@ class App : public flexd::icl::ipc::IPCConnector {
         }
 
         virtual void onConnectPeer(uint32_t peerID, bool genericPeer) override {
-            std::cout << "onConnectPeer() -> " << peerID << ", generic = "<< genericPeer << "\n";
+            std::cout << "onConnectPeer() -> " << peerID <<  "\n";
             std::string msg = "onConnectPeer test msg from " + std::to_string(getMyID()) + " to " + std::to_string(peerID);
             send(peerID, msg);
         }

@@ -54,7 +54,7 @@ namespace flexd {
             FleXdUDSClient::~FleXdUDSClient() {
             }
 
-            bool FleXdUDSClient::connect(int fd) {
+            bool FleXdUDSClient::connect() {
                 if(connectUDS())
                 {
                     m_poller.addEvent(getFd(), [this](FleXdEpoll::Event e)
@@ -67,12 +67,12 @@ namespace flexd {
                 return false;
             }
 
-            bool FleXdUDSClient::disconnect(int fd) {
-                return reconnect(0);
+            bool FleXdUDSClient::disconnect() {
+                return reconnect();
             }
 
             bool FleXdUDSClient::initUDS() {
-                return m_proxy->connect(-1);
+                return m_proxy->connect();
             }
 
             void FleXdUDSClient::rcvEvent(FleXdEpoll::Event e) {
@@ -83,7 +83,7 @@ namespace flexd {
                         readMsg(e, std::move(array), rc);
                     }
                 } else if (e.type == EpollEvent::EpollError) {
-                    m_proxy->disconnect(e.fd);
+                    m_proxy->disconnect();
                 }
             }
 
@@ -101,8 +101,8 @@ namespace flexd {
                 }
             }
 
-            bool FleXdUDSClient::reconnect(int fd) {
-                return m_proxy->connect(fd);
+            bool FleXdUDSClient::reconnect() {
+                return m_proxy->connect();
             }
 
         } // namespace ipc

@@ -49,14 +49,12 @@ namespace flexd {
 
                 pSharedFleXdIPC getIPC();
                 int getFd() const;
-                bool init();
-                bool connect(int fd);
-                bool disconnect(int fd);
-                void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1);
+                virtual bool init() override;
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1) override;
 
                 void setOnInit(std::function<void(bool)> fcn);
-                void setOnConnect(std::function<void(bool, int)> fcn);
-                void setOnDisconnect(std::function<void(bool, int)> fcn);
+                void setOnConnect(std::function<void(bool)> fcn);
+                void setOnDisconnect(std::function<void(int)> fcn);
                 void setOnConnectClient(std::function<void(int)> fcn);
                 void setOnDisconnectClient(std::function<void(int)> fcn);
                 void setOnSndMsg(std::function<void(pSharedFleXdIPCMsg, int)> fcn);
@@ -64,10 +62,12 @@ namespace flexd {
                 void setOnRcvEvent(std::function<void(FleXdEpoll::Event)> fcn);
 
             protected:
-                void connectClient(int fd);
-                void disconnectClient(int fd);
-                void rcvMsg(pSharedFleXdIPCMsg msg, int);
-                void rcvEvent(FleXdEpoll::Event e);
+                virtual bool connect() override;
+                virtual bool disconnect() override;
+                virtual void connectClient(int fd) override;
+                virtual void disconnectClient(int fd) override;
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int) override;
+                virtual void rcvEvent(FleXdEpoll::Event e) override;
 
             protected:
                 pSharedFleXdIPC m_ipc;
@@ -76,8 +76,8 @@ namespace flexd {
                 std::function<void(bool)> m_onInit = nullptr;
                 std::function<void(int)> m_onConnectClient = nullptr;
                 std::function<void(int)> m_onDisconnectClient = nullptr;
-                std::function<void(bool, int)> m_onConnect = nullptr;
-                std::function<void(bool, int)> m_onDisconnect = nullptr;
+                std::function<void(bool)> m_onConnect = nullptr;
+                std::function<void(int)> m_onDisconnect = nullptr;
                 std::function<void(pSharedFleXdIPCMsg, int)> m_onSndMsg = nullptr;
                 std::function<void(pSharedFleXdIPCMsg, int)> m_onRcvMsg = nullptr;
                 std::function<void(FleXdEpoll::Event)> m_onRcvEvent = nullptr;

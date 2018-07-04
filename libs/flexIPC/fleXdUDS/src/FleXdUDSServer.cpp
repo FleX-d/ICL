@@ -51,6 +51,7 @@ namespace flexd {
             }
 
             FleXdUDSServer::~FleXdUDSServer() {
+                ::close(getFd());
                 ::unlink(m_socPath.c_str());
             }
 
@@ -121,18 +122,6 @@ namespace flexd {
                         }
                     }
                 }
-            }
-
-            //TODO currently not used
-            bool FleXdUDSServer::reconnect(int fd) {
-                return removeFdFromList(fd);
-            }
-
-            //TODO currently not used
-            bool FleXdUDSServer::removeFdFromList(int fd) {
-                const size_t size = m_map.size();
-                    m_proxy->disconnectClient(fd);
-                return size == m_map.size() + 1;
             }
 
         } // namespace ipc

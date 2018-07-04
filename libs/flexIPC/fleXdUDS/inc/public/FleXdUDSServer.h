@@ -65,8 +65,7 @@ namespace flexd {
                 virtual void connectClient(int fd) override;
                 virtual void disconnectClient(int fd) override;
                 virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) override;
-                virtual bool reconnect(int fd) override;
-                bool removeFdFromList(int fd);
+                virtual bool reconnect() override { return false; }
 
             private:
                 std::map<int, FleXdIPCBuffer> m_map;

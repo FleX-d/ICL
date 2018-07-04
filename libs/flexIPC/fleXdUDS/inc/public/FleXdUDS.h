@@ -66,7 +66,7 @@ namespace flexd {
                 virtual bool initUDS() = 0;
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
                 virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
-                virtual bool reconnect(int fd) = 0;
+                virtual bool reconnect() = 0;
                 virtual int getFd() const override;
                 bool connectUDS();
                 bool listenUDS();

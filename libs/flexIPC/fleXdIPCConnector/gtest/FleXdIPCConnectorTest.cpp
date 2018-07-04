@@ -36,21 +36,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FleXdIPCConnector.h"
 #include "FleXdEpoll.h"
 #include "FleXdIPCCommon.h"
+#include "FleXdEvent.h"
 #include <gtest/gtest.h>
 #include <future>
 #include <chrono>
 #include <thread>
 
-#define IPC1_PEER_ID 10000
-#define IPC2_PEER_ID 20000
-#define IPC3_PEER_ID 30000
+#define PEER_ID1 1111
+#define PEER_ID2 2222
+#define PEER_ID3 3333
 using namespace flexd::icl::ipc;
 
 namespace {
     FleXdEpoll poller(10);
-    uint32_t myID = 132;
-    bool genericPeersAllowed = true;
-    bool garantedDelivery = false;
+    FleXdEpoll poller1(10);
+    FleXdEpoll poller2(10);
+    FleXdTermEvent eventTerm(poller);
+    FleXdTermEvent eventTerm1(poller1);
+    FleXdTermEvent eventTerm2(poller2);
+    
 
     class IPCTest: public IPCConnector {
     public:
@@ -65,73 +69,91 @@ namespace {
         void onConnectPeer(uint32_t peerID, bool genericPeer) override {
             
         }
+        /*
+         * Function for testing sending and receiving messages [Don't used now]
+         */
+        void sendMSGToPeer(uint32_t peerID){
+            std::string stringmsg("Message from ");
+            stringmsg += std::to_string(peerID);
+            std::vector<uint8_t> data {stringmsg.begin(),stringmsg.end()};
+            auto msg = std::make_shared<flexd::icl::ipc::FleXdIPCMsg>(std::move(data));
+            msg->getAdditionalHeader()->setValue_1(0);
+            msg->getAdditionalHeader()->setValue_4(getMyID());
+            msg->getAdditionalHeader()->setValue_5(peerID);
+            sendMsg(msg, peerID);
+        }
 
     };
-
-    IPCTest testConnector1(myID, poller);
-    IPCTest testConnector2(myID+2, poller);
-    IPCTest testConnector5(myID+5, poller,genericPeersAllowed,garantedDelivery);
     /**
      * Basic Test of functions
      */
 
-    bool swapClientServer(IPCTest* test){
-        delete test;
-        return true; 
-    }
-    
-    bool createSingleServer(IPCTest* test,uint32_t peerid){
-        test = new IPCTest(peerid,poller);
-        test->addPeer(IPC2_PEER_ID);
-        poller.loop();
-        return false;
-    }
-    
-    bool createSingleIPCClient(IPCTest* test,uint32_t peerid){
-        test = new IPCTest(peerid,poller);
-        test->addPeer(IPC1_PEER_ID);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        return false;
-    }
-
     TEST(IPCConnector, getMyID){
-        EXPECT_EQ(myID, testConnector1.getMyID());
+        IPCTest testConnector(00123, poller);
+        EXPECT_EQ(00123, testConnector.getMyID());
     }
+    
     TEST(IPCConnector, addPeer){
-        EXPECT_TRUE(testConnector1.addPeer(myID+2));
+        IPCTest testConnector(00123, poller);
+        EXPECT_TRUE(testConnector.addPeer(00125));
     }
 
-    TEST(IPCConnector, serverInitialization){
-        std::string socPath = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+10);
+    TEST(IPCConnector, serverInitializationFileSocket){
+        std::string socPath = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(00133);
         EXPECT_FALSE(checkIfFileExist(socPath));
-        IPCTest testIPC(myID+10, poller);
-        testIPC.addPeer(myID+4);
+        IPCTest testIPC(00133, poller);
+        testIPC.addPeer(00127);
         EXPECT_TRUE(checkIfFileExist(socPath));
     }
+    
 
     TEST(IPCConnector, initialization_clientToServer){
-        uint32_t serverID = 11111;
-        uint32_t clientID = 12000;
-        IPCTest* IPCConn1Server = new IPCTest(serverID,poller);
-        IPCTest* IPCConn2Client = nullptr;
-        IPCConn1Server->addPeer(clientID);
-        auto handlerServer = std::async(createSingleServer,IPCConn1Server,serverID);
-        auto handlerClient = std::async(createSingleIPCClient,IPCConn2Client,clientID);
-        EXPECT_TRUE(checkIfFileExist("/tmp/FleXd/shared/ipc/uds/" + std::to_string(serverID)));
+        std::string socPath1 = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(PEER_ID1);
+        std::string socPath2 = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(PEER_ID2);
         
-        /*
-        std::string socPath = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+3);
-        EXPECT_FALSE(checkIfFileExist(socPath));
-        IPCTest* testConnector3 = new IPCTest(myID+3, poller);
-        EXPECT_TRUE(testConnector3->addPeer(myID+4));
-        EXPECT_TRUE(checkIfFileExist("/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+3)));
-        IPCTest testConnector4(myID+4, poller);
-        EXPECT_FALSE(checkIfFileExist("/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+4)));
-        EXPECT_TRUE(testConnector4.addPeer(myID+3));
-        EXPECT_FALSE(checkIfFileExist("/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+4)));
-        std::async(swapClientServer,testConnector3);
-        EXPECT_FALSE(checkIfFileExist("/tmp/FleXd/shared/ipc/uds/" + std::to_string(myID+3)));*/
+        if(checkIfFileExist(socPath1)){
+            ::unlink(socPath1.c_str()); 
+        }
+        if(checkIfFileExist(socPath2)){
+            ::unlink(socPath2.c_str()); 
+        }
+        
+      //  eventTerm1.init();
+      //  eventTerm2.init();
+        std::thread handlerPoller1([](void){ poller1.loop(); });
+        std::thread handlerPoller2([](void){ poller2.loop(); });    
+        
+        IPCTest* App0 = new IPCTest(PEER_ID1, poller1);
+        IPCTest App1(PEER_ID2, poller2);
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        App0->addPeer(PEER_ID2);
+        EXPECT_TRUE(checkIfFileExist(socPath1));
+        App1.addPeer(PEER_ID1);
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        EXPECT_FALSE(checkIfFileExist(socPath2));
+        delete App0;
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        EXPECT_TRUE(checkIfFileExist(socPath2));
+        
+        App0 = new IPCTest(PEER_ID1, poller1);
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        App0->addPeer(PEER_ID2);
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+    
+        poller1.endLoop();
+        poller2.endLoop();
+        handlerPoller1.detach();
+        handlerPoller2.detach();
     }
-
+    
+    TEST(IPCConnector, genericServer){
+        IPCTest genIPC(66666, poller1, true);
+        EXPECT_TRUE(genIPC.initGenericServer());
+        
+        IPCTest client(77777, poller2);
+    }
+    
 }
 

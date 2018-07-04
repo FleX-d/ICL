@@ -53,8 +53,8 @@ namespace flexd {
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = 0) override;
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
 
-                virtual bool connect(int fd) override;
-                virtual bool disconnect(int fd) override;
+                virtual bool connect() override;
+                virtual bool disconnect() override;
 
             protected:
                 virtual bool initUDS() override;
@@ -62,7 +62,7 @@ namespace flexd {
             private:
                 virtual void rcvEvent(FleXdEpoll::Event e) override;
                 virtual void readMsg(FleXdEpoll::Event e, byteArray8192&& array, int size) override;
-                virtual bool reconnect(int fd) override;
+                virtual bool reconnect() override;
 
             private:
                 pSharedArray8192 m_array;
