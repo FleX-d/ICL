@@ -87,6 +87,8 @@ namespace flexd {
                 if (::connect(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
                     return false;
                 }
+                int i = 1;
+                if (::setsockopt(m_ctx->fd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(int)) < 0) return false;
                 ::fcntl(m_ctx->fd, F_SETFL, O_NONBLOCK);
                 return true;
             }
@@ -95,6 +97,7 @@ namespace flexd {
                 struct stat info;
                 if ((stat(m_socPath.c_str(), &info) == 0) || (m_socPath[0] != '\0')) {
                     ::unlink(m_socPath.c_str());
+                    ::system("sync");
                 }
                 if (::bind(m_ctx->fd, (struct sockaddr*) &(m_ctx->addr), sizeof (m_ctx->addr)) == -1) {
                     return false;

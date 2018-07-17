@@ -39,11 +39,10 @@ int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdTermEvent event(poller);
     std::cout << "***Start app generic" << "\n";
     if(event.init()) {
-        App a(111, poller, true);
+        App a(111, poller, true, argc > 1);
         if (a.initGenericServer()) {
             poller.loop();
         }
     }
     return 0;
 }
-

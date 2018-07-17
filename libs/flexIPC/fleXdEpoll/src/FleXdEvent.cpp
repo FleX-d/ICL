@@ -53,14 +53,28 @@ namespace flexd {
             }
 
             bool FleXdEvent::init() {
-                m_fd = ::eventfd(0, EFD_NONBLOCK);
-                if (m_fd > -1) {
-                    m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
-                    {
-                        onEvent(e);
-                    });
+                if (m_fd == -1) {
+                    m_fd = ::eventfd(0, EFD_NONBLOCK);
+                    if (m_fd > -1) {
+                        m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
+                        {
+                            onEvent(e);
+                        });
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            bool FleXdEvent::uninit() {
+                if (m_fd == -1) {
                     return true;
                 }
+                if (m_poller.rmEvent(m_fd)) {
+                    ::close(m_fd);
+                    m_fd = -1;
+                    return true;
+                };
                 return false;
             }
 
@@ -75,6 +89,10 @@ namespace flexd {
 
             int FleXdEvent::getFd() const {
                 return m_fd;
+            }
+
+            void FleXdEvent::setOnEvent(std::function<void()> onEvent) {
+                m_onEvent = onEvent;
             }
 
             void FleXdEvent::onEvent(FleXdEpoll::Event e) {

@@ -51,8 +51,14 @@ namespace flexd {
             }
 
             FleXdUDSServer::~FleXdUDSServer() {
+                for (const auto& ref : m_map) {
+                    m_poller.rmEvent(ref.first);
+                    ::close(ref.first);
+                }
+                m_poller.rmEvent(getFd());
                 ::close(getFd());
                 ::unlink(m_socPath.c_str());
+                ::system("sync");
             }
 
             bool FleXdUDSServer::initUDS() {
@@ -100,6 +106,8 @@ namespace flexd {
             }
 
             void FleXdUDSServer::disconnectClient(int fd) {
+                m_poller.rmEvent(fd);
+                ::close(fd);
                 std::ignore = m_map.erase(fd);
             }
 

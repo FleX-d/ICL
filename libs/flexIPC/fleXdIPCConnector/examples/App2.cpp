@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Created on May 31, 2018, 8:04 AM
  */
 
-
 #include "App.h"
 
 int main(int argc, char** argv) {
@@ -40,14 +39,13 @@ int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdTermEvent event(poller);
     std::cout << "***Start app 101" << "\n";
     if(event.init()) {
-        App a(101, poller);
-        std::cout << "***addPeer 100 " << a.addPeer(100)  << "\n";
+        App a(101, poller, false, argc > 1);
+        std::cout << "***addPeer 100 " << a.addPeer(100) << "\n";
         std::cout << "***addPeer 102 " << a.addPeer(102) << "\n";
-        //std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
+        std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
         a.send(100, "Testing msg from 101 to 100");
-        // a.send(102, "Testing msg from 101 to 102");
+        a.send(102, "Testing msg from 101 to 102");
         poller.loop();
     }
     return 0;
 }
-

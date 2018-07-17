@@ -51,7 +51,7 @@ namespace flexd {
                 virtual bool init() = 0;
                 virtual bool connect() { return false; }
                 virtual bool disconnect() { return false; }
-                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd = -1) = 0;
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
                 virtual void connectClient(int fd) {}
                 virtual void disconnectClient(int fd) {}
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
@@ -62,7 +62,7 @@ namespace flexd {
                 virtual void onDisconnectClient(int fd) {}
                 virtual void onConnect(bool ret) {}
                 virtual void onDisconnect(int fd) {}
-                virtual void onSndMsg(pSharedFleXdIPCMsg msg, int fd = -1) {}
+                virtual void onSndMsg(pSharedFleXdIPCMsg msg, int fd) {}
                 virtual void onRcvMsg(pSharedFleXdIPCMsg msg, int fd) {}
                 virtual void onRcvEvent(FleXdEpoll::Event e) {}
             };

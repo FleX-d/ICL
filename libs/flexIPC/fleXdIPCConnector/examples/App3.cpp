@@ -37,15 +37,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdEpoll poller(10);
     flexd::icl::ipc::FleXdTermEvent event(poller);
-    std::cout << "***Start app 102, poller" << "\n";
+    std::cout << "***Start app 102" << "\n";
     if(event.init()) {
-        App a(102, poller);
-        std::cout << "***addPeer 100 " << a.addPeer(100)  << "\n";
+        App a(102, poller, false, argc > 1);
+        std::cout << "***addPeer 100 " << a.addPeer(100) << "\n";
         std::cout << "***addPeer 101 " << a.addPeer(101) << "\n";
-       // std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
+        std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
         a.send(100, "Some test msg from 102 to 100");
+        a.send(101, "Some test msg from 102 to 101");
         poller.loop();
     }
     return 0;
 }
-

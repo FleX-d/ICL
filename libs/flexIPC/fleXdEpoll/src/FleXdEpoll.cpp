@@ -36,7 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <queue>
 #include <iostream>
-#include <errno.h>
 #include <pthread.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -46,19 +45,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/stat.h>
 #include <unistd.h>
 
-
 namespace flexd {
     namespace icl {
         namespace ipc {
 
             class EpollClient {
             public:
-
                 EpollClient()
                 : epollEvent(),
-                onEvent(nullptr) {
+                  onEvent(nullptr) {
                 }
-
                 ~EpollClient() = default;
 
                 epoll_event epollEvent;
@@ -67,16 +63,12 @@ namespace flexd {
 
             class FleXdEpoll::Epoll {
             public:
-
                 Epoll(size_t _maxEventh)
                 : efd(epoll_create(_maxEventh)),
-                maxEventh(_maxEventh),
-                ev(_maxEventh),
-                buffer()
-                {
-
+                  maxEventh(_maxEventh),
+                  ev(_maxEventh),
+                  buffer() {
                 }
-
                 ~Epoll() = default;
 
                 int efd;
@@ -87,12 +79,11 @@ namespace flexd {
 
             FleXdEpoll::FleXdEpoll(size_t maxEventh)
             :  m_epoll(std::make_unique<FleXdEpoll::Epoll>(maxEventh)),
-               m_safeStop(false)
-            {
-
+               m_safeStop(false) {
             }
 
-            FleXdEpoll::~FleXdEpoll() {}
+            FleXdEpoll::~FleXdEpoll() {
+            }
 
             bool FleXdEpoll::addEvent(int fd, std::function<void(Event)> onEvent) {
                 auto itBuffer = m_epoll->buffer.find(fd);
@@ -105,10 +96,7 @@ namespace flexd {
                     ev.data.u64 = 0;
                     ev.data.fd = fd;
                     ev.events |= EPOLLIN | EPOLLPRI | EPOLLHUP;
-                    //TODO add fd to epoll
-                    std::ignore = epoll_ctl(m_epoll->efd, EPOLL_CTL_ADD, fd, &ev); // TODO check return
-
-                    return true;
+                    return (0 == epoll_ctl(m_epoll->efd, EPOLL_CTL_ADD, fd, &ev)); // TODO check return
                 }
                 return false;
             }
@@ -116,10 +104,9 @@ namespace flexd {
             bool FleXdEpoll::rmEvent(int fd) {
                 auto itBuffer = m_epoll->buffer.find(fd);
                 if (itBuffer != m_epoll->buffer.end()) {
-                    std::ignore = epoll_ctl(m_epoll->efd, EPOLL_CTL_DEL, fd, &(itBuffer->second.epollEvent)); // TODO check return
-//                    close(fd);
+                    bool ret = (0 == epoll_ctl(m_epoll->efd, EPOLL_CTL_DEL, fd, &(itBuffer->second.epollEvent))); // TODO check return
                     std::ignore = m_epoll->buffer.erase(itBuffer);
-                    return true;
+                    return ret;
                 } else {
                     return false;
                 }
@@ -137,10 +124,9 @@ namespace flexd {
                 uint32_t flags = 0;
                 std::queue<int> rmEvQueue{};
                 while (!m_safeStop) {
-                    int nfds = epoll_wait(m_epoll->efd, m_epoll->ev.data(), m_epoll->maxEventh, -1);
+                    int nfds = epoll_wait(m_epoll->efd, m_epoll->ev.data(), m_epoll->maxEventh, 1000);
 
                     for (int i = 0; i < nfds; i++) {
-
 						const epoll_event& evItem = m_epoll->ev.at(i);
 
                         fd = evItem.data.fd;

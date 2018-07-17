@@ -46,8 +46,10 @@ namespace flexd {
                 virtual ~FleXdEvent();
 
                 bool init();
+                bool uninit();
                 bool trigger();
                 int getFd() const;
+                void setOnEvent(std::function<void()> onEvent);
 
                 FleXdEvent(const FleXdEpoll&) = delete;
                 FleXdEvent& operator=(const FleXdEpoll&) = delete;

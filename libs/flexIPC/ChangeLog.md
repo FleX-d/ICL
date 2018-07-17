@@ -2,6 +2,27 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-17
+### Added
+- [fleXdEpoll] New setOn... functions for FleXdEvent and FleXdTimer [Martin Strenger]
+- [fleXdEpoll] Added FleXdEvent::uninit() function [Martin Strenger]
+- [fleXdIPCConnector] New virtual functions [Martin Strenger]
+
+### Changed
+- [fleXdEpoll] Fixed missing file descriptor closing in FleXdTimer::stop() function [Martin Strenger]
+- [fleXdEpoll] Fixed behaviour for multiple calling of FleXdEvent::init() function [Martin Strenger]
+- [fleXdEpoll] Fixed behaviour for multiple calling of FleXdTimer::start() and FleXdTimer::stop() functions [Martin Strenger]
+- [fleXdEpoll] Fixed epoll_wait deadlock [Martin Strenger]
+- [fleXdIPCCommon] Fixed segmentation fault when proxy was deleted on the run (example: switching from client to server) [Martin Strenger]
+- [fleXdIPCConnector] Fixed message sending, sending before handshake is no more possible [Martin Strenger]
+- [fleXdIPCConnector] Changed fleXdIPCConnector examples [Martin Strenger]
+- [fleXdIPCConnector] Fixed fleXdIPCConnector unit tests [Martin Strenger]
+- [fleXdUDS] Fixed missing file descriptor closing [Martin Strenger]
+- [fleXdUDS] Fixed missing event removal from epoll [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-07-04
 ### Added
 - Unit test [Jakub Pekar]

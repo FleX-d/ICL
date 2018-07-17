@@ -13,7 +13,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
-      
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -58,7 +58,7 @@ namespace flexd {
                 const bool ret = m_ipc->init();
                 if (m_onInit) {
                     m_onInit(ret);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onInit(ret);
                 }
                 return ret;
@@ -68,7 +68,7 @@ namespace flexd {
                 const bool ret = m_ipc->connect();
                 if (m_onConnect) {
                     m_onConnect(ret);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onConnect(ret);
                 }
                 return ret;
@@ -78,7 +78,7 @@ namespace flexd {
                 const bool ret = m_ipc->disconnect();;
                 if (m_onDisconnect) {
                     m_onDisconnect(m_ipc->getFd());
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onDisconnect(m_ipc->getFd());
                 }
                 return ret;
@@ -88,7 +88,7 @@ namespace flexd {
                 m_ipc->sndMsg(msg, fd);
                 if(m_onSndMsg) {
                     m_onSndMsg(msg, fd);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onSndMsg(msg, fd);
                 }
             }
@@ -97,7 +97,7 @@ namespace flexd {
                 m_ipc->connectClient(fd);
                 if(m_onConnectClient) {
                     m_onConnectClient(fd);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onConnectClient(fd);
                 }
             }
@@ -106,7 +106,7 @@ namespace flexd {
                 m_ipc->disconnectClient(fd);
                 if(m_onDisconnectClient) {
                     m_onDisconnectClient(fd);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onDisconnectClient(fd);
                 }
             }
@@ -115,7 +115,7 @@ namespace flexd {
                 m_ipc->rcvMsg(msg, fd);
                 if(m_onRcvMsg) {
                     m_onRcvMsg(msg, fd);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onRcvMsg(msg, fd);
                 }
             }
@@ -124,7 +124,7 @@ namespace flexd {
                 m_ipc->rcvEvent(e);
                 if(m_onRcvEvent) {
                     m_onRcvEvent(e);
-                } else {
+                } else if(m_ipc) {
                     m_ipc->onRcvEvent(e);
                 }
             }

@@ -35,6 +35,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdEpoll.h"
 
+#define FLEXDTIMER_USEC 1000L
+#define FLEXDTIMER_MSEC 1000000L
+
 struct itimerspec;
 namespace flexd {
     namespace icl {
@@ -48,6 +51,7 @@ namespace flexd {
                 bool start();
                 bool stop();
                 int getFd() const;
+                void setOnTimer(std::function<void()> onTimer);
 
                 FleXdTimer(const FleXdEpoll&) = delete;
                 FleXdTimer& operator=(const FleXdEpoll&) = delete;

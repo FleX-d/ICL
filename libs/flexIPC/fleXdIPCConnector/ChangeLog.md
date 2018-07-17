@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-17
+### Added
+- New virtual functions [Martin Strenger]
+
+### Changed
+- Fixed segmentation fault when switching from client to server [Martin Strenger]
+- Fixed message sending, sending before handshake is no more possible [Martin Strenger]
+- Changed fleXdIPCConnector examples [Martin Strenger]
+- Fixed fleXdIPCConnector unit tests [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-27
 ### Added
 - functionality - after crashing server, client itself change to server [Jakub Pekar]

@@ -63,6 +63,8 @@ namespace flexd {
                 bool PeerStatus(uint32_t peerID) const;
 
             protected:
+                virtual void onAfterSndMsg(pSharedFleXdIPCMsg msg) {};
+                virtual void onBeforeRcvMsg(std::shared_ptr<const FleXdIPCMsg> msg) {};
                 virtual void receiveMsg(pSharedFleXdIPCMsg msg) = 0;
                 virtual void onConnectPeer(uint32_t peerID, bool genericPeer) = 0;
 
@@ -76,17 +78,19 @@ namespace flexd {
                 void onDisconnect(int fd);
                 void handshake(int fd);
                 void handshakeAck(uint32_t peerID, int fd);
-                bool handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd, bool& genericPeer);
+                void handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd);
+                void handshakeFinAck(uint32_t peerID, bool genericPeer);
                 void flushQueue(uint32_t peerID);
 
             private:
                 struct Client {
-                    Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr, bool m_generic = false)
-                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)), m_queue() {}
+                    Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr,  bool generic = false)
+                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)), m_queue(), m_handshakeDone(false), m_generic(generic) {}
                     bool m_active;
                     int m_fd;
                     pSharedFleXdIPCProxy m_ptr;
                     std::queue<pSharedFleXdIPCMsg> m_queue;
+                    bool m_handshakeDone;
                     bool m_generic;
                 };
                 const uint32_t m_myID;

@@ -39,13 +39,13 @@ int main(int argc, char** argv) {
     flexd::icl::ipc::FleXdTermEvent event(poller);
     std::cout << "***Start app 100" << "\n";
     if(event.init()) {
-        App a(100, poller);
-        std::cout << "***addPeer 101 " << a.addPeer(101)  << "\n";
+        App a(100, poller, false, argc > 1);
+        std::cout << "***addPeer 101 " << a.addPeer(101) << "\n";
         std::cout << "***addPeer 102 " << a.addPeer(102) << "\n";
-        // std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
+        std::cout << "***addPeer 111 " << a.addPeer(111) << "\n";
         a.send(101, "Test msg from 100 to 101");
+        a.send(102, "Test msg from 100 t0 102");
         poller.loop();
     }
     return 0;
 }
-

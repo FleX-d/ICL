@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-17
+### Added
+- None
+
+### Changed
+- Fixed segmentation fault when proxy was deleted on the run (example: switching from client to server) [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-28
 ### Added
 - Unit tests for messages bigger than 8192 bytes [Martin Strenger]

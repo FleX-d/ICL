@@ -12,7 +12,7 @@ modification, are permitted provided that the following conditions are met:
  * Neither the name of the Globallogic s.r.o. nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
-      
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -70,6 +70,7 @@ namespace flexd {
             bool  IPCConnector::initAsServer(){
                 const std::string myPath = FLEXDIPCUDSPATH + std::to_string(m_myID);
                 m_server = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSServer> >(myPath, m_poller);
+                m_server->setOnSndMsg([this](pSharedFleXdIPCMsg msg, int){ this->onAfterSndMsg(msg); });
                 m_server->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
                 m_server->setOnConnectClient([this](int fd){ this->onConnectClient(fd); });
                 m_server->setOnDisconnectClient([this](int fd){ this->onDisconnectClient(fd); });
@@ -89,7 +90,7 @@ namespace flexd {
                 if(checkIfFileExist(socPath)) {
                     return addClient(peerID, socPath);
                 } else {
-                    if(!m_server) {                       
+                    if(!m_server) {
                         if (!initAsServer()){
                             return false;
                         }
@@ -109,19 +110,36 @@ namespace flexd {
             }
             bool IPCConnector::mutePeer(uint32_t peerID)
             {
+                //TODO
                 return false;
             }
 
             bool IPCConnector::unMutePeer(uint32_t peerID)
             {
+                //TODO
                 return false;
             }
 
             bool IPCConnector::sendMsg(pSharedFleXdIPCMsg msg, uint32_t peerID) {
                 if(msg) {
                     auto it = m_clients.find(peerID);
-                    if (it != m_clients.end()) {
-                        if((it->second.m_active)&&(it->second.m_ptr)&&(it->second.m_fd != -1)) {
+                    if(it != m_clients.end()) {
+                        bool allowSending = it->second.m_handshakeDone;
+                        if(!allowSending && !msg->getHeaderParamType()) {
+                            switch(msg->getHeaderParam()) {
+                                case FleXdIPCMsgTypes::Enum::Handshake:
+                                case FleXdIPCMsgTypes::Enum::HandshakeAck:
+                                case FleXdIPCMsgTypes::Enum::HandshakeSuccess:
+                                case FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric:
+                                    allowSending = true;
+                                    break;
+                                case FleXdIPCMsgTypes::Enum::IPCMsg:
+                                case FleXdIPCMsgTypes::Enum::Generic:
+                                default:
+                                    break;
+                            }
+                        }
+                        if(allowSending && it->second.m_active && it->second.m_ptr && (it->second.m_fd != -1)) {
                             it->second.m_ptr->sndMsg(msg, it->second.m_fd);
                             return true;
                         } else {
@@ -135,6 +153,7 @@ namespace flexd {
             bool IPCConnector::addClient(uint32_t clientID, const std::string& socPath) {
                 if(m_clients.count(clientID) == 0) {
                     auto client = std::make_shared<FleXdIPCProxyBuilder<FleXdUDSClient> >(socPath, m_poller);
+                    client->setOnSndMsg([this](pSharedFleXdIPCMsg msg, int){ this->onAfterSndMsg(msg); });
                     client->setOnRcvMsg([this](pSharedFleXdIPCMsg msg, int fd){ this->onRcvMsg(msg, fd); });
                     client->setOnConnect([this](bool ret){ this->onConnect(ret); });
                     client->setOnDisconnect([this](int fd ){ this->onDisconnect(fd); });
@@ -148,6 +167,7 @@ namespace flexd {
             }
 
             void IPCConnector::onRcvMsg(pSharedFleXdIPCMsg msg, int fd) {
+                onBeforeRcvMsg(msg);
                 if(msg) {
                     if(msg->getHeaderParamType() == true) {
                         receiveMsg(msg);
@@ -160,26 +180,19 @@ namespace flexd {
                             }
                             case FleXdIPCMsgTypes::Enum::HandshakeAck: { //server side
                                 BitStream hello(msg->releasePayload());
-                                bool genericPeer = false;
                                 const uint32_t peer1 = hello.get<uint32_t>();
                                 const uint32_t peer2 = hello.get<uint32_t>();
-                                if (handshakeFin(peer1, peer2, fd, genericPeer)) {
-                                    onConnectPeer(peer1, genericPeer);
-                                }
+                                handshakeFin(peer1, peer2, fd);
                                 break;
                             }
                             case FleXdIPCMsgTypes::Enum::HandshakeSuccess: { //client side
                                 BitStream hello(msg->releasePayload());
-                                const uint32_t peer = hello.get<uint32_t>();
-                                onConnectPeer(peer, false);
-                                flushQueue(peer);
+                                handshakeFinAck(hello.get<uint32_t>(), false);
                                 break;
                             }
                             case FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric: { //client side
                                 BitStream hello(msg->releasePayload());
-                                const uint32_t peer = hello.get<uint32_t>();
-                                onConnectPeer(peer, true);
-                                flushQueue(peer);
+                                handshakeFinAck(hello.get<uint32_t>(), true);
                                 break;
                             }
                             case FleXdIPCMsgTypes::Enum::IPCMsg:
@@ -204,6 +217,7 @@ namespace flexd {
                 for(auto& ref : m_clients) {
                     if(ref.second.m_fd == fd) {
                         ref.second.m_active = false;
+                        ref.second.m_handshakeDone = false;
                         break;
                     }
                 }
@@ -219,17 +233,19 @@ namespace flexd {
                     for(auto& ref : m_clients) {
                         if(ref.second.m_fd == fd) {
                             peerID = ref.first;
+                            ref.second.m_active = false;
+                            ref.second.m_handshakeDone = false;
                             break;
                         }
                     }
                     if(!m_server) {
-                        //TODO Reconection 
+                        //TODO Reconection
                         auto ref = m_clients.find(peerID);
                         if(ref != m_clients.end()) {
                             //set the timer for delay reconnection (e.g. 5-times)
                             //ref.second.m_ptr.get->
                             ref->second.m_ptr.reset();
-                        }   
+                        }
                     }
                     removePeer(peerID);
                     addPeer(peerID);
@@ -256,9 +272,8 @@ namespace flexd {
                 }
             }
 
-            bool IPCConnector::handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd, bool& genericPeer) {
+            void IPCConnector::handshakeFin(uint32_t peerID1, uint32_t peerID2, int fd) {
                 BitStream hello;
-                genericPeer = false;
                 hello.put<uint32_t>(peerID1);
                 const uint32_t peerID = (peerID1 == m_myID) ? peerID2 : peerID1;
                 auto it = m_clients.find(peerID);
@@ -267,23 +282,34 @@ namespace flexd {
                     it->second.m_fd = fd;
                     auto msg = std::make_shared<FleXdIPCMsg>(it->second.m_generic ? FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric : FleXdIPCMsgTypes::Enum::HandshakeSuccess, hello.releaseData());
                     it->second.m_ptr->sndMsg(msg, fd);
+                    it->second.m_handshakeDone = true;
+                    onConnectPeer(peerID, it->second.m_generic);
                     flushQueue(peerID);
-                    return true;
                 } else if(m_genericPeersAllowed) {
                     auto ret = m_clients.insert(std::make_pair(peerID, Client(true, fd, m_server, true)));
                     if(ret.second) {
                         auto msg = std::make_shared<FleXdIPCMsg>(FleXdIPCMsgTypes::Enum::HandshakeSuccessGeneric, hello.releaseData());
                         ret.first->second.m_ptr->sndMsg(msg, fd);
+                        ret.first->second.m_handshakeDone = true;
+                        onConnectPeer(peerID, true);
                         flushQueue(peerID);
-                        genericPeer = true;
-                        return true;
                     } else {
                         // TODO send handshake again?
                     }
                 } else {
                     // TODO
                 }
-                return false;
+            }
+
+            void IPCConnector::handshakeFinAck(uint32_t peerID, bool genericPeer) {
+                auto it = m_clients.find(peerID);
+                if(it != m_clients.end()) {
+                    it->second.m_handshakeDone = true;
+                    onConnectPeer(peerID, genericPeer);
+                    flushQueue(peerID);
+                } else {
+                    // TODO
+                }
             }
 
             void IPCConnector::flushQueue(uint32_t peerID) {

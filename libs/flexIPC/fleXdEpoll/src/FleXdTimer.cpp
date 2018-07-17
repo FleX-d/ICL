@@ -58,33 +58,41 @@ namespace flexd {
             }
 
             bool FleXdTimer::start() {
-                m_fd = ::timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
-                if (m_fd != -1) {
-                    if (::timerfd_settime(m_fd, 0, &m_timer, nullptr) < 0) {
-                        ::close(m_fd);
-                        return false;
+                if (m_fd == -1) {
+                    m_fd = ::timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
+                    if (m_fd > -1) {
+                        if (::timerfd_settime(m_fd, 0, &m_timer, nullptr) < 0) {
+                            ::close(m_fd);
+                            return false;
+                        }
+                        m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
+                        {
+                            onTimer(e);
+                        });
+                        return true;
                     }
-                    m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
-                    {
-                        onTimer(e);
-                    });
-                    return true;
                 }
                 return false;
             }
 
             bool FleXdTimer::stop() {
-                if (m_fd != -1) {
-                    if (m_poller.rmEvent(m_fd)) {
-                        m_fd = -1;
-                        return true;
-                    };
+                if (m_fd == -1) {
+                    return true;
                 }
+                if (m_poller.rmEvent(m_fd)) {
+                    ::close(m_fd);
+                    m_fd = -1;
+                    return true;
+                };
                 return false;
             }
 
             int FleXdTimer::getFd() const {
                 return m_fd;
+            }
+
+            void FleXdTimer::setOnTimer(std::function<void()> onTimer) {
+                m_onTimer = onTimer;
             }
 
             void FleXdTimer::onTimer(FleXdEpoll::Event e) {

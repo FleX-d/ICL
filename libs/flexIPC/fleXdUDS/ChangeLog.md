@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-17
+### Added
+- None
+
+### Changed
+- Fixed missing file descriptor closing [Martin Strenger]
+- Fixed missing event removal from epoll [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-06-18
 ### Added
 - None

@@ -52,6 +52,8 @@ namespace flexd {
             }
 
             FleXdUDSClient::~FleXdUDSClient() {
+                m_poller.rmEvent(getFd());
+                ::close(getFd());
             }
 
             bool FleXdUDSClient::connect() {
@@ -102,7 +104,8 @@ namespace flexd {
             }
 
             bool FleXdUDSClient::reconnect() {
-                return m_proxy->connect();
+                //TODO
+                return false;
             }
 
         } // namespace ipc
