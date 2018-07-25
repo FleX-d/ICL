@@ -63,6 +63,7 @@ for (( j=1; j<argc; j++ )); do
     echo "    <file name=\"$file\"/>" >> $CATALOGUE
   else
     echo "$file: direction ok"
+    echo "    <file name=\"$file\"/>" >> $CATALOGUE
   fi
 done
 echo "</colection>" >> $CATALOGUE

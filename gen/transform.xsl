@@ -30,17 +30,41 @@
 #include &quot;FleXdEpoll.h&quot;
 #include &quot;JsonObj.h&quot;
 #include &quot;FleXdIPCMsg.h&quot;
+#include &quot;GenericClient.h&quot;
 #include &lt;memory&gt;
 #include &lt;cstdint&gt;
 </xsl:text>
 namespace flexd {
    namespace gen {
-    class IPCInterface : public flexd::icl::ipc::IPCConnector {
+    class IPCInterface : public flexd::icl::ipc::IPCConnector, public flexd::gen::GenericClient {
 	public:
 	    IPCInterface (flexd::icl::ipc::FleXdEpoll&amp; poller);
             virtual ~IPCInterface();
-	<xsl:for-each select="/colection/file">   
-	   <xsl:for-each select="document(@name)/package/function[@direction='out']">   
+       <xsl:for-each select="/colection/file">
+       <xsl:for-each select="document(@name)/package">
+       <xsl:choose><xsl:when test="@generic='true'">
+          <xsl:for-each select="function[@direction='out']">   
+	    <xsl:text>    void </xsl:text>
+	    <xsl:value-of select="concat('send',@name)"/>
+	    <xsl:text>(std::shared_ptr&lt;GenericClient::Header&gt; header,</xsl:text>
+	      <xsl:for-each select="parameter[@direction='out']">
+	        <xsl:choose>
+	        <xsl:when test="@type = 'std::string'">
+                  <xsl:value-of select="concat('const ',@type,'&amp; ',@name)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                 <xsl:value-of select="concat(@type,' ',@name)"/>
+               </xsl:otherwise>
+               </xsl:choose>
+               <xsl:choose><xsl:when test="position() != last()">, </xsl:when></xsl:choose>
+	     </xsl:for-each>
+            <xsl:text>);</xsl:text>
+	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+	    <xsl:text>        </xsl:text>
+	   </xsl:for-each>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:for-each select="function[@direction='out']">   
 	    <xsl:text>    void </xsl:text>
 	    <xsl:value-of select="concat('send',@name)"/>
 	    <xsl:text>(</xsl:text>
@@ -59,14 +83,32 @@ namespace flexd {
 	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
 	    <xsl:text>        </xsl:text>
 	   </xsl:for-each>
-	</xsl:for-each>
+	</xsl:otherwise>
+       </xsl:choose>
+       </xsl:for-each>
+       </xsl:for-each>
 	
 	private:
-            void send(std::shared_ptr&lt;flexd::icl::ipc::FleXdIPCMsg&gt; Msg);
+            void send(std::shared_ptr&lt;flexd::icl::ipc::FleXdIPCMsg&gt; Msg, uint32_t PeerID);
             virtual void receiveMsg(flexd::icl::ipc::pSharedFleXdIPCMsg Msg) override;
 	    
-	<xsl:for-each select="/colection/file">
-	<xsl:for-each select="document(@name)/package/function[@direction='in']">
+       <xsl:for-each select="/colection/file">
+       <xsl:for-each select="document(@name)/package">
+       <xsl:choose><xsl:when test="@generic='true'">
+	<xsl:for-each select="function[@direction='in']">
+	    <xsl:text>    virtual void </xsl:text>
+	    <xsl:value-of select="concat('receive',@name)"/>
+	    <xsl:text>(std::shared_ptr&lt;GenericClient::Header&gt; header, </xsl:text>    
+	    <xsl:call-template name="parseParameters">
+		<xsl:with-param name="element" select="parameter[@direction='out']"/>
+	    </xsl:call-template>
+	    <xsl:text>) = 0;</xsl:text>
+	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+	    <xsl:text>        </xsl:text>
+	</xsl:for-each> 
+      </xsl:when>
+	<xsl:otherwise>
+	  <xsl:for-each select="function[@direction='in']">
 	    <xsl:text>    virtual void </xsl:text>
 	    <xsl:value-of select="concat('receive',@name)"/>
 	    <xsl:text>(</xsl:text>    
@@ -77,10 +119,10 @@ namespace flexd {
 	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
 	    <xsl:text>        </xsl:text>
 	</xsl:for-each> 
-	</xsl:for-each>    
-	    uint32_t getTimestamp();
-	private:
-	    uint8_t m_counter;
+	</xsl:otherwise>
+       </xsl:choose>
+       </xsl:for-each>
+       </xsl:for-each>
     };
   }
 }
@@ -101,8 +143,6 @@ namespace flexd {
 #include &quot;IPCInterface.h&quot;
 #include &lt;string&gt;
 #include &lt;vector&gt;
-#include &lt;ctime&gt;
-#include &lt;chrono&gt;
 #include &lt;cstdint&gt;
 </xsl:text>
     
@@ -111,14 +151,22 @@ namespace flexd {
   
 	IPCInterface::IPCInterface (flexd::icl::ipc::FleXdEpoll&amp; poller)
 	:IPCConnector(<xsl:for-each select="/colection/file">
-		<xsl:choose>
-	        <xsl:when test="position() = last()">
+		<xsl:choose><xsl:when test="position() = last()">
                   <xsl:call-template name="document"> 
                   <xsl:with-param name="doc" select="document(@name)"/>
 		  </xsl:call-template>
                 </xsl:when>
-               </xsl:choose></xsl:for-each>, poller),
-	 m_counter(0)
+               </xsl:choose></xsl:for-each>, poller<xsl:for-each select="/colection/file">
+		<xsl:for-each select="document(@name)/package">
+		  <xsl:choose><xsl:when test="@generic='true'">
+		      <xsl:text>, true), GenericClient()</xsl:text>
+		  </xsl:when>
+		  <xsl:otherwise>
+		      <xsl:text>)</xsl:text>
+		  </xsl:otherwise>
+		  </xsl:choose>
+		</xsl:for-each>
+	       </xsl:for-each>
 	{     
         <xsl:for-each select="/colection/file"><xsl:for-each select="document(@name)/package/element"><xsl:for-each select="parameter[@name='to']"> 
 	  addPeer(<xsl:value-of select="@value"/>);</xsl:for-each></xsl:for-each></xsl:for-each>
@@ -129,9 +177,46 @@ namespace flexd {
         }
        
        <xsl:for-each select="/colection/file">
-       <xsl:for-each select="document(@name)/package/function[@direction='out']">
-	   <xsl:text>&#x0A;<!-- new line --></xsl:text>
-	   <xsl:text>       void IPCInterface::</xsl:text>
+       <xsl:for-each select="document(@name)/package">
+       <xsl:choose><xsl:when test="@generic='true'">
+	    <xsl:for-each select="function[@direction='out']"> 
+	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+	    <xsl:text>       void IPCInterface::</xsl:text>
+	    <xsl:value-of select="concat('send',@name)"/>
+	    <xsl:text>(std::shared_ptr&lt;GenericClient::Header&gt; header, </xsl:text>
+	     <xsl:for-each select="parameter[@direction='out']">
+             <xsl:choose>
+	        <xsl:when test="@type = 'std::string'">
+                  <xsl:value-of select="concat('const ',@type,'&amp; ',@name)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                 <xsl:value-of select="concat(@type,' ',@name)"/>
+               </xsl:otherwise>
+               </xsl:choose>
+               <xsl:choose><xsl:when test="position() != last()">, </xsl:when></xsl:choose>
+	    </xsl:for-each>
+	    <xsl:text>)</xsl:text>
+       {
+       
+           <xsl:call-template name="InitializeParameters">
+	       <xsl:with-param name="element" select="parameter[@direction='in']"/>
+	   </xsl:call-template>
+	   flexd::icl::JsonObj json = {};
+	    <xsl:for-each select="parameter[@direction='in']">
+	   json.add<xsl:value-of select="concat('&lt;',@type,'&gt;(&quot;/',@name,'&quot;, ',@name,');')"/>
+	   </xsl:for-each>
+	   <xsl:for-each select="parameter[@direction='out']">
+	   json.add<xsl:value-of select="concat('&lt;',@type,'&gt;(&quot;/payload/',@name,'&quot;, ',@name,');')"/>
+	   </xsl:for-each>
+	   send(msgWrap(header, json.getJson()), header->to);
+       }
+	   </xsl:for-each>
+	</xsl:when>
+	<xsl:otherwise>
+            
+            <xsl:for-each select="function[@direction='out']"> 
+	    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+	    <xsl:text>       void IPCInterface::</xsl:text>
 	    <xsl:value-of select="concat('send',@name)"/>
 	    <xsl:text>(</xsl:text>
 	     <xsl:for-each select="parameter[@direction='out']">
@@ -176,8 +261,11 @@ namespace flexd {
                </xsl:otherwise>
 	     </xsl:choose>
 	   </xsl:for-each>
-           send(msg);
+           send(msg, to);
        }
+	   </xsl:for-each>
+        </xsl:otherwise>
+       </xsl:choose>
        </xsl:for-each>
        </xsl:for-each>
        
@@ -186,15 +274,46 @@ namespace flexd {
        <xsl:value-of select="concat('void ','IPCInterface::','receive','Msg' ,'(flexd::icl::ipc::pSharedFleXdIPCMsg msg)')"/>
         {
             try{
-		std::string str(msg->getPayload().begin(),msg->getPayload().end());
-		flexd::icl::JsonObj json(str);
+             if(!msg) {
+                    return;
+                }
+                flexd::icl::JsonObj json(msgUnwrap(msg));
 		if(json.exist(&quot;/id&quot;))
 		{
 		    int id; 
 		    json.get&lt;int&gt;(&quot;/id&quot;, id);
 		    switch(id)
 		    {<xsl:for-each select="/colection/file">
-		     <xsl:for-each select="document(@name)/package/function[@direction='in']">
+		     <xsl:for-each select="document(@name)/package">
+		     <xsl:choose><xsl:when test="@generic='true'">
+		     <xsl:for-each select="function[@direction='in']">
+			case <xsl:value-of select="parameter[@name='id']/@value"/>: {
+			    <xsl:for-each select="parameter[@direction='out']">
+			    <xsl:value-of select="concat(@type,' ',@name,';')"/>
+			    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+			    <xsl:text>                            </xsl:text>
+			    </xsl:for-each>
+			    bool tmp = true;
+			    <xsl:for-each select="parameter[@direction='out']">
+			    if(json.exist(<xsl:value-of select="concat('&quot;/payload/',@name,'&quot;))')"/>{
+				json.get<xsl:value-of select="concat('&lt;',@type,'&gt;(&quot;/payload/',@name,'&quot;, ',@name,');')"/> 
+			    } else {
+				tmp = false;}
+			    </xsl:for-each>
+			    <xsl:text>&#x0A;<!-- new line --></xsl:text>
+			    <xsl:text>                            </xsl:text>
+			    if(tmp){
+			    <xsl:value-of select="concat('   receive',@name)"/>
+			    <xsl:text>(m_header, </xsl:text>
+			    <xsl:call-template name="parseParametersWithoutType">
+			    <xsl:with-param name="element" select="parameter[@direction='out']"/>
+			    </xsl:call-template>
+			    <xsl:text>);</xsl:text>}
+			    break; }
+		     </xsl:for-each>
+		    </xsl:when>
+		    <xsl:otherwise>
+		    <xsl:for-each select="function[@direction='in']">
 			case <xsl:value-of select="parameter[@name='id']/@value"/>: {
 			    <xsl:for-each select="parameter[@direction='out']">
 			    <xsl:value-of select="concat(@type,' ',@name,';')"/>
@@ -218,8 +337,12 @@ namespace flexd {
 			    </xsl:call-template>
 			    <xsl:text>);</xsl:text>}
 			    break; }
-	    </xsl:for-each>
-	    </xsl:for-each>
+		     </xsl:for-each>
+		    </xsl:otherwise>
+		    </xsl:choose>
+		  </xsl:for-each>
+		  </xsl:for-each>
+		     
 	           }
 	        }
 	   }catch(...){
@@ -227,22 +350,11 @@ namespace flexd {
 	   }
         }
         
-       
-	void IPCInterface::send(std::shared_ptr&lt;flexd::icl::ipc::FleXdIPCMsg&gt; Msg)
-        {
-	   if(sendMsg(Msg))
-	   {
-	      m_counter++;
-	   }
+	void IPCInterface::send(std::shared_ptr&lt;flexd::icl::ipc::FleXdIPCMsg&gt; Msg, uint32_t peerID) {
+            if(sendMsg(Msg, peerID)) {
+                m_counter++;
+            }
         }
-        
-        uint32_t IPCInterface::getTimestamp()
-        {
-	    std::chrono::time_point&lt;std::chrono::system_clock&gt; p;
-	    p = std::chrono::system_clock::now();
-	    std::time_t time = std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(p.time_since_epoch()).count();
-	    return static_cast&lt;uint32_t&gt; (time);
-        }  
         
      }
 }
