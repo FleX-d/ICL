@@ -68,6 +68,8 @@ namespace flexd {
                 virtual void disconnectClient(int fd) override;
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int) override;
                 virtual void rcvEvent(FleXdEpoll::Event e) override;
+                virtual bool isServer() override;
+                virtual bool isClient() override;
 
             protected:
                 pSharedFleXdIPC m_ipc;

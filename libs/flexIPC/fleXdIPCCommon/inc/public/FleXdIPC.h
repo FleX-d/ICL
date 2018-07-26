@@ -57,6 +57,9 @@ namespace flexd {
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
                 virtual void rcvEvent(FleXdEpoll::Event e) = 0;
 
+                virtual bool isServer() = 0;
+                virtual bool isClient() = 0;
+
                 virtual void onInit(bool ret) {}
                 virtual void onConnectClient(int fd) {}
                 virtual void onDisconnectClient(int fd) {}

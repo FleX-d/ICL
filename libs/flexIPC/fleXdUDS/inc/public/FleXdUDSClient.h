@@ -56,6 +56,9 @@ namespace flexd {
                 virtual bool connect() override;
                 virtual bool disconnect() override;
 
+                virtual bool isServer() override { return false; }
+                virtual bool isClient() override { return true; }
+
             protected:
                 virtual bool initUDS() override;
 

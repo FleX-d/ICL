@@ -129,6 +129,14 @@ namespace flexd {
                 }
             }
 
+            bool FleXdIPCProxy::isServer() {
+                return m_ipc->isServer();
+            }
+
+            bool FleXdIPCProxy::isClient() {
+                return m_ipc->isClient();
+            }
+
             void FleXdIPCProxy::setOnInit(std::function<void(bool)> fcn) {
                 m_onInit = fcn;
             }

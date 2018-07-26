@@ -35,6 +35,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <signal.h>
 
+namespace {
+    std::atomic<int> sigEventFd;
+
+    void signalHandler(int signal) {
+        if (sigEventFd != -1) {
+            ::eventfd_write(sigEventFd, signal);
+        } else {
+            switch (signal) {
+                case SIGABRT:
+                case SIGTERM:
+                case SIGINT:
+                    exit(EXIT_FAILURE);
+                default:
+                    break;
+            }
+        }
+    }
+}
+
 namespace flexd {
     namespace icl {
         namespace ipc {
@@ -56,11 +75,7 @@ namespace flexd {
                 if (m_fd == -1) {
                     m_fd = ::eventfd(0, EFD_NONBLOCK);
                     if (m_fd > -1) {
-                        m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
-                        {
-                            onEvent(e);
-                        });
-                        return true;
+                        return m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e) { onEvent(e); });
                     }
                 }
                 return false;
@@ -108,9 +123,12 @@ namespace flexd {
                 }
             }
 
-
             FleXdTermEvent::FleXdTermEvent(FleXdEpoll& poller)
             : FleXdEvent(poller) {
+                sigEventFd.store(-1);
+                signal(SIGABRT, signalHandler);
+                signal(SIGTERM, signalHandler);
+                signal(SIGINT, signalHandler);
             }
 
             FleXdTermEvent::~FleXdTermEvent() {
@@ -119,48 +137,18 @@ namespace flexd {
             bool FleXdTermEvent::init() {
                 if (FleXdEvent::init())
                 {
-                    FleXdSignalHandler::getInstance().setEventFd(FleXdEvent::getFd());
+                    sigEventFd.store(FleXdEvent::getFd());
                     return true;
                 }
                 return false;
             }
 
+            bool FleXdTermEvent::trigger() {
+                return ::raise(SIGTERM) == 0;
+            }
+
             void FleXdTermEvent::onEvent() {
                 m_poller.endLoop();
-            }
-
-
-            std::atomic<int> FleXdSignalHandler::m_eventFd;
-
-            FleXdSignalHandler::FleXdSignalHandler() {
-                m_eventFd.store(-1);
-                signal(SIGABRT, FleXdSignalHandler::signalHandler);
-                signal(SIGTERM, FleXdSignalHandler::signalHandler);
-                signal(SIGINT, FleXdSignalHandler::signalHandler);
-            }
-
-            FleXdSignalHandler& FleXdSignalHandler::getInstance() {
-                static FleXdSignalHandler instance;
-                return instance;
-            }
-
-            void FleXdSignalHandler::setEventFd(int eventFd) {
-                m_eventFd.store(eventFd);
-            }
-
-            void FleXdSignalHandler::signalHandler(int signal) {
-                if (m_eventFd != -1) {
-                    ::eventfd_write(m_eventFd, signal);
-                } else {
-                    switch (signal) {
-                        case SIGABRT:
-                        case SIGTERM:
-                        case SIGINT:
-                            exit(EXIT_FAILURE);
-                        default:
-                            break;
-                    }
-                }
             }
 
         } // namespace ipc

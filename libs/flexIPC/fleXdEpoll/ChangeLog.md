@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-26
+### Added
+- None
+
+### Changed
+- Updated examples for FleXdTimer [Martin Strenger]
+
+### Removed
+- Removed FleXdSignalHandler class (singleton) [Martin Strenger]
+
 ## [0.1.0] - 2018-07-17
 ### Added
 - New setOn... functions for FleXdEvent and FleXdTimer [Martin Strenger]

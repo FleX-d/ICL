@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <FleXdEpoll.h>
 #include <FleXdIPCMsg.h>
 #include <FleXdIPCProxy.h>
+#include <FleXdTimer.h>
 #include <cstdlib>
 #include <cstdint>
 #include <map>
@@ -69,8 +70,8 @@ namespace flexd {
                 virtual void onConnectPeer(uint32_t peerID, bool genericPeer) = 0;
 
             private:
-                bool addClient(uint32_t clientID, const std::string& socPath);
                 bool initAsServer();
+                bool addClient(uint32_t clientID, const std::string& socPath);
                 void onRcvMsg(pSharedFleXdIPCMsg msg, int fd);
                 void onConnectClient(int fd);
                 void onDisconnectClient(int fd);
@@ -85,7 +86,13 @@ namespace flexd {
             private:
                 struct Client {
                     Client(bool active = false, int fd = -1, pSharedFleXdIPCProxy ptr = nullptr,  bool generic = false)
-                    : m_active(active), m_fd(fd), m_ptr(std::move(ptr)), m_queue(), m_handshakeDone(false), m_generic(generic) {}
+                    : m_active(active),
+                      m_fd(fd),
+                      m_ptr(std::move(ptr)),
+                      m_queue(),
+                      m_handshakeDone(false),
+                      m_generic(generic) {
+                    }
                     bool m_active;
                     int m_fd;
                     pSharedFleXdIPCProxy m_ptr;
@@ -93,12 +100,23 @@ namespace flexd {
                     bool m_handshakeDone;
                     bool m_generic;
                 };
+
+                struct Reconnection {
+                    Reconnection(FleXdEpoll& poller, time_t sec)
+                    : m_timer(poller, sec),
+                      m_retryCount(0) {
+                    }
+                    FleXdTimer m_timer;
+                    uint8_t m_retryCount;
+                };
+
                 const uint32_t m_myID;
                 FleXdEpoll& m_poller;
                 const bool m_garantedDelivery;
                 const bool m_genericPeersAllowed;
                 pSharedFleXdIPCProxy m_server;
                 std::map<uint32_t, Client> m_clients;
+                std::map<uint32_t, Reconnection> m_reconnections;
             };
 
         } // namespace ipc

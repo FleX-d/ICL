@@ -73,7 +73,7 @@ namespace flexd {
                 virtual ~FleXdTermEvent();
 
                 bool init();
-                bool trigger() { return true; }
+                bool trigger();
 
                 FleXdTermEvent(const FleXdEpoll&) = delete;
                 FleXdTermEvent& operator=(const FleXdEpoll&) = delete;
@@ -81,24 +81,6 @@ namespace flexd {
                 FleXdTermEvent& operator=(const FleXdEpoll&&) = delete;
 
                 virtual void onEvent() override;
-            };
-
-            class FleXdSignalHandler {
-            public:
-                ~FleXdSignalHandler() = default;
-
-                static FleXdSignalHandler& getInstance();
-                static void setEventFd(int eventFd);
-                static void signalHandler(int signal);
-
-                FleXdSignalHandler(const FleXdEpoll&) = delete;
-                FleXdSignalHandler& operator=(const FleXdEpoll&) = delete;
-                FleXdSignalHandler(const FleXdEpoll&&) = delete;
-                FleXdSignalHandler& operator=(const FleXdEpoll&&) = delete;
-
-            private:
-                FleXdSignalHandler();
-                static std::atomic<int> m_eventFd;
             };
 
         } // namespace ipc

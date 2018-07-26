@@ -42,10 +42,10 @@ namespace flexd {
 
             FleXdTimer::FleXdTimer(FleXdEpoll& poller, time_t sec, long nsec /*= 0*/, bool periodic /*= true*/, std::function<void()> onTimer /*= nullptr*/)
             : m_poller(poller),
-              m_timer({ periodic ? (sec < 0 ? 0 : sec) : 0,
-                        periodic ? (nsec > NSEC_MAX ? NSEC_MAX : (nsec < 0 ? 0 : nsec)) : 0,
-                        sec < 0 ? 0 : sec,
-                        nsec > NSEC_MAX ? NSEC_MAX : nsec < 0 ? 0 : nsec }),
+              m_timer({ { periodic ? (sec < 0 ? 0 : sec) : 0,
+                          periodic ? (nsec > NSEC_MAX ? NSEC_MAX : (nsec < 0 ? 0 : nsec)) : 0 },
+                        { sec < 0 ? 0 : sec,
+                          nsec > NSEC_MAX ? NSEC_MAX : nsec < 0 ? 0 : nsec } }),
               m_onTimer(onTimer),
               m_fd(-1) {
             }
@@ -65,11 +65,7 @@ namespace flexd {
                             ::close(m_fd);
                             return false;
                         }
-                        m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e)
-                        {
-                            onTimer(e);
-                        });
-                        return true;
+                        return m_poller.addEvent(m_fd, [this](FleXdEpoll::Event e) { onTimer(e); });
                     }
                 }
                 return false;

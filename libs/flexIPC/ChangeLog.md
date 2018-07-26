@@ -2,6 +2,22 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-26
+### Added
+- [fleXdIPCCommon] New virtual functions isServer() and isClient() for FleXdIPC class [Martin Strenger]
+- [fleXdIPCConnector] Reconnection struct [Martin Strenger]
+
+### Changed
+- [fleXdEpoll] Updated examples for FleXdTimer [Martin Strenger]
+- [fleXdIPCCommon] New virtual functions isServer() and isClient() for FleXdIPC class [Martin Strenger]
+- [fleXdIPCConnector] Changed behaviour for clinets on disconnection from server [Martin Strenger]
+- [fleXdIPCConnector] Changed behaviour for generic clinets on disconnection from server [Martin Strenger]
+- [fleXdIPCConnector] Updated unit tests [Martin Strenger]
+- [fleXdUDS] Update regarding changes in FleXdIPCCommon [Martin Strenger]
+
+### Removed
+- [fleXdEpoll] Removed FleXdSignalHandler class (singleton) [Martin Strenger]
+
 ## [0.1.0] - 2018-07-17
 ### Added
 - [fleXdEpoll] New setOn... functions for FleXdEvent and FleXdTimer [Martin Strenger]

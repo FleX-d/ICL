@@ -57,6 +57,9 @@ namespace flexd {
                 virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) override;
                 virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override {}
 
+                virtual bool isServer() override { return true; }
+                virtual bool isClient() override { return false; }
+
             protected:
                 virtual bool initUDS() override;
 

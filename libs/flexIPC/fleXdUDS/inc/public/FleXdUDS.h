@@ -59,12 +59,11 @@ namespace flexd {
                  * Function send message to Server.
                  * @param msg - is shared pointer which contains attributes of FleXdIPCMsg
                  */
-                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
-
+                virtual void sndMsg(pSharedFleXdIPCMsg msg, int fd) override = 0;
 
             protected:
                 virtual bool initUDS() = 0;
-                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) = 0;
+                virtual void rcvMsg(pSharedFleXdIPCMsg msg, int fd) override = 0;
                 virtual void readMsg(FleXdEpoll::Event e, std::array<uint8_t, 8192>&& array, int size) = 0;
                 virtual bool reconnect() = 0;
                 virtual int getFd() const override;

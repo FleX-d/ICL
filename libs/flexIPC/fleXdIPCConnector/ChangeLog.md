@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-26
+### Added
+- Reconnection struct [Martin Strenger]
+
+### Changed
+- Changed behaviour for clinets on disconnection from server [Martin Strenger]
+- Changed behaviour for generic clinets on disconnection from server [Martin Strenger]
+- Updated unit tests [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-07-17
 ### Added
 - New virtual functions [Martin Strenger]

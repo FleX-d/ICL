@@ -139,13 +139,60 @@ namespace {
         EXPECT_FALSE(checkIfFileExist(socPath2));
         delete App0;
         EXPECT_FALSE(checkIfFileExist(socPath1));
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(7000));
         EXPECT_TRUE(checkIfFileExist(socPath2));
 
         App0 = new IPCTest(PEER_ID1, poller1);
         EXPECT_FALSE(checkIfFileExist(socPath1));
         App0->addPeer(PEER_ID2);
         EXPECT_FALSE(checkIfFileExist(socPath1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        delete App0;
+
+        poller1.endLoop();
+        poller2.endLoop();
+        handlerPoller1.join();
+        handlerPoller2.join();
+    }
+
+    TEST(IPCConnector, initialization_clientReconnect) {
+        std::string socPath1 = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(PEER_ID1);
+        std::string socPath2 = "/tmp/FleXd/shared/ipc/uds/" + std::to_string(PEER_ID2);
+        ::unlink(socPath1.c_str());
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        ::unlink(socPath2.c_str());
+        EXPECT_FALSE(checkIfFileExist(socPath2));
+
+        std::thread handlerPoller1(&FleXdEpoll::loop, &poller1);
+        std::thread handlerPoller2(&FleXdEpoll::loop, &poller2);
+
+        IPCTest* App0(new IPCTest(PEER_ID1, poller1));
+        IPCTest App1(PEER_ID2, poller2);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        App0->addPeer(PEER_ID2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        EXPECT_TRUE(checkIfFileExist(socPath1));
+        App1.addPeer(PEER_ID1);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        EXPECT_FALSE(checkIfFileExist(socPath2));
+        delete App0;
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        EXPECT_FALSE(checkIfFileExist(socPath2));
+
+        App0 = new IPCTest(PEER_ID1, poller1);
+        EXPECT_FALSE(checkIfFileExist(socPath1));
+        onConnectPeerCalled.store(false);
+        App0->addPeer(PEER_ID2);
+        EXPECT_TRUE(checkIfFileExist(socPath1));
+        uint8_t count = 0;
+        while(!onConnectPeerCalled.load()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            ASSERT_LE(++count, 20);
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         delete App0;
 
@@ -172,8 +219,10 @@ namespace {
         onConnectPeerCalled.store(false);
         genericTest.store(false);
         EXPECT_TRUE(client.addPeer(PEER_ID3));
+        uint8_t count = 0;
         while(!onConnectPeerCalled.load()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            ASSERT_LE(++count, 20);
         }
         EXPECT_TRUE(genericTest);
 

@@ -35,8 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FleXdEpoll.h"
 
-#define FLEXDTIMER_USEC 1000L
-#define FLEXDTIMER_MSEC 1000000L
+#define FLEXDTIMER_USEC *1000L
+#define FLEXDTIMER_MSEC *1000000L
 
 struct itimerspec;
 namespace flexd {

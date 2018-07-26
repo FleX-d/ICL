@@ -46,12 +46,6 @@ void onEvent()
     std::cout << "[pid " << ::getpid() << "] Event triggered" << std::endl;
 }
 
-// void onSignal()
-// {
-//     std::cout << "Signal triggered" << std::endl;
-//     exit(1);
-// }
-
 int main(int argc, char** argv)
 {
     FleXdEpoll poller(10);
@@ -83,6 +77,7 @@ int main(int argc, char** argv)
             default:
                 std::cout << "[pid " << ::getpid() << "] poller.loop()" << std::endl;
                 poller.loop();
+                std::cout << "[pid " << ::getpid() << "] poller.endloop()" << std::endl;
                 break;
         }
     } else {

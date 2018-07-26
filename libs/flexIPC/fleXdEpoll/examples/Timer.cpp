@@ -34,26 +34,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "FleXdEpoll.h"
+#include "FleXdEvent.h"
 #include "FleXdTimer.h"
 #include <iostream>
 
 using namespace flexd::icl::ipc;
 
-void onTimer()
-{
-    std::cout << "Timer expired" << std::endl;
-}
-
 int main(int argc, char** argv)
 {
     FleXdEpoll poller(10);
-    FleXdTimer timer(poller, 1, 0, true, onTimer);
-    if (timer.start())
+    FleXdTermEvent termEvent(poller);
+    FleXdTimer timer1(poller, 0, 900 FLEXDTIMER_MSEC, true, []() { std::cout << "Periodic timer 1 expired" << std::endl; });
+    FleXdTimer timer2(poller, 2, 0, true,  []() { std::cout << "Periodic timer 2 expired" << std::endl; });
+    FleXdTimer timer3(poller, 2, 400 FLEXDTIMER_MSEC, false,  []() { std::cout << "Single shot timer expired" << std::endl; });
+    FleXdTimer timer4(poller, 5, 0, false, [&]() { std::cout << "Program will be terminated" << std::endl; termEvent.trigger(); });
+    if (termEvent.init())
     {
-        std::cout << "FleXdTimer.start() successful" << std::endl;
+        std::cout << "Periodic timer 1 start " << (timer1.start() ? "successful" : "failed") << std::endl;
+        std::cout << "Periodic timer 2 start " << (timer2.start() ? "successful" : "failed") << std::endl;
+        std::cout << "Single shot timer start " << (timer3.start() ? "successful" : "failed") << std::endl;
+        std::cout << "Termination timer start " << (timer4.start() ? "successful" : "failed") << std::endl;
         poller.loop();
     } else {
-        std::cout << "FleXdTimer.start() failed" << std::endl;
+        std::cout << "FleXdTermEvent::init() failed" << std::endl;
     }
     return 0;
 }
