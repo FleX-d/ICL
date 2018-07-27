@@ -31,7 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "FleXdEvent.h"
-#include <sys/eventfd.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -58,7 +57,7 @@ namespace flexd {
     namespace icl {
         namespace ipc {
 
-            FleXdEvent::FleXdEvent(FleXdEpoll& poller, std::function<void()> onEvent /*= nullptr*/)
+            FleXdEvent::FleXdEvent(FleXdEpoll& poller, std::function<void(eventfd_t)> onEvent /*= nullptr*/)
             : m_poller(poller),
               m_onEvent(onEvent),
               m_fd(-1) {
@@ -93,9 +92,9 @@ namespace flexd {
                 return false;
             }
 
-            bool FleXdEvent::trigger() {
+            bool FleXdEvent::trigger(eventfd_t value /*= 1*/) {
                 if (m_fd != -1) {
-                    if (::eventfd_write(m_fd, 1) == 0) {
+                    if (::eventfd_write(m_fd, value) == 0) {
                         return true;
                     }
                 }
@@ -106,18 +105,18 @@ namespace flexd {
                 return m_fd;
             }
 
-            void FleXdEvent::setOnEvent(std::function<void()> onEvent) {
+            void FleXdEvent::setOnEvent(std::function<void(eventfd_t)> onEvent) {
                 m_onEvent = onEvent;
             }
 
             void FleXdEvent::onEvent(FleXdEpoll::Event e) {
                 if (e.type == EpollEvent::EpollIn && e.fd == m_fd) {
-                    eventfd_t val;
-                    if (::eventfd_read(m_fd, &val) == 0) {
+                    eventfd_t value;
+                    if (::eventfd_read(m_fd, &value) == 0) {
                         if (m_onEvent) {
-                            m_onEvent();
+                            m_onEvent(value);
                         } else {
-                            onEvent();
+                            onEvent(value);
                         }
                     }
                 }
@@ -147,7 +146,7 @@ namespace flexd {
                 return ::raise(SIGTERM) == 0;
             }
 
-            void FleXdTermEvent::onEvent() {
+            void FleXdTermEvent::onEvent(eventfd_t) {
                 m_poller.endLoop();
             }
 

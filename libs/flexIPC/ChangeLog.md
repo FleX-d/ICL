@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+## [0.1.0] - 2018-07-27
+### Added
+- None
+
+### Changed
+- [fleXdEpoll] Changed FleXdEvent to be able to trigger event with custom values [Martin Strenger]
+- [fleXdEpoll] Updated examples for FleXdEvent [Martin Strenger]
+
+### Removed
+- None
+
 ## [0.1.0] - 2018-07-26
 ### Added
 - [fleXdIPCCommon] New virtual functions isServer() and isClient() for FleXdIPC class [Martin Strenger]

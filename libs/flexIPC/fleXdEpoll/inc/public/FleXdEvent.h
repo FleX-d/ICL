@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FLEXDEVENT_H
 
 #include "FleXdEpoll.h"
+#include <sys/eventfd.h>
 
 struct itimerspec;
 namespace flexd {
@@ -42,28 +43,48 @@ namespace flexd {
 
             class FleXdEvent {
             public:
-                explicit FleXdEvent(FleXdEpoll& poller, std::function<void()> onEvent = nullptr);
+                explicit FleXdEvent(FleXdEpoll& poller, std::function<void(eventfd_t)> onEvent = nullptr);
                 virtual ~FleXdEvent();
 
+                /**
+                 * Function initializes the event (adds event to FleXdEpoll)
+                 * @return true on success
+                 */
                 bool init();
+                /**
+                 * Function uninitializes the event (removes event from FleXdEpoll)
+                 * @return true on success
+                 */
                 bool uninit();
-                bool trigger();
+                /**
+                 * Function triggers the event with defined value. Value must be greater than 0.
+                 * @return true on success
+                 */
+                bool trigger(eventfd_t value = 1);
+                /**
+                 * Function returns file descriptor of the event
+                 * @return file descriptor
+                 */
                 int getFd() const;
-                void setOnEvent(std::function<void()> onEvent);
+                /**
+                 * Function sets the callback function for event
+                 * @param onEvent - callback function
+                 */
+                void setOnEvent(std::function<void(eventfd_t)> onEvent);
 
                 FleXdEvent(const FleXdEpoll&) = delete;
                 FleXdEvent& operator=(const FleXdEpoll&) = delete;
                 FleXdEvent(const FleXdEpoll&&) = delete;
                 FleXdEvent& operator=(const FleXdEpoll&&) = delete;
 
-                virtual void onEvent() {}
+                virtual void onEvent(eventfd_t) {}
 
             private:
                 void onEvent(FleXdEpoll::Event e);
 
             protected:
                 FleXdEpoll& m_poller;
-                std::function<void()> m_onEvent;
+                std::function<void(eventfd_t)> m_onEvent;
                 int m_fd;
             };
 
@@ -80,7 +101,7 @@ namespace flexd {
                 FleXdTermEvent(const FleXdEpoll&&) = delete;
                 FleXdTermEvent& operator=(const FleXdEpoll&&) = delete;
 
-                virtual void onEvent() override;
+                virtual void onEvent(eventfd_t) override;
             };
 
         } // namespace ipc

@@ -41,9 +41,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace flexd::icl::ipc;
 
-void onEvent()
+void onEvent(eventfd_t value)
 {
-    std::cout << "[pid " << ::getpid() << "] Event triggered" << std::endl;
+    std::cout << "[pid " << ::getpid() << "] Event triggered with value "<< value << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -69,10 +69,18 @@ int main(int argc, char** argv)
                 std::cout << "[pid " << ::getpid() << "] sleep(2)" << std::endl;
                 ::sleep(2);
                 if (event.trigger()) {
-                    std::cout << "[pid " << ::getpid() << "] Trigger event" << std::endl;
+                    std::cout << "[pid " << ::getpid() << "] Trigger event with default value" << std::endl;
                 } else {
-                    std::cout << "[pid " << ::getpid() << "] Failed to trigger event" << std::endl;
+                    std::cout << "[pid " << ::getpid() << "] Failed to trigger event with default value" << std::endl;
                 }
+                std::cout << "[pid " << ::getpid() << "] sleep(2)" << std::endl;
+                ::sleep(1);
+                if (event.trigger(123)) {
+                    std::cout << "[pid " << ::getpid() << "] Trigger event with value 123" << std::endl;
+                } else {
+                    std::cout << "[pid " << ::getpid() << "] Failed to trigger event with value 123" << std::endl;
+                }
+                std::cout << "[pid " << ::getpid() << "] EXIT" << std::endl;
                 ::exit(EXIT_SUCCESS);
             default:
                 std::cout << "[pid " << ::getpid() << "] poller.loop()" << std::endl;
