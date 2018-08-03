@@ -93,7 +93,7 @@ namespace flexd {
 
             void FleXdTimer::onTimer(FleXdEpoll::Event e) {
                 if (e.type == EpollEvent::EpollIn && e.fd == m_fd) {
-                    size_t buf = 0;
+                    uint64_t buf = 0;
                     if (::read(m_fd, &buf, sizeof(buf)) != -1) {
                         if (m_onTimer) {
                             m_onTimer();
